@@ -1,0 +1,12 @@
+Get-Service TeamCity
+Get-Service TCBuildAgent
+
+
+Restart-Service TCBuildAgent
+
+
+---- Install OctoPack
+
+dotnet octo --version
+dotnet tool install Octopus.DotNet.Cli --global
+dotnet tool uninstall Octopus.DotNet.Cli --global
