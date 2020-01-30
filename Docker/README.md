@@ -37,10 +37,11 @@ docker container rm <id>
 docker logs <id>
 ```
 
-### Remove Dangling Images:
+### Clean Up:
 ```
-docker system prune
 docker image prune
+docker volume prune
+docker system prune
 ```
 ### Volumes:
 ```
@@ -56,8 +57,12 @@ docker network ls
 ```
 docker-compose --help
 docker-compose up
+docker-compose up servicename
 docker-compose down
 docker-compose start
-docker-compose stop
+docker-compose start servicename
+docker-compose stop 
+docker-compose stop servicename
 docker-compose build
+docker-compose build servicename
 ```
