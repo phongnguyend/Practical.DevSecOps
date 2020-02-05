@@ -81,6 +81,17 @@ Web API:
 </system.webServer>
 ```
 
+## Add CORS
+```xml
+<system.webServer>
+   <httpprotocol>
+      <customheaders>
+        <add name="Access-Control-Allow-Origin" value="domain" />
+      </customheaders>
+    </httpprotocol>
+</system.webServer>
+```
+
 ## Add Strict Transport Security
 ```xml
 <system.webServer>
