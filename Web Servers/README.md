@@ -81,7 +81,7 @@ Web API:
 </system.webServer>
 ```
 
-## Add CORS
+## Add CORS for Simple Senarios
 ```xml
 <system.webServer>
    <httpprotocol>
@@ -91,6 +91,7 @@ Web API:
     </httpprotocol>
 </system.webServer>
 ```
+For complex senarios, use [IIS CORS Module](https://docs.microsoft.com/en-us/iis/extensions/cors-module/cors-module-configuration-reference#cors-configuration) instead.
 
 ## Add Strict Transport Security
 ```xml
