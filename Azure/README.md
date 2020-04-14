@@ -1,1 +1,13 @@
 
+### [Certifications:](https://docs.microsoft.com/en-us/learn/certifications/browse/?term=azure&resource_type=certification)
+- [Microsoft Certified: Azure Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-fundamentals)
+- [Microsoft Certified: Azure Developer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-developer)
+  + [Udemy | AZ-203 Developing Solutions for Microsoft Azure Exam Prep](https://www.udemy.com/course/70532-azure/)
+  + [Udemy | Exam AZ-203 - Developing Solutions for Microsoft Azure](https://www.udemy.com/course/exam-microsoft-azure-dev/)
+- [Microsoft Certified: Azure Solutions Architect Expert](https://docs.microsoft.com/en-us/learn/certifications/azure-solutions-architect)
+  + [Udemy | AZ-300 Azure Architecture Technologies Exam Prep 2020](https://www.udemy.com/course/70534-azure/)
+  + [Udemy | Microsoft AZ-300: Azure Architect Technologies](https://www.udemy.com/course/microsoft-az-300-azure-architect-technologies/)
+  + [Udemy | AZ-300: Microsoft Azure Architect Technologies- UPDATED 2020](https://www.udemy.com/course/az-102-azure-administrator-certification-transition/)
+  + [Udemy | AZ-301 Azure Architect Design Exam Prep 2020](https://www.udemy.com/course/az301-azure/)
+  + [Udemy | Microsoft AZ-301 Certification: Azure Architect Design 2020](https://www.udemy.com/course/microsoft-az-301-certification-azure-architect-design/)
+  + [Udemy | Exam AZ-301: Microsoft Azure Architect Design](https://www.udemy.com/course/exam-az-microsoft-azure-exam-role1/)
