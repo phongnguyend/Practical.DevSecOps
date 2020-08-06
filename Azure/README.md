@@ -19,11 +19,15 @@
 ##
 ## [Microsoft Certified: Azure Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-administrator)
 - [Microsoft Learning | AZ-104: Microsoft Azure Administrator](https://microsoftlearning.github.io/AZ-104-MicrosoftAzureAdministrator/)
-- [ExamTopics | Microsoft AZ-103 Exam](https://www.examtopics.com/exams/microsoft/az-103/)
 - [ExamTopics | Microsoft AZ-104 Exam](https://www.examtopics.com/exams/microsoft/az-104/)
 - [Udemy | AZ-103 / AZ-104 Azure Administrator Exam Certification](https://www.udemy.com/course/70533-azure/)
 ##
-## [Microsoft Certified: Azure Security Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-security-engineer)  
+## [Microsoft Certified: Azure Security Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-security-engineer) 
+- [Microsoft Learning | AZ-500: Microsoft Azure Security Technologies](https://microsoftlearning.github.io/AZ500-AzureSecurityTechnologies/)
+- [ExamTopics | Microsoft AZ-500 Exam](https://www.examtopics.com/exams/microsoft/az-500/)
+- [ITExams | Microsoft Azure Security Technologies (AZ-500) Exam](https://www.itexams.com/info/AZ-500)
+- [CertBolt | Microsoft Certified: Azure Security Engineer Associate Training](https://www.certbolt.com/microsoft-certified-azure-security-engineer-associate-exam-dumps)
+- [Udemy | Microsoft AZ-500 Certification: Azure Security Technologies](https://www.udemy.com/course/az-500-course/)
 ##
 ## [Microsoft Certified: Azure Solutions Architect Expert](https://docs.microsoft.com/en-us/learn/certifications/azure-solutions-architect)
 - [Udemy | AZ-300 Azure Architecture Technologies Exam Prep](https://www.udemy.com/course/70534-azure/)
