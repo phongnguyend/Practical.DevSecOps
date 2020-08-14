@@ -8,3 +8,4 @@
 - [AzCopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10)
 - [Azure Import/Export](https://www.microsoft.com/en-us/download/details.aspx?id=42659)
 - [Azure Data Box](https://azure.microsoft.com/en-us/services/databox/)
+- [Azure File Sync](https://docs.microsoft.com/en-us/azure/storage/files/storage-sync-files-deployment-guide?tabs=azure-portal)
