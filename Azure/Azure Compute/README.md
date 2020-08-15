@@ -7,3 +7,7 @@
 - [AZ-303, AZ-304: Architect compute infrastructure in Azure](https://docs.microsoft.com/en-us/learn/paths/architect-compute-infrastructure/)
 
 ### Tools:
+- [Azure Resource Manager (ARM) Tools for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools)
+- [ARM Visualizer](http://armviz.io/)
+- [Azure Quickstart Templates](https://github.com/Azure/azure-quickstart-templates)
+- [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
