@@ -13,3 +13,21 @@
 - [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
 - [Microsoft System Preparation (Sysprep)](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/sysprep--system-preparation--overview)
 - [Windows Azure Linux Agent (waagent)](https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/agent-linux)
+
+## Azure Functions:
+- Function App:
+  + Storage Account
+  + Runtime
+  + Consumption Plan
+  + Functions Version
+- Functions:
+  + Triggers
+  + Input Bindings
+  + Output Bindings
+  + function.json
+- Duarable Functions:
+  + HTTP Starter
+  + Orchestrator
+  + Activity
+- Tools:
+  + [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
