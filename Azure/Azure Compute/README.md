@@ -11,3 +11,5 @@
 - [ARM Visualizer](http://armviz.io/)
 - [Azure Quickstart Templates](https://github.com/Azure/azure-quickstart-templates)
 - [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
+- [Microsoft System Preparation (Sysprep)](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/sysprep--system-preparation--overview)
+- [Windows Azure Linux Agent (waagent)](https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/agent-linux)
