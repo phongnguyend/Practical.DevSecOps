@@ -1,3 +1,12 @@
+### Learning Paths:
+- [AZ-104: Manage identities and governance in Azure](https://docs.microsoft.com/en-us/learn/paths/az-104-manage-identities-governance/)
+- [AZ-500: Manage identity and access in Azure Active Directory](https://docs.microsoft.com/en-us/learn/paths/manage-identity-and-access/)
+
+### Tools:
+
+
+### Common Scripts:
+
 - Create an User & its own Resource Group
 ```
 az ad user create --display-name "<Display Name>" \
