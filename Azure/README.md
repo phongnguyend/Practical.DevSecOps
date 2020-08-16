@@ -4,7 +4,9 @@
 ## [Microsoft Certified: Azure Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-fundamentals)
 - [Microsoft Learning | Microsoft Azure Fundamentals - AZ-900T00 and AZ-900T01](https://microsoftlearning.github.io/AZ-900T0x-MicrosoftAzureFundamentals/)
 - [ExamTopics | Microsoft AZ-900 Certification with Actual Questions](https://www.examtopics.com/exams/microsoft/az-900/)
-- [Udemy | AZ-900: Microsoft Azure Fundamentals Exam Prep](https://www.udemy.com/course/az900-azure/)  
+- [Udemy | AZ-900: Microsoft Azure Fundamentals Exam Prep](https://www.udemy.com/course/az900-azure/)
+##
+## [Microsoft Certified: Azure Data Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-data-fundamentals)
 ##
 ## [Microsoft Certified: Azure Developer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-developer)
 - [Microsoft Learning | AZ-204: Developing solutions for Microsoft Azure](https://microsoftlearning.github.io/AZ-204-DevelopingSolutionsforMicrosoftAzure/)
@@ -28,6 +30,10 @@
 - [ITExams | Microsoft Azure Security Technologies (AZ-500) Exam](https://www.itexams.com/info/AZ-500)
 - [CertBolt | Microsoft Certified: Azure Security Engineer Associate Training](https://www.certbolt.com/microsoft-certified-azure-security-engineer-associate-exam-dumps)
 - [Udemy | Microsoft AZ-500 Certification: Azure Security Technologies](https://www.udemy.com/course/az-500-course/)
+##
+## [Microsoft Certified: Azure Database Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-database-administrator-associate)
+##
+## [Microsoft Certified: Azure Data Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-data-engineer)
 ##
 ## [Microsoft Certified: Azure Solutions Architect Expert](https://docs.microsoft.com/en-us/learn/certifications/azure-solutions-architect)
 - [Udemy | AZ-300 Azure Architecture Technologies Exam Prep](https://www.udemy.com/course/70534-azure/)
