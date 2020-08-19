@@ -1000,3 +1000,151 @@ echo https://$(az network public-ip show \
 az group delete --name $rgName --yes		
   ```
 </details>
+
+<details>
+  <summary><b>DNS Load Balancing with Azure Traffic Manager</b></summary>
+  
+  ```
+az network traffic-manager profile create \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name TM-MusicStream-Priority \
+    --routing-method Priority \
+    --unique-dns-name TM-MusicStream-Priority-$RANDOM
+	
+az deployment group create \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --template-uri  https://raw.githubusercontent.com/MicrosoftDocs/mslearn-distribute-load-with-traffic-manager/master/azuredeploy.json \
+    --parameters password="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)"
+	
+WestId=$(az network public-ip show \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name westus2-vm-nic-pip \
+    --query id \
+    --out tsv)
+
+az network traffic-manager endpoint create \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --profile-name TM-MusicStream-Priority \
+    --name "Primary-WestUS" \
+    --type azureEndpoints \
+    --priority 1 \
+    --target-resource-id $WestId
+
+EastId=$(az network public-ip show \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name eastasia-vm-nic-pip \
+    --query id \
+    --out tsv)
+
+az network traffic-manager endpoint create \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --profile-name TM-MusicStream-Priority \
+    --name "Failover-EastAsia" \
+    --type azureEndpoints \
+    --priority 2 \
+    --target-resource-id $EastId
+	
+az network traffic-manager endpoint list \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --profile-name TM-MusicStream-Priority \
+    --output table
+	
+# Retrieve the address for the West US 2 web app
+nslookup $(az network public-ip show \
+            --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+            --name eastasia-vm-nic-pip \
+            --query dnsSettings.fqdn \
+            --output tsv)
+# Retrieve the address for the East Asia web app
+nslookup $(az network public-ip show \
+            --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+            --name westus2-vm-nic-pip \
+            --query dnsSettings.fqdn \
+            --output tsv)
+# Retrieve the address for the Traffic Manager profile
+nslookup $(az network traffic-manager profile show \
+            --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+            --name TM-MusicStream-Priority \
+            --query dnsConfig.fqdn \
+            --out tsv)
+			
+echo http://$(az network traffic-manager profile show \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name TM-MusicStream-Priority \
+    --query dnsConfig.fqdn \
+    --out tsv)
+	
+az network traffic-manager endpoint update \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa  \
+    --name "Primary-WestUS" \
+    --profile-name TM-MusicStream-Priority \
+    --type azureEndpoints \
+    --endpoint-status Disabled
+	
+# Retrieve the address for the West US 2 web app
+nslookup $(az network public-ip show \
+            --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+            --name eastasia-vm-nic-pip \
+            --query dnsSettings.fqdn \
+            --output tsv)
+# Retrieve the address for the East Asia web app
+nslookup $(az network public-ip show \
+            --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+            --name westus2-vm-nic-pip \
+            --query dnsSettings.fqdn \
+            --output tsv)
+# Retrieve the address for the Traffic Manager profile
+nslookup $(az network traffic-manager profile show \
+            --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+            --name TM-MusicStream-Priority \
+            --query dnsConfig.fqdn \
+            --out tsv)
+			
+### Create a Traffic Manager profile using performance routing ###
+
+az network traffic-manager profile create \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name TM-MusicStream-Performance \
+    --routing-method Performance \
+    --unique-dns-name TM-MusicStream-Performance-$RANDOM \
+    --output table
+	
+WestId=$(az network public-ip show \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name westus2-vm-nic-pip \
+    --query id \
+    --out tsv)
+
+az network traffic-manager endpoint create \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --profile-name TM-MusicStream-Performance \
+    --name "WestUS" \
+    --type azureEndpoints \
+    --target-resource-id $WestId
+
+EastId=$(az network public-ip show \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name eastasia-vm-nic-pip \
+    --query id \
+    --out tsv)
+
+az network traffic-manager endpoint create \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --profile-name TM-MusicStream-Performance \
+    --name "EastAsia" \
+    --type azureEndpoints \
+    --target-resource-id $EastId
+	
+echo http://$(az network traffic-manager profile show \
+    --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+    --name TM-MusicStream-Performance \
+    --query dnsConfig.fqdn \
+    --output tsv)
+	
+nslookup $(az network traffic-manager profile show \
+        --resource-group learn-a10af545-e9e7-409b-be6f-b5d342c439fa \
+        --name TM-MusicStream-Performance \
+        --query dnsConfig.fqdn \
+        --output tsv)	
+  ```
+</details>
