@@ -12,6 +12,12 @@
 - [Network Watcher | IP flow verify](https://portal.azure.com/#blade/Microsoft_Azure_Network/NetworkWatcherMenuBlade/verifyIPFlow)
 - [Network Watcher | Usage + quotas](https://portal.azure.com/#blade/Microsoft_Azure_Network/NetworkWatcherMenuBlade/usage)
 
+### Useful Links:
+- [Configure a custom domain name in Azure App Service with Traffic Manager integration](https://docs.microsoft.com/en-us/azure/app-service/configure-domain-traffic-manager)
+- [CNAME Record - How it Works, Alternatives & Advanced Use Cases](https://ns1.com/resources/cname)
+- [What does the TTL on a CNAME record mean?](https://serverfault.com/questions/260254/what-does-the-ttl-on-a-cname-record-mean)
+- [Check DNS records on Windows with nslookup: Check when a cached record expires](https://support.rackspace.com/how-to/nslookup-checking-dns-records-on-windows/)
+
 ### Common Scripts:
 <details>
   <summary><b>Network + Subnets</b></summary>
@@ -279,7 +285,7 @@ az group delete --name LearnNetworking --yes
 </details>
 
 <details>
-  <summary><b>Connect your on-premises network to Azure with VPN Gateway</b></summary>
+  <summary><b>Connect on-premises network to Azure with VPN Gateway</b></summary>
   
   ```
 -- Azure network
