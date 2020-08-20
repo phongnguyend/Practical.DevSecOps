@@ -37,3 +37,41 @@ az vm create \
 	
   ```
 </details>
+
+<details>
+  <summary><b>Create CPU 80% Alert</b></summary>
+  
+  ```
+cat <<EOF > cloud-init.txt
+#cloud-config
+package_upgrade: true
+packages:
+- stress
+runcmd:
+- sudo stress --cpu 1
+EOF
+
+az vm create \
+    --resource-group learn-903737bb-b940-45e0-9ae9-b5943e85ef9c \
+    --name vm1 \
+    --image UbuntuLTS \
+    --custom-data cloud-init.txt \
+    --generate-ssh-keys
+
+VMID=$(az vm show \
+        --resource-group learn-903737bb-b940-45e0-9ae9-b5943e85ef9c \
+        --name vm1 \
+        --query id \
+        --output tsv)
+		
+az monitor metrics alert create \
+    -n "Cpu80PercentAlert" \
+    --resource-group learn-903737bb-b940-45e0-9ae9-b5943e85ef9c \
+    --scopes $VMID \
+    --condition "max percentage CPU > 80" \
+    --description "Virtual machine is running at or greater than 80% CPU utilization" \
+    --evaluation-frequency 1m \
+    --window-size 1m \
+    --severity 3
+  ```
+</details>
