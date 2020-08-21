@@ -1,12 +1,12 @@
 Generate Strong Password:
-```
+```ps1
 Add-Type -AssemblyName System.Web
 
 [System.Web.Security.Membership]::GeneratePassword(20, 2) | Set-Clipboard
 ```
 
 Disable SSL 2, SSL 3, TLS 1, TLS 1.0, TLS 1.1 Windows Sever [(refer)](https://www.petenetlive.com/KB/Article/0001675)
-```ps
+```ps1
 New-Item 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\SSL 2.0\Server' -Force | Out-Null 
 New-ItemProperty -path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\SSL 2.0\Server' -name 'Enabled' -value '0' -PropertyType 'DWord' -Force | Out-Null 
 New-ItemProperty -path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\SSL 2.0\Server' -name 'DisabledByDefault' -value 1 -PropertyType 'DWord' -Force | Out-Null 
