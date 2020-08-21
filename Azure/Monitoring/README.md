@@ -75,3 +75,76 @@ az monitor metrics alert create \
     --severity 3
   ```
 </details>
+
+<details>
+  <summary><b>Backup & Restore Virtual Machine</b></summary>
+  
+  ```
+RGROUP=$(az group create --name vmbackups --location westus2 --output tsv --query name)
+
+az network vnet create \
+    --resource-group $RGROUP \
+    --name NorthwindInternal \
+    --address-prefix 10.0.0.0/16 \
+    --subnet-name NorthwindInternal1 \
+    --subnet-prefix 10.0.0.0/24
+	
+az vm create \
+    --resource-group $RGROUP \
+    --name NW-APP01 \
+    --size Standard_DS1_v2 \
+    --vnet-name NorthwindInternal \
+    --subnet NorthwindInternal1 \
+    --image Win2016Datacenter \
+    --admin-username admin123 \
+    --no-wait \
+    --admin-password abcABC123'!@#'
+	
+az vm create \
+    --resource-group $RGROUP \
+    --name NW-RHEL01 \
+    --size Standard_DS1_v2 \
+    --image RedHat:RHEL:7-RAW:latest \
+    --authentication-type ssh \
+    --generate-ssh-keys \
+    --vnet-name NorthwindInternal \
+    --subnet NorthwindInternal1
+
+az backup vault create \
+	--name azure-backup  \
+	--resource-group vmbackups \
+	--location westus2
+
+az backup protection enable-for-vm \
+    --resource-group vmbackups \
+    --vault-name azure-backup \
+    --vm NW-APP01 \
+    --policy-name DefaultPolicy
+
+az backup job list \
+    --resource-group vmbackups \
+    --vault-name azure-backup \
+    --output table
+	
+az backup protection backup-now \
+    --resource-group vmbackups \
+    --vault-name azure-backup \
+    --container-name NW-APP01 \
+    --item-name NW-APP01 \
+    --retain-until 18-10-2030 \
+    --backup-management-type AzureIaasVM
+
+storageName=restorestaging$RANDOM
+
+az storage account create \
+	--resource-group $RGROUP \
+	--name $storageName \
+	--location westus2
+
+az vm stop --resource-group $RGROUP --name NW-APP01
+
+## use azure portal to restore ##
+
+az group delete --name $RGROUP --yes
+```
+</details>
