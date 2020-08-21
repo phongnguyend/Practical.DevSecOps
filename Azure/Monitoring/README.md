@@ -11,7 +11,7 @@
 - [Azure Diagnostics Extension](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostics-extension-overview)
 - [Kusto Query Language](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/concepts/)
 
-### Usful Links:
+### Useful Links:
 - [Delete an Azure Backup Recovery Services vault](https://docs.microsoft.com/en-us/azure/backup/backup-azure-delete-vault)
 
 ### Scripts:
