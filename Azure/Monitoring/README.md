@@ -11,6 +11,9 @@
 - [Azure Diagnostics Extension](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostics-extension-overview)
 - [Kusto Query Language](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/concepts/)
 
+### Usful Links:
+- [Delete an Azure Backup Recovery Services vault](https://docs.microsoft.com/en-us/azure/backup/backup-azure-delete-vault)
+
 ### Scripts:
 <details>
   <summary><b>Configure Virtual Machine Boot Diagnostics</b></summary>
@@ -147,4 +150,32 @@ az vm stop --resource-group $RGROUP --name NW-APP01
 
 az group delete --name $RGROUP --yes
 ```
+</details>
+
+<details>
+  <summary><b>Protect Azure infrastructure with Azure Site Recovery</b></summary>
+  
+  ```
+curl https://raw.githubusercontent.com/MicrosoftDocs/mslearn-protect-infrastructure-with-azure-site-recovery/master/deploy.json > deploy.json
+
+az group create --name west-coast-rg --location westus2
+az group create --name east-coast-rg --location eastus2
+
+az deployment group create \
+    --name asrDeployment \
+    --template-file deploy.json \
+    --parameters storageAccounts_asrcache_name=asrcache$RANDOM \
+    --resource-group west-coast-rg
+
+az backup vault create \
+  --name asr-vault  \
+  --resource-group east-coast-rg \
+  --location eastus2
+
+# use portal to continue #
+
+az group delete --name west-coast-rg --yes
+az group delete --name east-coast-rg --yes
+az group delete --name west-coast-rg-asr --yes
+  ```
 </details>
