@@ -10,6 +10,7 @@
 - [Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/overview)
 - [Azure Sentinel](https://docs.microsoft.com/en-us/azure/sentinel/overview)
 - [Azure Diagnostics Extension](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostics-extension-overview)
+- [Microsoft Antimalware Extension](https://docs.microsoft.com/en-us/azure/security/fundamentals/antimalware)
 - [Kusto Query Language](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/concepts/)
 
 ### Useful Links:
