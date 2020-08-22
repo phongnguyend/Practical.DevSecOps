@@ -2,6 +2,7 @@
 - [AZ-104: Monitor and back up Azure resources](https://docs.microsoft.com/en-us/learn/paths/az-104-monitor-backup-resources/)
 - [AZ-500: Manage security operations in Azure](https://docs.microsoft.com/en-us/learn/paths/manage-security-operations/)
 - [AZ-303, AZ-304: Architect infrastructure operations in Azure](https://docs.microsoft.com/en-us/learn/paths/architect-infrastructure-operations/)
+- [AZ-303, AZ-304: Architect migration, business continuity, and disaster recovery in Azure](https://docs.microsoft.com/en-us/learn/paths/architect-migration-bcdr/)
 
 ### Tools:
 - [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
