@@ -181,3 +181,29 @@ az group delete --name east-coast-rg --yes
 az group delete --name west-coast-rg-asr --yes
   ```
 </details>
+
+<details>
+  <summary><b>Capture Web Application Logs with App Service Diagnostics Logging</b></summary>
+  
+  ```
+gitRepo=https://github.com/MicrosoftDocs/mslearn-capture-application-logs-app-service
+appName="contosofashions$RANDOM"
+appPlan="contosofashionsAppPlan"
+appLocation=southeastasia
+resourceGroup=learn-081cf34f-1480-4bb7-ae7f-fc0592d95f9a
+storageAccount=sa$appName
+
+az appservice plan create --name $appPlan --resource-group $resourceGroup --location $appLocation --sku FREE
+az webapp create --name $appName --resource-group $resourceGroup --plan $appPlan --deployment-source-url $gitRepo
+
+az storage account create -n $storageAccount -g $resourceGroup -l $appLocation --sku Standard_LRS
+
+az webapp log config --application-logging true --level verbose --name $appName --resource-group $resourceGroup
+
+az webapp log tail  --resource-group learn-081cf34f-1480-4bb7-ae7f-fc0592d95f9a --name $appName
+
+az webapp log config --application-logging false --name $appName --resource-group $resourceGroup
+
+az webapp log show --name $appName --resource-group $resourceGroup
+  ```
+</details>
