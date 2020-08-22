@@ -13,6 +13,7 @@
 - [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
 - [Microsoft System Preparation (Sysprep)](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/sysprep--system-preparation--overview)
 - [Windows Azure Linux Agent (waagent)](https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/agent-linux)
+- [Azure Diagnostics Extension](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostics-extension-overview)
 - [Microsoft Antimalware Extension](https://docs.microsoft.com/en-us/azure/security/fundamentals/antimalware)
 
 ## Azure Functions:
