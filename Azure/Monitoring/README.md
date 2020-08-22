@@ -15,6 +15,8 @@
 
 ### Useful Links:
 - [Delete an Azure Backup Recovery Services vault](https://docs.microsoft.com/en-us/azure/backup/backup-azure-delete-vault)
+- [ASP.NET Core Logging with Azure App Service and Serilog](https://devblogs.microsoft.com/aspnet/asp-net-core-logging/)
+- [Configuring Logging in Azure App Services](https://ardalis.com/configuring-logging-in-azure-app-services/)
 
 ### Scripts:
 <details>
