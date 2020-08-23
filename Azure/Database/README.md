@@ -5,3 +5,5 @@
 - [AZ-303, AZ-304: Architect a data platform in Azure](https://docs.microsoft.com/en-us/learn/paths/architect-data-platform/)
 
 ### Tools:
+- [Azure Data Studio](https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio?view=sql-server-ver15)
+- [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility?view=sql-server-ver15)
