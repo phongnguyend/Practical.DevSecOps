@@ -7,3 +7,4 @@
 ### Tools:
 - [Azure Data Studio](https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio?view=sql-server-ver15)
 - [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility?view=sql-server-ver15)
+- [Data Migration Assistant](https://www.microsoft.com/en-us/download/details.aspx?id=53595)
