@@ -17,12 +17,12 @@
 - [ITExams | Developing Solutions for Microsoft Azure (AZ-203) Exam](https://www.itexams.com/info/AZ-203)
 - [ITExams | Developing Solutions for Microsoft Azure (AZ-204) Exam](https://www.itexams.com/info/AZ-204)
 - [CertBolt | Microsoft Certified: Azure Developer Associate Training](https://www.certbolt.com/microsoft-certified-azure-developer-associate-exam-dumps)
-- [Udemy | AZ-203 / AZ-204 Developing for Microsoft Azure Exam Prep](https://www.udemy.com/course/70532-azure/)
+- [Udemy | AZ-204 Developing for Microsoft Azure Exam Prep](https://www.udemy.com/course/70532-azure/)
 ##
 ## [Microsoft Certified: Azure Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-administrator)
 - [Microsoft Learning | AZ-104: Microsoft Azure Administrator](https://microsoftlearning.github.io/AZ-104-MicrosoftAzureAdministrator/)
 - [ExamTopics | Microsoft AZ-104 Exam](https://www.examtopics.com/exams/microsoft/az-104/)
-- [Udemy | AZ-103 / AZ-104 Azure Administrator Exam Certification](https://www.udemy.com/course/70533-azure/)
+- [Udemy | AZ-104 Azure Administrator Exam Certification](https://www.udemy.com/course/70533-azure/)
 ##
 ## [Microsoft Certified: Azure Security Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-security-engineer) 
 - [Microsoft Learning | AZ-500: Microsoft Azure Security Technologies](https://microsoftlearning.github.io/AZ500-AzureSecurityTechnologies/)
@@ -32,12 +32,17 @@
 - [Udemy | Microsoft AZ-500 Certification: Azure Security Technologies](https://www.udemy.com/course/az-500-course/)
 ##
 ## [Microsoft Certified: Azure Database Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-database-administrator-associate)
+- [Microsoft Learning | DP-300: Administering Relational Databases on Microsoft Azure](https://microsoftlearning.github.io/DP-300T00-Administering-Relational-Databases-on-Azure/)
 ##
 ## [Microsoft Certified: Azure Data Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-data-engineer)
+- [Microsoft Learning | DP-200: Implementing an Azure Data Solution](https://github.com/MicrosoftLearning/DP-200-Implementing-an-Azure-Data-Solution/)
+- [Microsoft Learning | DP-201: Designing an Azure Data Solution](https://github.com/MicrosoftLearning/DP-201-Designing-an-Azure-Data-Solution/)
 ##
 ## [Microsoft Certified: Azure Solutions Architect Expert](https://docs.microsoft.com/en-us/learn/certifications/azure-solutions-architect)
-- [Udemy | AZ-300 Azure Architecture Technologies Exam Prep](https://www.udemy.com/course/70534-azure/)
-- [Udemy | AZ-301 Azure Architect Design Exam Prep](https://www.udemy.com/course/az301-azure/)
+- [Microsoft Learning | AZ-303: Microsoft Azure Architect Technologies](https://github.com/MicrosoftLearning/AZ-303-Microsoft-Azure-Architect-Technologies)
+- [Microsoft Learning | AZ-304: Microsoft Azure Architect Design](https://github.com/MicrosoftLearning/AZ-304-Microsoft-Azure-Architect-Design)
+- [Udemy | AZ-303 Azure Architecture Technologies Exam Prep](https://www.udemy.com/course/70534-azure/)
+- [Udemy | AZ-304 Azure Architect Design Exam Prep](https://www.udemy.com/course/az301-azure/)
 ##
 ## [Microsoft Certified: DevOps Engineer Expert](https://docs.microsoft.com/en-us/learn/certifications/devops-engineer)
 
