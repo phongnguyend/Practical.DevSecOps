@@ -13,3 +13,92 @@
 - [Azure Cosmos DB: Consistency Levels](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels)
 - [Azure Cosmos DB: Common Use Cases](https://docs.microsoft.com/en-us/azure/cosmos-db/use-cases)
 - [Azure Cosmos DB: Indexing](https://docs.microsoft.com/en-us/azure/cosmos-db/index-overview)
+
+### Common Scripts:
+<details>
+  <summary><b>Create a Storage account</b></summary>
+  
+  ```
+az storage account create \
+  --name <storage-account-name> \
+  --resource-group <resource-group> \
+  --location <your-location> \
+  --sku <sku> \
+  --kind <kind> \
+  --access-tier <tier>
+  ```
+</details>
+
+<details>
+  <summary><b>Create a Data Lake storage account</b></summary>
+  
+  ```
+az storage account create \
+  --name <storage-account-name> \
+  --resource-group <resource-group> \
+  --location <your-location> \
+  --sku <sku> \
+  --kind <kind> \
+  --access-tier <tier> \
+  --enable-hierarchical-namespace true
+  ```
+</details>
+
+<details>
+  <summary><b>Create Blob storage in a storage account</b></summary>
+  
+  ```
+az storage container create \
+  --name <container-name> \
+  --account-name <storage-account-name> \
+  --public-access <access>
+  ```
+</details>
+
+<details>
+  <summary><b>Create File storage in a storage account</b></summary>
+  
+  ```
+az storage share create \
+  --name <share-name> \
+  --account-name <storage-account-name>
+  ```
+</details>
+
+<details>
+  <summary><b>Provision a Cosmos DB account</b></summary>
+  
+  ```
+az cosmosdb create \
+  --subscription <your-subscription> \
+  --resource-group <resource-group-name> \
+  --name <cosmosdb-account-name> \
+  --locations regionName=eastus failoverPriority=0 \
+  --locations regionName=westus failoverPriority=1 \
+  --enable-multiple-write-locations
+  ```
+</details>
+
+<details>
+  <summary><b>Create a Database and a Container in a Cosmos DB account</b></summary>
+  
+  ```
+## Azure CLI - create a database
+
+az cosmosdb sql database create \
+  --account-name <cosmos-db-account-name> \
+  --name <database-name> \
+  --resource-group <resource-group-name> \
+  --subscription <your-subscription> \
+  --throughput <number-of-RU/s>
+
+## Azure CLI - create a container
+
+az cosmosdb sql container create \
+  --account-name <cosmos-db-account-name> \
+  --database-name <database-name> \
+  --name <container-name> \
+  --resource-group <resource-group-name> \
+  --partition-key-path <key-field-in-documents>
+  ```
+</details>
