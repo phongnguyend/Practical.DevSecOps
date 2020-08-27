@@ -102,3 +102,58 @@ az cosmosdb sql container create \
   --partition-key-path <key-field-in-documents>
   ```
 </details>
+
+<details>
+  <summary><b>Upload a blob to Azure Storage</b></summary>
+  
+  ```
+az storage blob upload \
+  --container-name images \
+  --account-name contosodata \
+  --file "\data\racer_black_large.gif" \
+  --name "bikes\racer_black"
+  ```
+</details>
+
+<details>
+  <summary><b>List the blobs in a container</b></summary>
+  
+  ```
+az storage blob list \
+  --account-name contosodata \
+  --container-name "images"
+  ```
+</details>
+
+<details>
+  <summary><b>Download a blob from a container</b></summary>
+  
+  ```
+az storage blob download \
+  --container-name images \
+  --account-name contosodata \
+  --file "racer_black_large.gif" \
+  --name "bikes\racer_black"
+  ```
+</details>
+
+<details>
+  <summary><b>Delete a blob from a container</b></summary>
+  
+  ```
+az storage blob delete \
+  --account-name contosodata \
+  --container-name "images" \
+  --name "bikes\racer_black"
+  ```
+</details>
+
+<details>
+  <summary><b>Delete an Azure Storage container</b></summary>
+  
+  ```
+az storage container delete \
+  --account-name contosodata \
+  --name "images"
+  ```
+</details>
