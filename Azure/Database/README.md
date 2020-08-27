@@ -104,7 +104,7 @@ az cosmosdb sql container create \
 </details>
 
 <details>
-  <summary><b>Upload a blob to Azure Storage</b></summary>
+  <summary><b>Upload (a) blob(s) to Azure Storage</b></summary>
   
   ```
 az storage blob upload \
@@ -112,6 +112,12 @@ az storage blob upload \
   --account-name contosodata \
   --file "\data\racer_black_large.gif" \
   --name "bikes\racer_black"
+
+az storage blob upload-batch \
+    --account-name <storage account name> \
+    --source 'images' \
+    --pattern '*.gif' \
+    --destination 'images'
   ```
 </details>
 
