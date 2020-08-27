@@ -8,3 +8,8 @@
 - [Azure Data Studio](https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio?view=sql-server-ver15)
 - [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility?view=sql-server-ver15)
 - [Data Migration Assistant](https://www.microsoft.com/en-us/download/details.aspx?id=53595)
+
+### Useful Links:
+- [Azure Cosmos DB: Consistency Levels](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels)
+- [Azure Cosmos DB: Common Use Cases](https://docs.microsoft.com/en-us/azure/cosmos-db/use-cases)
+- [Azure Cosmos DB: Indexing](https://docs.microsoft.com/en-us/azure/cosmos-db/index-overview)
