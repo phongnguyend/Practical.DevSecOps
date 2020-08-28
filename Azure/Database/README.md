@@ -16,6 +16,9 @@
 - [Azure Cosmos DB: Consistency Levels](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels)
 - [Azure Cosmos DB: Common Use Cases](https://docs.microsoft.com/en-us/azure/cosmos-db/use-cases)
 - [Azure Cosmos DB: Indexing](https://docs.microsoft.com/en-us/azure/cosmos-db/index-overview)
+- [Migrate an on-premises SQL Server database to an Azure SQL database](https://www.sqlshack.com/migrate-an-on-premises-sql-server-database-to-the-azure-sql-database/)
+- [Azure Database Migration Guide](https://datamigration.microsoft.com/scenario/sql-to-azuresqldb?step=1)
+- [Azure Database Migration Service](https://docs.microsoft.com/en-us/azure/dms/tutorial-sql-server-to-azure-sql)
 
 ### Common Scripts:
 <details>
