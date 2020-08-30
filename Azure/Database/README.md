@@ -169,3 +169,29 @@ az storage container delete \
   --name "images"
   ```
 </details>
+
+<details>
+  <summary><b>Create a database and container in Azure Cosmos DB</b></summary>
+  
+  ```
+export NAME=cosmos$RANDOM
+
+az cosmosdb create \
+    --name $NAME \
+    --kind GlobalDocumentDB \
+    --resource-group learn-54e9e86a-9435-4558-a6a0-e10b85000821
+
+az cosmosdb sql database create \
+    --account-name $NAME \
+    --name "Products" \
+    --resource-group learn-54e9e86a-9435-4558-a6a0-e10b85000821
+
+az cosmosdb sql container create \
+    --account-name $NAME \
+    --database-name "Products" \
+    --name "Clothing" \
+    --partition-key-path "/productId" \
+    --throughput 1000 \
+    --resource-group learn-54e9e86a-9435-4558-a6a0-e10b85000821
+  ```
+</details>
