@@ -11,6 +11,7 @@
 - [Data Migration Tool](https://docs.microsoft.com/en-us/azure/cosmos-db/import-data)
 - [Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/connector-azure-cosmos-db)
 - [Azure Cosmos DB SQL API .NET SDK Bulk Import](https://docs.microsoft.com/en-us/azure/cosmos-db/tutorial-sql-api-dotnet-bulk-import)
+- [Azure Cosmos DB: Capacity Calculator](https://cosmos.azure.com/capacitycalculator/)
 
 ### Useful Links:
 - [Azure Cosmos DB: Consistency Levels](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels)
