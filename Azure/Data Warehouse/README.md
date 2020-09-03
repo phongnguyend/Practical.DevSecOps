@@ -12,6 +12,7 @@
 - [Azure Analysis Services](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-overview)
 
 ### Tools:
+- [SQL Server Management Studio (SSMS)](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms)
 - [PolyBase](https://docs.microsoft.com/en-us/sql/relational-databases/polybase/polybase-guide)
 - [Power BI](https://docs.microsoft.com/en-us/power-bi/fundamentals/power-bi-overview)
 
