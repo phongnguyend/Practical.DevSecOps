@@ -1,12 +1,12 @@
 
 ## Masters
-![alt text](master1.png)
+![alt text](imgs/master.png)
 
 ## Nodes
-![alt text](node.png)
+![alt text](imgs/node.png)
 
 ## Pods
-![alt text](pod.png)
+![alt text](imgs/pod.png)
 
 ## Services
 
