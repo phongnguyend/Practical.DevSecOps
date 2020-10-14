@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: app-settings
+  name: app-configmaps
   labels:
-    app: app-settings
+    app: app-configmaps
 data:
   enemies: aliens
   lives: "3"

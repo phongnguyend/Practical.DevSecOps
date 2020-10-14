@@ -22,7 +22,9 @@ spec:
         - containerPort: 80
         envFrom:
         - configMapRef:
-            name: app-settings
+            name: app-configmaps
+        - secretRef:
+            name: app-secrets
         resources:
           limits:
             memory: "128Mi" #128 MB

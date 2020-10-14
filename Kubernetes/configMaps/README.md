@@ -1,8 +1,11 @@
 ```
-kubectl create -f app-settings.configmap.yml
+kubectl apply -f app.configmap.yml
+kubectl apply -f app.secret.yml
 kubectl apply –f nginx.deployment.yml
 kubectl get cm
+kubectl get secrets
 kubectl get all
-Kubectl delete –f nginx.deployment.yml
-kubectl delete cm app-settings
+kubectl delete –f nginx.deployment.yml
+kubectl delete -f app.configmap.yml
+kubectl delete -f app.secret.yml
 ```
