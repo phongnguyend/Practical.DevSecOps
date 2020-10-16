@@ -9,5 +9,6 @@
   helm repo update
   helm install mysql stable/mysql
   kubectl get secrets
+  helm upgrade mysql
   helm uninstall mysql
   ```
