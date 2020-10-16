@@ -22,3 +22,8 @@
   + [helm | The Kubernetes Package Manager](https://github.com/helm/helm)
   + [charts | Curated applications for Kubernetes](https://github.com/helm/charts)
   + [chartmuseum | Host your own Helm Chart Repository](https://github.com/helm/chartmuseum)
+
+## Tools
+- [Visual Studio Code Kubernetes Extension](https://marketplace.visualstudio.com/items?itemName=ms-kubernetes-tools.vscode-kubernetes-tools)
+- [kompose | Go from Docker Compose to Kubernetes](https://github.com/kubernetes/kompose)
+- [Lens - The Kubernetes IDE](https://github.com/lensapp/lens)
