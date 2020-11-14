@@ -137,6 +137,10 @@
   git config --list
   git config --list --show-origin
   ```
+- Configure Notepad++ as Editor:
+  ```
+  git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
+  ```
 - https://stackoverflow.com/questions/44549733/how-to-use-visual-studio-code-as-the-default-editor-for-git-mergetool
 
 ### Git GUI:
