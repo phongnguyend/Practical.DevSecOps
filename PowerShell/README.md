@@ -49,3 +49,11 @@ New-EventLog -LogName "Application" -Source "Application Name"
 New-EventLog -LogName "CustomLogName" -Source "Application Name"
 Remove-EventLog -LogName "CustomLogName"
 ```
+
+### Install & Create Windows Failover Cluster
+```ps1
+Install-WindowsFeature -Name Failover-Clustering –IncludeManagementTools
+Test-Cluster -Node Node1, Node2
+New-Cluster -Name MyCluster -Node Node1, Node2
+Get-Cluster
+```
