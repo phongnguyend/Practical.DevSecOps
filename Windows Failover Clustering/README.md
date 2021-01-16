@@ -68,3 +68,18 @@ Install-ADDSForest `
 -Force:$true
 
 ```
+
+## Install Failover Clustering Feature on VM1, VM2
+```
+Install-WindowsFeature -Name Failover-Clustering –IncludeManagementTools
+```
+
+## Test 
+```
+Test-Cluster -Node VM1, VM2
+```
+
+## Create Cluster
+```
+New-Cluster -Name MyCluster -Node VM1, VM2 -StaticAddress 10.0.0.10
+```
