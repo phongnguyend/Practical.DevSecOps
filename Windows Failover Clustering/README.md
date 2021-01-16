@@ -16,7 +16,7 @@ az vm create \
  -n DC \
  --image win2016datacenter \
  --admin-username vmadmin \
- --admin-password vmadmin123'!''@''#' \
+ --admin-password 'abcABC123!@#' \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
  --subnet default
@@ -26,7 +26,7 @@ az vm create \
  -n VM1 \
  --image win2016datacenter \
  --admin-username vmadmin \
- --admin-password vmadmin123'!''@''#' \
+ --admin-password 'abcABC123!@#' \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
  --subnet default
@@ -36,7 +36,7 @@ az vm create \
  -n VM2 \
  --image win2016datacenter \
  --admin-username vmadmin \
- --admin-password vmadmin123'!''@''#' \
+ --admin-password 'abcABC123!@#' \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
  --subnet default
