@@ -42,3 +42,24 @@ az vm create \
  --subnet default
 
 ```
+
+## Login to DC and Install Active Directory Domain Services (ADDS)
+```
+Install-WindowsFeature AD-Domain-Services
+
+Import-Module ADDSDeployment
+
+Install-ADDSForest `
+-CreateDnsDelegation:$false `
+-DatabasePath "C:\windows\NTDS" `
+-DomainMode "WinThreshold" `
+-DomainName "htlt.local" `
+-DomainNetbiosName "HTLT" `
+-ForestMode "WinThreshold" `
+-InstallDns:$true `
+-LogPath "C:\windows\NTDS" `
+-NoRebootOnCompletion:$false `
+-SysvolPath "C:\windows\SYSVOL" `
+-Force:$true
+
+```
