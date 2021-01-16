@@ -45,7 +45,7 @@ az vm create \
 
 ## Login to DC and Install Active Directory Domain Services (ADDS)
 ```
-Install-WindowsFeature AD-Domain-Services
+Install-WindowsFeature AD-Domain-Services –IncludeManagementTools
 
 Import-Module ADDSDeployment
 
