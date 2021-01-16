@@ -41,6 +41,11 @@ az vm create \
  --vnet-name VNET \
  --subnet default
 
+dcIpAddress="$(az network nic ip-config show -g Clustering1 -n ipconfigDC --nic-name DCVMNic --query "privateIpAddress" --out tsv)"
+echo $dcIpAddress
+az network nic update -n VM1VMNic -g Clustering1 --dns-servers $dcIpAddress
+az network nic update -n VM2VMNic -g Clustering1 --dns-servers $dcIpAddress
+
 ```
 
 ## Login to DC and Install Active Directory Domain Services (ADDS)
