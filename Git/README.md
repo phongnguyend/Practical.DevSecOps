@@ -174,3 +174,13 @@ git branch --set-upstream-to=origin/master master
 - [git - how to delete all commit history in github? - Stack Overflow](https://stackoverflow.com/questions/13716658/how-to-delete-all-commit-history-in-github)
 - [Steps to clear out the history of a git/github repository](https://gist.github.com/stephenhardy/5470814)
 - [How to Delete Commit History in Github](https://tecadmin.net/delete-commit-history-in-github/)
+
+### [Syncing a Fork](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork)
+```
+git remote -v
+git remote add upstream https://github.com/ORIGINAL_OWNER/ORIGINAL_REPOSITORY.git
+git remote -v
+git fetch upstream
+git checkout main
+git merge upstream/main
+```
