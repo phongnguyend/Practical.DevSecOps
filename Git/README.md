@@ -147,6 +147,7 @@
 - [Sourcetree | Free Git GUI for Mac and Windows](https://www.sourcetreeapp.com/)
 - [TortoiseGit – Windows Shell Interface to Git](https://tortoisegit.org/)
 - [Git in Visual Studio](https://azuredevopslabs.com/labs/devopsserver/github/)
+- [GitHub Desktop](https://desktop.github.com/)
 
 ### VS Code Extensions:
 - [GitLens — Git supercharged](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
@@ -184,3 +185,7 @@ git fetch upstream
 git checkout main
 git merge upstream/main
 ```
+
+### Reorder Commits:
+- [git - Reordering of commits - Stack Overflow](https://stackoverflow.com/questions/2740537/reordering-of-commits)
+- [How to reorder last two commits in git? - Stack Overflow](https://stackoverflow.com/questions/33388210/how-to-reorder-last-two-commits-in-git)
