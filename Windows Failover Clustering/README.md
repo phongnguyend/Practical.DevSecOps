@@ -71,6 +71,9 @@ Install-ADDSForest `
 
 ## Join Domain then Install Failover Clustering Feature on VM1, VM2:
 ```
+Add-Computer -LocalCredential "vmadmin" -DomainName "htlt.local" -Credential "vmadmin" -Restart
+```
+```
 Install-WindowsFeature -Name Failover-Clustering –IncludeManagementTools
 ```
 
