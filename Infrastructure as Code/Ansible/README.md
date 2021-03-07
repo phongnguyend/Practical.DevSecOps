@@ -1,5 +1,7 @@
 ## Setup Lab Environment in Azure
 ```
+---
+
 az group create --name ANSIBLE --location southeastasia
 
 az network vnet create \
@@ -56,4 +58,5 @@ echo $dcIpAddress
 az network nic update -n VM1VMNic -g ANSIBLE --dns-servers $dcIpAddress
 az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
 
+---
 ```
