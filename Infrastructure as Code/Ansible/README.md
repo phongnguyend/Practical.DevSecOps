@@ -61,6 +61,14 @@ az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
 ---
 ```
 
+## Setup Windows Hosts:
+- [WinRM Setup](https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html#winrm-setup)
+- Download and Execute PowerShell:
+  ```
+  https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1
+  powershell.exe -ExecutionPolicy ByPass -File "C:\ConfigureRemotingForAnsible.ps1"
+  ```
+
 ## Connect to ANSIBLE Node over SSH with Vistual Studio Code
 - [Install and Configure Vistual Studio Code Extension](https://code.visualstudio.com/docs/remote/ssh-tutorial)
 - [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu)
