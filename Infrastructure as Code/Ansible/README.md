@@ -154,7 +154,7 @@ echo "ssh vmadmin@"$ansiblePublicIpAddress
   
 ## Create and Run Playbooks:
 - Create [create-ad.yml](create-ad.yml)
-- Create [join-ad.yml](create-ad.yml)
+- Create [join-ad.yml](join-ad.yml)
 - Run
   ```
   ansible-playbook create-ad.yml
