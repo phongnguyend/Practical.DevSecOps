@@ -116,5 +116,13 @@ az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
   ```
   
 ## Create and Run Playbooks:
-- Create create-ad.yml
-- Create join-ad.yml
+- Create [create-ad.yml](create-ad.yml)
+- Create [join-ad.yml](create-ad.yml)
+- Run
+  ```
+  ansible-playbook create-ad.yml
+  ```
+- Run
+  ```
+  ansible-playbook join-ad.yml
+  ```
