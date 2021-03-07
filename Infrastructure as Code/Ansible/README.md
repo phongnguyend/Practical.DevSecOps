@@ -108,3 +108,13 @@ az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
   ansible_connection=winrm
   ansible_winrm_server_cert_validation=ignore
   ```
+- Test Connection:
+  ```
+  ansible domaincontroler -m win_ping
+  ansible nodes -m win_ping
+  ansible all -m win_ping
+  ```
+  
+## Create and Run Playbooks:
+- Create create-ad.yml
+- Create join-ad.yml
