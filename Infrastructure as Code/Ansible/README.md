@@ -58,6 +58,33 @@ echo $dcIpAddress
 az network nic update -n VM1VMNic -g ANSIBLE --dns-servers $dcIpAddress
 az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
 
+az network nsg rule create \
+ -g ANSIBLE \
+ --nsg-name DCNSG \
+ -n WinRM \
+ --priority 1010 \
+ --destination-port-ranges 5986 \
+ --access Allow \
+ --protocol Tcp
+
+az network nsg rule create \
+ -g ANSIBLE \
+ --nsg-name VM1NSG \
+ -n WinRM \
+ --priority 1010 \
+ --destination-port-ranges 5986 \
+ --access Allow \
+ --protocol Tcp
+
+az network nsg rule create \
+ -g ANSIBLE \
+ --nsg-name VM2NSG \
+ -n WinRM \
+ --priority 1010 \
+ --destination-port-ranges 5986 \
+ --access Allow \
+ --protocol Tcp
+
 ---
 ```
 
