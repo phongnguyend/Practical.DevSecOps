@@ -127,7 +127,7 @@ echo "ssh vmadmin@"$ansiblePublicIpAddress
 - Configure Hosts:
   ```
   [domaincontroler]
-  168.63.252.169
+  10.0.0.5
 
   [domaincontroler:vars]
   ansible_user=vmadmin
@@ -136,8 +136,8 @@ echo "ssh vmadmin@"$ansiblePublicIpAddress
   ansible_winrm_server_cert_validation=ignore
 
   [nodes]
-  104.215.253.36
-  104.215.153.53
+  10.0.0.6
+  10.0.0.7
 
   [nodes:vars]
   ansible_user=vmadmin
