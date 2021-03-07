@@ -159,6 +159,11 @@ echo "ssh vmadmin@"$ansiblePublicIpAddress
   ```
   ansible-playbook create-ad.yml
   ```
+- Restart Nodes
+  ```
+  az vm restart -g ANSIBLE -n VM1
+  az vm restart -g ANSIBLE -n VM2
+  ```
 - Run
   ```
   ansible-playbook join-ad.yml
