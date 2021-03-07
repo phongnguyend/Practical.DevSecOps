@@ -85,6 +85,16 @@ az network nsg rule create \
  --access Allow \
  --protocol Tcp
 
+ansiblePublicIpAddress="$(az vm show -d -g ANSIBLE -n ANSIBLE --query publicIps -o tsv)"
+dcPublicIpAddress="$(az vm show -d -g ANSIBLE -n DC --query publicIps -o tsv)"
+vm1PublicIpAddress="$(az vm show -d -g ANSIBLE -n VM1 --query publicIps -o tsv)"
+vm2PublicIpAddress="$(az vm show -d -g ANSIBLE -n VM2 --query publicIps -o tsv)"
+echo $ansiblePublicIpAddress
+echo $dcPublicIpAddress
+echo $vm1PublicIpAddress
+echo $vm2PublicIpAddress
+echo "ssh vmadmin@"$ansiblePublicIpAddress
+
 ---
 ```
 
