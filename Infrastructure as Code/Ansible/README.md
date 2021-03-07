@@ -60,3 +60,43 @@ az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
 
 ---
 ```
+
+## Connect to ANSIBLE Node over SSH with Vistual Studio Code
+- [Install and Configure Vistual Studio Code Extension](https://code.visualstudio.com/docs/remote/ssh-tutorial)
+- [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu)
+  ```
+  sudo apt update
+  sudo apt install software-properties-common
+  sudo apt-add-repository --yes --update ppa:ansible/ansible
+  sudo apt install ansible python-pip
+  pip install pywinrm
+
+  sudo chown -R vmadmin /etc/ansible/
+  ```
+- Open /etc/ansible/hosts
+  ```
+  sudo vim /etc/ansible/hosts
+  sudo nano /etc/ansible/hosts
+  cat /etc/ansible/hosts
+  ```
+- Configure Hosts:
+  ```
+  [domaincontroler]
+  168.63.252.169
+
+  [domaincontroler:vars]
+  ansible_user=vmadmin
+  ansible_password=abcABC123!@#
+  ansible_connection=winrm
+  ansible_winrm_server_cert_validation=ignore
+
+  [nodes]
+  104.215.253.36
+  104.215.153.53
+
+  [nodes:vars]
+  ansible_user=vmadmin
+  ansible_password=abcABC123!@#
+  ansible_connection=winrm
+  ansible_winrm_server_cert_validation=ignore
+  ```
