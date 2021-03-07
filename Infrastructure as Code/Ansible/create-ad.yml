@@ -1,0 +1,20 @@
+---
+- name: AD Domain
+  hosts: domaincontroler
+  tasks:
+  
+    - name: Create an AD Domain
+      win_domain:
+        create_dns_delegation: no
+        database_path: C:\windows\NTDS
+        dns_domain_name: htlt.local
+        domain_mode: WinThreshold
+        domain_netbios_name: HTLT
+        forest_mode: WinThreshold
+        safe_mode_password: abcABC123!@#
+        sysvol_path: C:\windows\SYSVOL
+      register: domain_install
+    - name: Reboot if needed
+      win_reboot:
+        msg: "Rebooting for domain configuration"
+      when: domain_install['reboot_required']
