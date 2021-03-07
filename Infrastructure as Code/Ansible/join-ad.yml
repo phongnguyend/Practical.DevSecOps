@@ -1,0 +1,16 @@
+---
+- name: Domain Members
+  hosts: nodes
+  tasks:
+  
+    - name: Join an AD Domain
+      win_domain_membership:
+        dns_domain_name: htlt.local
+        domain_admin_user: vmadmin@htlt.local
+        domain_admin_password: abcABC123!@#
+        state: domain
+      register: domain_state
+    - name: Reboot if needed
+      win_reboot:
+        msg: "Rebooting for domain configuration"
+      when: domain_state['reboot_required']
