@@ -30,7 +30,7 @@
   
 ### Git Branching:
 - https://git-school.github.io/visualizing-git/
-- https://nvie.com/posts/a-successful-git-branching-model/
+- [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/) vs [GitHub Flow](https://guides.github.com/introduction/flow/)
 - List:
   ```
   git branch
@@ -149,9 +149,12 @@
 - [Git in Visual Studio](https://azuredevopslabs.com/labs/devopsserver/github/)
 - [GitHub Desktop](https://desktop.github.com/)
 
-### VS Code Extensions:
+### Visual Studio Code Extensions:
 - [GitLens — Git supercharged](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
 - [Git History](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
+
+### Visual Studio Extensions:
+- [GitFlow for Visual Studio 2019](https://marketplace.visualstudio.com/items?itemName=vs-publisher-57624.GitFlowforVisualStudio2019)
 
 ### Advanced Git Techniques
 - Git Attributes
