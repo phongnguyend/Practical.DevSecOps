@@ -11,11 +11,8 @@
 ##
 ## [Microsoft Certified: Azure Developer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-developer)
 - [Microsoft Learning | AZ-204: Developing solutions for Microsoft Azure](https://microsoftlearning.github.io/AZ-204-DevelopingSolutionsforMicrosoftAzure/)
-- [ExamTopics | Microsoft AZ-203 Exam](https://www.examtopics.com/exams/microsoft/az-203/)
 - [ExamTopics | Microsoft AZ-204 Exam](https://www.examtopics.com/exams/microsoft/az-204/)
-- [VCE Guide | Microsoft AZ-203 Exam](https://vceguide.com/microsoft/az-203-developing-solutions-for-microsoft-azure/)
 - [VCE Guide | Microsoft AZ-204 Exam](https://vceguide.com/microsoft/az-204-developing-solutions-for-microsoft-azure/)
-- [ITExams | Developing Solutions for Microsoft Azure (AZ-203) Exam](https://www.itexams.com/info/AZ-203)
 - [ITExams | Developing Solutions for Microsoft Azure (AZ-204) Exam](https://www.itexams.com/info/AZ-204)
 - [CertBolt | Microsoft Certified: Azure Developer Associate Training](https://www.certbolt.com/microsoft-certified-azure-developer-associate-exam-dumps)
 - [Udemy | AZ-204 Developing for Microsoft Azure Exam Prep](https://www.udemy.com/course/70532-azure/)
