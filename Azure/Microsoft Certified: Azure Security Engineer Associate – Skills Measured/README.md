@@ -4,8 +4,7 @@
 - manage Azure AD directory groups
 - manage Azure AD users
 - configure password writeback
-- configure authentication methods including password hash and Pass Through
-## Authentication (PTA), OAuth, and passwordless
+- configure authentication methods including password hash and Pass Through Authentication (PTA), OAuth, and passwordless
 - transfer Azure subscriptions between Azure AD tenants
 ## Configure secure access by using Azure AD
 - monitor privileged access for Azure AD Privileged Identity Management (PIM)
