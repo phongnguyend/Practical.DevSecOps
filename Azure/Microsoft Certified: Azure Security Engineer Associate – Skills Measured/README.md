@@ -37,7 +37,7 @@ encryption)
 - [configure Azure Bastion](configure_Azure_Bastion.md)
 - configure a firewall on a storage account, Azure SQL, KeyVault, or App Service
 - implement Service Endpoints
-- implement DDoS protection
+- [implement DDoS protection](implement_DDoS_protection.md)
 ## Configure advanced security for compute
 - configure endpoint protection
 - configure and monitor system updates for VMs
