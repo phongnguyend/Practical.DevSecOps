@@ -32,8 +32,8 @@ encryption)
 - configure Network Security Groups (NSGs) and Application Security Groups (ASGs)
 - create and configure Azure Firewall
 - implement Azure Firewall Manager
-- configure Azure Front Door service as an Application Gateway
-- configure a Web Application Firewall (WAF) on Azure Application Gateway
+- [configure Azure Front Door service as an Application Gateway](configure_Azure_Front_Door.md)
+- [configure a Web Application Firewall (WAF) on Azure Application Gateway](configure_Azure_Application_Gateway.md)
 - [configure Azure Bastion](configure_Azure_Bastion.md)
 - [configure a firewall on a storage account, Azure SQL, KeyVault, or App Service](configure_a_firewall_on_common_services.md)
 - [implement Service Endpoints](implement_Service_Endpoints.md)
