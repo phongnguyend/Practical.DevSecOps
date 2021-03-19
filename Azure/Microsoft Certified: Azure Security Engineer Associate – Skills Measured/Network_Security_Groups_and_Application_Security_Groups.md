@@ -1,0 +1,2 @@
+- [Azure network security groups overview | Microsoft Docs](https://docs.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview)
+- [Azure application security groups overview | Microsoft Docs](https://docs.microsoft.com/en-us/azure/virtual-network/application-security-groups)
