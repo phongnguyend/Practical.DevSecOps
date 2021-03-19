@@ -13,6 +13,10 @@ az network vnet create \
  --subnet-name default \
  --subnet-prefix 10.0.0.0/24
 
+az network nsg create \
+  --resource-group AZ500 \
+  --name NSG
+
 az vm create \
  -g AZ500 \
  -n VM \
@@ -22,6 +26,7 @@ az vm create \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
  --subnet default \
+ --nsg NSG \
  --public-ip-address ''
 
 az network vnet subnet create \
