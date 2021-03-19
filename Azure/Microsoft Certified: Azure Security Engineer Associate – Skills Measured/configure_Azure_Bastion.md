@@ -21,6 +21,34 @@ az network nsg create \
   --resource-group AZ500 \
   --name BASTION-NSG
 
+az network nsg rule create \
+  --resource-group AZ500 \
+  --nsg-name BASTION-NSG \
+  --name BastionInboundRule \
+  --direction Inbound \
+  --priority 100 \
+  --source-address-prefixes '*' \
+  --source-port-ranges '*' \
+  --destination-address-prefixes '*' \
+  --destination-port-ranges 443 8080 5701 \
+  --access Allow \
+  --protocol Tcp \
+  --description "Bastion Inbound Rule"
+
+az network nsg rule create \
+  --resource-group AZ500 \
+  --nsg-name BASTION-NSG \
+  --name BastionOutboundRule \
+  --direction Outbound \
+  --priority 100 \
+  --source-address-prefixes '*' \
+  --source-port-ranges '*' \
+  --destination-address-prefixes '*' \
+  --destination-port-ranges 22 3389 8080 5701 443 \
+  --access Allow \
+  --protocol Tcp \
+  --description "Bastion Outbound Rule"
+
 az vm create \
  -g AZ500 \
  -n VM \
