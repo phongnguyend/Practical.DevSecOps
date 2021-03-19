@@ -10,7 +10,26 @@ az network vnet create \
  --address-prefix 10.0.0.0/16 \
  --subnet-name default \
  --subnet-prefix 10.0.0.0/24
- 
+
+az network vnet subnet create \
+ --name AzureBastionSubnet \
+ --resource-group ANSIBLE \
+ --vnet-name VNET \
+ --address-prefixes 10.0.1.0/24
+
+az network public-ip create \
+ --resource-group ANSIBLE \
+ --name BASTIONIP \
+ --sku Standard \
+ --location southeastasia
+
+az network bastion create \
+ --name BASTION \
+ --public-ip-address BASTIONIP \
+ --resource-group ANSIBLE \
+ --vnet-name VNET \
+ --location southeastasia
+
 az network nsg create \
   --resource-group ANSIBLE \
   --name NSG
