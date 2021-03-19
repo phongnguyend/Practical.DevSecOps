@@ -36,7 +36,7 @@ encryption)
 - configure a Web Application Firewall (WAF) on Azure Application Gateway
 - [configure Azure Bastion](configure_Azure_Bastion.md)
 - configure a firewall on a storage account, Azure SQL, KeyVault, or App Service
-- implement Service Endpoints
+- [implement Service Endpoints](implement_Service_Endpoints.md)
 - [implement DDoS protection](implement_DDoS_protection.md)
 ## Configure advanced security for compute
 - configure endpoint protection
