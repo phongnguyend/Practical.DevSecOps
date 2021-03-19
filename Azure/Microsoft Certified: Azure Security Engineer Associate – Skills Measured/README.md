@@ -29,7 +29,7 @@
 ## Implement advanced network security
 - secure the connectivity of virtual networks (VPN authentication, Express Route
 encryption)
-- configure Network Security Groups (NSGs) and Application Security Groups (ASGs)
+- [configure Network Security Groups (NSGs) and Application Security Groups (ASGs)](Network_Security_Groups_and_Application_Security_Groups.md)
 - [create and configure Azure Firewall](Azure_Firewall.md)
 - [implement Azure Firewall Manager](Azure_Firewall_Manager.md)
 - [configure Azure Front Door service as an Application Gateway](configure_Azure_Front_Door.md)
