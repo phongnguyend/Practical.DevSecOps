@@ -69,8 +69,26 @@ az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
 az network nsg rule create \
  -g ANSIBLE \
  --nsg-name NSG \
+ -n RDP \
+ --priority 1001 \
+ --destination-port-ranges 3389 \
+ --access Allow \
+ --protocol Tcp
+
+az network nsg rule create \
+ -g ANSIBLE \
+ --nsg-name NSG \
+ -n SSH \
+ --priority 1002 \
+ --destination-port-ranges 22 \
+ --access Allow \
+ --protocol Tcp
+
+az network nsg rule create \
+ -g ANSIBLE \
+ --nsg-name NSG \
  -n WinRM \
- --priority 1010 \
+ --priority 1003 \
  --destination-port-ranges 5986 \
  --access Allow \
  --protocol Tcp
