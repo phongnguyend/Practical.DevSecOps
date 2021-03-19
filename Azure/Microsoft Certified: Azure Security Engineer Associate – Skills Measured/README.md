@@ -34,7 +34,7 @@ encryption)
 - implement Azure Firewall Manager
 - configure Azure Front Door service as an Application Gateway
 - configure a Web Application Firewall (WAF) on Azure Application Gateway
-- configure Azure Bastion
+- [configure Azure Bastion](configure_Azure_Bastion.md)
 - configure a firewall on a storage account, Azure SQL, KeyVault, or App Service
 - implement Service Endpoints
 - implement DDoS protection
