@@ -27,8 +27,8 @@
 - check access
 # Implement platform protection (15-20%)
 ## Implement advanced network security
-- secure the connectivity of virtual networks (VPN authentication, Express Route
-encryption)
+- [secure the connectivity of virtual networks (VPN authentication, Express Route
+encryption)](vpn_gateway_and_express_route.md)
 - [configure Network Security Groups (NSGs) and Application Security Groups (ASGs)](Network_Security_Groups_and_Application_Security_Groups.md)
 - [create and configure Azure Firewall](Azure_Firewall.md)
 - [implement Azure Firewall Manager](Azure_Firewall_Manager.md)
