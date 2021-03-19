@@ -16,6 +16,10 @@ az network vnet create \
 az network nsg create \
   --resource-group AZ500 \
   --name NSG
+  
+az network nsg create \
+  --resource-group AZ500 \
+  --name BASTION-NSG
 
 az vm create \
  -g AZ500 \
@@ -33,7 +37,8 @@ az network vnet subnet create \
  --name AzureBastionSubnet \
  --resource-group AZ500 \
  --vnet-name VNET \
- --address-prefixes 10.0.1.0/24
+ --address-prefixes 10.0.1.0/24 \
+ --network-security-group BASTION-NSG
  
 az network public-ip create \
  --resource-group AZ500 \
