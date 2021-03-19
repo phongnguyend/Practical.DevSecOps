@@ -30,8 +30,8 @@
 - secure the connectivity of virtual networks (VPN authentication, Express Route
 encryption)
 - configure Network Security Groups (NSGs) and Application Security Groups (ASGs)
-- create and configure Azure Firewall
-- implement Azure Firewall Manager
+- [create and configure Azure Firewall](Azure_Firewall.md)
+- [implement Azure Firewall Manager](Azure_Firewall_Manager.md)
 - [configure Azure Front Door service as an Application Gateway](configure_Azure_Front_Door.md)
 - [configure a Web Application Firewall (WAF) on Azure Application Gateway](configure_Azure_Application_Gateway.md)
 - [configure Azure Bastion](configure_Azure_Bastion.md)
