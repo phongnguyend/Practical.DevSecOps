@@ -42,7 +42,7 @@ encryption)](vpn_gateway_and_express_route.md)
 - [configure endpoint protection](configure_endpoint_protection.md)
 - [configure and monitor system updates for VMs](configure_and_monitor_system_updates_for_VMs.md)
 - [configure authentication for Azure Container Registry](configure_authentication_for_Azure_Container_Registry.md)
-- configure security for different types of containers
+- [configure security for different types of containers](configure_security_for_different_types_of_containers.md)
 - [implement vulnerability management](implement_vulnerability_management.md)
 - configure isolation for AKS
 - [configure security for container registry](configure_security_for_container_registry.md)
