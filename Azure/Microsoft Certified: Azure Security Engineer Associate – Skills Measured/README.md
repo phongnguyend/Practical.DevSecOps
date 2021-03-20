@@ -50,7 +50,7 @@ encryption)](vpn_gateway_and_express_route.md)
 - configure authentication and security for Azure App Service
 - configure SSL/TLS certs
 - configure authentication for Azure Kubernetes Service
-- configure automatic updates
+- [configure automatic updates](configure_automatic_updates.md)
 # Manage security operations (25-30%)
 ## Monitor security by using Azure Monitor
 - create and customize alerts
