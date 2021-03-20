@@ -1,0 +1,4 @@
+- [Configure Azure Storage firewalls and virtual networks | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-portal)
+- [Secure a database - Azure SQL Database | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/secure-database-tutorial#create-firewall-rules)
+- [Configure Azure Key Vault firewalls and virtual networks - Azure Key Vault | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/general/network-security)
+- [Azure App Service access restrictions - Azure App Service | Microsoft Docs](https://docs.microsoft.com/en-us/azure/app-service/app-service-ip-restrictions)

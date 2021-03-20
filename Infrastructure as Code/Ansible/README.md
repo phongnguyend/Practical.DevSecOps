@@ -10,7 +10,30 @@ az network vnet create \
  --address-prefix 10.0.0.0/16 \
  --subnet-name default \
  --subnet-prefix 10.0.0.0/24
- 
+
+az network vnet subnet create \
+ --name AzureBastionSubnet \
+ --resource-group ANSIBLE \
+ --vnet-name VNET \
+ --address-prefixes 10.0.1.0/24
+
+az network public-ip create \
+ --resource-group ANSIBLE \
+ --name BASTIONIP \
+ --sku Standard \
+ --location southeastasia
+
+az network bastion create \
+ --name BASTION \
+ --public-ip-address BASTIONIP \
+ --resource-group ANSIBLE \
+ --vnet-name VNET \
+ --location southeastasia
+
+az network nsg create \
+  --resource-group ANSIBLE \
+  --name NSG
+
 az vm image list -f windows -o table
 
 az vm create \
@@ -21,7 +44,8 @@ az vm create \
  --admin-password 'abcABC123!@#' \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
- --subnet default
+ --subnet default \
+ --nsg NSG
  
 az vm create \
  -g ANSIBLE \
@@ -31,7 +55,8 @@ az vm create \
  --admin-password 'abcABC123!@#' \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
- --subnet default
+ --subnet default \
+ --nsg NSG
  
 az vm create \
  -g ANSIBLE \
@@ -41,7 +66,8 @@ az vm create \
  --admin-password 'abcABC123!@#' \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
- --subnet default
+ --subnet default \
+ --nsg NSG
  
 az vm create \
  -g ANSIBLE \
@@ -51,7 +77,8 @@ az vm create \
  --admin-password 'abcABC123!@#' \
  --size Standard_D2s_v3 \
  --vnet-name VNET \
- --subnet default
+ --subnet default \
+ --nsg NSG
 
 dcIpAddress="$(az network nic ip-config show -g ANSIBLE -n ipconfigDC --nic-name DCVMNic --query "privateIpAddress" --out tsv)"
 echo $dcIpAddress
@@ -60,27 +87,27 @@ az network nic update -n VM2VMNic -g ANSIBLE --dns-servers $dcIpAddress
 
 az network nsg rule create \
  -g ANSIBLE \
- --nsg-name DCNSG \
- -n WinRM \
- --priority 1010 \
- --destination-port-ranges 5986 \
+ --nsg-name NSG \
+ -n RDP \
+ --priority 1001 \
+ --destination-port-ranges 3389 \
  --access Allow \
  --protocol Tcp
 
 az network nsg rule create \
  -g ANSIBLE \
- --nsg-name VM1NSG \
- -n WinRM \
- --priority 1010 \
- --destination-port-ranges 5986 \
+ --nsg-name NSG \
+ -n SSH \
+ --priority 1002 \
+ --destination-port-ranges 22 \
  --access Allow \
  --protocol Tcp
 
 az network nsg rule create \
  -g ANSIBLE \
- --nsg-name VM2NSG \
+ --nsg-name NSG \
  -n WinRM \
- --priority 1010 \
+ --priority 1003 \
  --destination-port-ranges 5986 \
  --access Allow \
  --protocol Tcp
