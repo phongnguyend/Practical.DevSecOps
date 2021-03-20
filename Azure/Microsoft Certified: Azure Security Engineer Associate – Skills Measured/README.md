@@ -40,7 +40,7 @@ encryption)](vpn_gateway_and_express_route.md)
 - [implement DDoS protection](implement_DDoS_protection.md)
 ## Configure advanced security for compute
 - [configure endpoint protection](configure_endpoint_protection.md)
-- configure and monitor system updates for VMs
+- [configure and monitor system updates for VMs](configure_and_monitor_system_updates_for_VMs.md)
 - configure authentication for Azure Container Registry
 - configure security for different types of containers
 - [implement vulnerability management](implement_vulnerability_management.md)
