@@ -44,7 +44,7 @@ encryption)](vpn_gateway_and_express_route.md)
 - [configure authentication for Azure Container Registry](configure_authentication_for_Azure_Container_Registry.md)
 - [configure security for different types of containers](configure_security_for_different_types_of_containers.md)
 - [implement vulnerability management](implement_vulnerability_management.md)
-- configure isolation for AKS
+- [configure isolation for AKS](configure_isolation_for_AKS.md)
 - [configure security for container registry](configure_security_for_container_registry.md)
 - [implement Azure Disk Encryption](implement_azure_disk_encryption.md)
 - [configure authentication and security for Azure App Service](configure_authentication_and_security_for_Azure_App_Service.md)
