@@ -1,0 +1,3 @@
+- [Azure Disk Encryption for virtual machines and virtual machine scale sets | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security/fundamentals/azure-disk-encryption-vms-vmss)
+- [Enable Azure Disk Encryption for Linux VMs - Azure Virtual Machines | Microsoft Docs](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview)
+- [Enable Azure Disk Encryption for Windows VMs - Azure Virtual Machines | Microsoft Docs](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/disk-encryption-overview)
