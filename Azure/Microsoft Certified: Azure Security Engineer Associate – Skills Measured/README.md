@@ -43,7 +43,7 @@ encryption)](vpn_gateway_and_express_route.md)
 - configure and monitor system updates for VMs
 - configure authentication for Azure Container Registry
 - configure security for different types of containers
-- implement vulnerability management
+- [implement vulnerability management](implement_vulnerability_management.md)
 - configure isolation for AKS
 - configure security for container registry
 - implement Azure Disk Encryption
