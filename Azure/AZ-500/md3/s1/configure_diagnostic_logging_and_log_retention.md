@@ -1,0 +1,2 @@
+- [Enable diagnostics logging - Azure App Service | Microsoft Docs](https://docs.microsoft.com/en-us/azure/app-service/troubleshoot-diagnostic-logs)
+- [Log Analytics tutorial - Azure Monitor | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-tutorial)
