@@ -48,7 +48,7 @@ encryption)](vpn_gateway_and_express_route.md)
 - [configure security for container registry](configure_security_for_container_registry.md)
 - [implement Azure Disk Encryption](implement_azure_disk_encryption.md)
 - [configure authentication and security for Azure App Service](configure_authentication_and_security_for_Azure_App_Service.md)
-- configure SSL/TLS certs
+- [configure SSL/TLS certs](configure_SSL_TLS_certs.md)
 - [configure authentication for Azure Kubernetes Service](configure_authentication_for_Azure_Kubernetes_Service.md)
 - [configure automatic updates](configure_automatic_updates.md)
 # Manage security operations (25-30%)
