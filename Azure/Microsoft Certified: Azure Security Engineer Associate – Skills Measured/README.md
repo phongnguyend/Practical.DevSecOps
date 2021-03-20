@@ -47,7 +47,7 @@ encryption)](vpn_gateway_and_express_route.md)
 - configure isolation for AKS
 - [configure security for container registry](configure_security_for_container_registry.md)
 - [implement Azure Disk Encryption](implement_azure_disk_encryption.md)
-- configure authentication and security for Azure App Service
+- [configure authentication and security for Azure App Service](configure_authentication_for_Azure_Kubernetes_Service.md)
 - configure SSL/TLS certs
 - configure authentication for Azure Kubernetes Service
 - [configure automatic updates](configure_automatic_updates.md)
