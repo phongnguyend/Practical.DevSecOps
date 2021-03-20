@@ -1,0 +1,1 @@
+- [Microsoft Antimalware Extension for Windows VMs on Azure - Azure Virtual Machines | Microsoft Docs](https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/iaas-antimalware-windows)
