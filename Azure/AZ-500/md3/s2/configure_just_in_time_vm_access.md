@@ -1,0 +1,2 @@
+- [Understanding just-in-time virtual machine access in Azure Security Center | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security-center/just-in-time-explained)
+- [Just-in-time virtual machine access in Azure Security Center | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security-center/security-center-just-in-time)
