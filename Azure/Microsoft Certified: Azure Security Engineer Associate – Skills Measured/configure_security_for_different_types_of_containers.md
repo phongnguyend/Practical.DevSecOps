@@ -1,0 +1,2 @@
+- [Container Security in Azure Security Center | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security-center/container-security)
+- [Security considerations for container instances - Azure Container Instances | Microsoft Docs](https://docs.microsoft.com/en-us/azure/container-instances/container-instances-image-security)
