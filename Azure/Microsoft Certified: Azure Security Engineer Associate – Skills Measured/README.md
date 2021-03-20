@@ -27,30 +27,30 @@
 - check access
 # Implement platform protection (15-20%)
 ## Implement advanced network security
-- secure the connectivity of virtual networks (VPN authentication, Express Route
-encryption)
-- configure Network Security Groups (NSGs) and Application Security Groups (ASGs)
-- create and configure Azure Firewall
-- implement Azure Firewall Manager
-- configure Azure Front Door service as an Application Gateway
-- configure a Web Application Firewall (WAF) on Azure Application Gateway
+- [secure the connectivity of virtual networks (VPN authentication, Express Route
+encryption)](vpn_gateway_and_express_route.md)
+- [configure Network Security Groups (NSGs) and Application Security Groups (ASGs)](Network_Security_Groups_and_Application_Security_Groups.md)
+- [create and configure Azure Firewall](Azure_Firewall.md)
+- [implement Azure Firewall Manager](Azure_Firewall_Manager.md)
+- [configure Azure Front Door service as an Application Gateway](configure_Azure_Front_Door.md)
+- [configure a Web Application Firewall (WAF) on Azure Application Gateway](configure_Azure_Application_Gateway.md)
 - [configure Azure Bastion](configure_Azure_Bastion.md)
-- configure a firewall on a storage account, Azure SQL, KeyVault, or App Service
-- implement Service Endpoints
-- implement DDoS protection
+- [configure a firewall on a storage account, Azure SQL, KeyVault, or App Service](configure_a_firewall_on_common_services.md)
+- [implement Service Endpoints](implement_Service_Endpoints.md)
+- [implement DDoS protection](implement_DDoS_protection.md)
 ## Configure advanced security for compute
-- configure endpoint protection
-- configure and monitor system updates for VMs
-- configure authentication for Azure Container Registry
-- configure security for different types of containers
-- implement vulnerability management
-- configure isolation for AKS
-- configure security for container registry
-- implement Azure Disk Encryption
-- configure authentication and security for Azure App Service
-- configure SSL/TLS certs
-- configure authentication for Azure Kubernetes Service
-- configure automatic updates
+- [configure endpoint protection](configure_endpoint_protection.md)
+- [configure and monitor system updates for VMs](configure_and_monitor_system_updates_for_VMs.md)
+- [configure authentication for Azure Container Registry](configure_authentication_for_Azure_Container_Registry.md)
+- [configure security for different types of containers](configure_security_for_different_types_of_containers.md)
+- [implement vulnerability management](implement_vulnerability_management.md)
+- [configure isolation for AKS](configure_isolation_for_AKS.md)
+- [configure security for container registry](configure_security_for_container_registry.md)
+- [implement Azure Disk Encryption](implement_azure_disk_encryption.md)
+- [configure authentication and security for Azure App Service](configure_authentication_and_security_for_Azure_App_Service.md)
+- [configure SSL/TLS certs](configure_SSL_TLS_certs.md)
+- [configure authentication for Azure Kubernetes Service](configure_authentication_for_Azure_Kubernetes_Service.md)
+- [configure automatic updates](configure_automatic_updates.md)
 # Manage security operations (25-30%)
 ## Monitor security by using Azure Monitor
 - create and customize alerts

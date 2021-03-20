@@ -1,0 +1,2 @@
+- [Azure virtual network service endpoints | Microsoft Docs](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview)
+- [Azure virtual network service endpoint policies | Microsoft Docs](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoint-policies-overview)

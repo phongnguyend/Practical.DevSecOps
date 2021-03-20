@@ -1,0 +1,1 @@
+- [Manage updates and patches for your VMs in Azure Automation | Microsoft Docs](https://docs.microsoft.com/en-us/azure/automation/update-management/manage-updates-for-vm)

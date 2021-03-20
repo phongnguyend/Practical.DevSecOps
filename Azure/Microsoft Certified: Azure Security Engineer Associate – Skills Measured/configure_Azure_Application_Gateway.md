@@ -1,0 +1,2 @@
+- [What is Azure Application Gateway | Microsoft Docs](https://docs.microsoft.com/en-us/azure/application-gateway/overview)
+- [What is Azure Web Application Firewall on Azure Application Gateway? - Azure Web Application Firewall | Microsoft Docs](https://docs.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview)
