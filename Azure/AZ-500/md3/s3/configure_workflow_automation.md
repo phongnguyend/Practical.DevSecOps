@@ -1,0 +1,1 @@
+- [Introduction to automation in Azure Sentinel | Microsoft Docs](https://docs.microsoft.com/en-us/azure/sentinel/automation-in-azure-sentinel)
