@@ -1,0 +1,1 @@
+- [Overview of Azure Blueprints - Azure Blueprints | Microsoft Docs](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview)
