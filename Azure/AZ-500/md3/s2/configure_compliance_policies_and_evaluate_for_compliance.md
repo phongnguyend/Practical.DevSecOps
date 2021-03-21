@@ -1,0 +1,2 @@
+- [Using the regulatory compliance dashboard in Azure Security Center | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security-center/update-regulatory-compliance-packages)
+- [Tutorial: Regulatory compliance checks - Azure Security Center | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security-center/security-center-compliance-dashboard)
