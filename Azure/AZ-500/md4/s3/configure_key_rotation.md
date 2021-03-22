@@ -1,0 +1,3 @@
+- [Azure Quickstart - Set and retrieve a key from Key Vault using Azure portal | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/keys/quick-create-portal)
+- [Rotation tutorial for resources with one set of authentication credentials stored in Azure Key Vault | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation)
+- [Tutorial - Updating certificate auto-rotation frequency in Key Vault | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/certificates/tutorial-rotate-certificates)

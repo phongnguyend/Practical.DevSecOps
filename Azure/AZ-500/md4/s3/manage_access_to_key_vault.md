@@ -1,0 +1,2 @@
+- [Secure access to a key vault | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/general/secure-your-key-vault)
+- [Authenticate to Azure Key Vault | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/general/authentication)

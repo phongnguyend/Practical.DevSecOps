@@ -1,0 +1,1 @@
+- [Authorizing data operations - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/common/storage-auth)

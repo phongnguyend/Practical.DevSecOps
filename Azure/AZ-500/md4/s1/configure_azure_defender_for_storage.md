@@ -1,0 +1,1 @@
+- [Configure Azure Defender for Storage - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/common/azure-defender-storage-configure)

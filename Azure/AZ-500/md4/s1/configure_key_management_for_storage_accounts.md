@@ -1,0 +1,1 @@
+- [Manage account access keys - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal)

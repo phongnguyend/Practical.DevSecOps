@@ -1,0 +1,2 @@
+- [Azure Defender for SQL - Azure SQL Database | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/azure-defender-for-sql)
+- [How to set up Azure Defender for SQL | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security-center/defender-for-sql-usage)

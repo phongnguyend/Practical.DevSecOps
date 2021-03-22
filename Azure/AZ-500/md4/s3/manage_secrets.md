@@ -1,0 +1,2 @@
+- [About Azure Key Vault secrets - Azure Key Vault | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/secrets/about-secrets)
+- [Azure Quickstart - Set and retrieve a secret from Key Vault using Azure portal | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal)

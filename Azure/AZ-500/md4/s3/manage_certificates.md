@@ -1,0 +1,2 @@
+- [About Azure Key Vault Certificates - Azure Key Vault | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/certificates/about-certificates)
+- [Get started with Key Vault certificates | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/certificates/certificate-scenarios)

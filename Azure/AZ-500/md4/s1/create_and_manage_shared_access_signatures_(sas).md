@@ -1,0 +1,1 @@
+- [Grant limited access to data with shared access signatures (SAS) - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview)

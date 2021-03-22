@@ -1,0 +1,2 @@
+- [Advanced Threat Protection - Azure SQL Database, SQL Managed Instance, & Azure Synapse Analytics | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/threat-detection-overview)
+- [Configure Advanced Threat Protection - Azure SQL Database | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/threat-detection-configure)

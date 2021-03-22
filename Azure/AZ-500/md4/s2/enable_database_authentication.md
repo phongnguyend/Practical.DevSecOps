@@ -1,0 +1,4 @@
+- [Authorize server and database access using logins and user accounts - Azure SQL Database & SQL Managed Instance & Azure Synapse Analytics | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/logins-create-manage)
+- [Azure Active Directory authentication - Azure SQL Database | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-overview)
+- [Configure Azure Active Directory authentication - Azure SQL Database & SQL Managed Instance & Azure Synapse Analytics | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure?tabs=azure-powershell)
+- [SQL Managed Instance security with Azure AD server principals (logins) - Azure SQL Managed Instance | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/managed-instance/aad-security-configure-tutorial)

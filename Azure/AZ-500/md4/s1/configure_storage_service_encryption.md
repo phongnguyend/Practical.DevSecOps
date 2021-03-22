@@ -1,0 +1,1 @@
+- [Azure Storage encryption for data at rest | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption)

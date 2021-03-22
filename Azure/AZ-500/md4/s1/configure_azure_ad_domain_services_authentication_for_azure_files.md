@@ -1,0 +1,1 @@
+- [Use Azure AD Domain Services to authorize access to file data over SMB | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-identity-auth-active-directory-domain-service-enable?tabs=azure-portal)

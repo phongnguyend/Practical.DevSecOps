@@ -1,0 +1,2 @@
+- [Transparent data encryption - Azure SQL Database & SQL Managed Instance & Azure Synapse Analytics | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/transparent-data-encryption-tde-overview?tabs=azure-portal)
+- [Customer-managed transparent data encryption (TDE) - Azure SQL Database & SQL Managed Instance & Azure Synapse Analytics | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/transparent-data-encryption-byok-overview)

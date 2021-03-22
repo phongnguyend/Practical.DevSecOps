@@ -1,0 +1,1 @@
+- [Azure Defender for Key Vault - the benefits and features | Microsoft Docs](https://docs.microsoft.com/en-us/azure/security-center/defender-for-key-vault-introduction)

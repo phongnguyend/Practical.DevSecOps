@@ -1,0 +1,3 @@
+- [Configure Always Encrypted by using Azure Key Vault - Azure SQL Database | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/always-encrypted-azure-key-vault-configure?tabs=azure-powershell)
+- [Configure Always Encrypted by using the Windows certificate store - Azure SQL Database | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/always-encrypted-certificate-store-configure)
+- [Tutorial: Getting started with Always Encrypted with secure enclaves in Azure SQL Database - Azure SQL Database | Microsoft Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/always-encrypted-enclaves-getting-started)

@@ -1,0 +1,1 @@
+- [Create a stored access policy with .NET - Azure Storage | Microsoft Docs](https://docs.microsoft.com/en-us/azure/storage/common/storage-stored-access-policy-define-dotnet?toc=/azure/storage/blobs/toc.json)

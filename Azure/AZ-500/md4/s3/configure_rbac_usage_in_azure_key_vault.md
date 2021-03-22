@@ -1,0 +1,1 @@
+- [Grant permission to applications to access an Azure key vault using Azure RBAC | Microsoft Docs](https://docs.microsoft.com/en-us/azure/key-vault/general/rbac-guide)
