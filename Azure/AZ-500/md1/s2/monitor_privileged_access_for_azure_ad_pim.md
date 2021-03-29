@@ -1,0 +1,2 @@
+- [What is Privileged Identity Management? - Azure AD | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure)
+- [Start using PIM - Azure Active Directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-getting-started)

@@ -1,0 +1,4 @@
+- [What is Conditional Access in Azure Active Directory? | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/overview)
+- [Conditional Access - Require MFA for all users - Azure Active Directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/howto-conditional-access-policy-all-users-mfa)
+- [Conditional Access - Require MFA for administrators - Azure Active Directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/howto-conditional-access-policy-admin-mfa)
+- [Enable Azure AD Multi-Factor Authentication | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-azure-mfa)

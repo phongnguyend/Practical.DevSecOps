@@ -1,0 +1,4 @@
+- [Transfer an Azure subscription to a different Azure AD directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/role-based-access-control/transfer-subscription)
+- [Add an existing Azure subscription to your tenant - Azure AD | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-subscriptions-associated-directory)
+- [Transfer billing ownership of an Azure subscription | Microsoft Docs](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/billing-subscription-transfer)
+- [Transfer Azure subscriptions between subscribers and CSPs | Microsoft Docs](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/transfer-subscriptions-subscribers-csp)

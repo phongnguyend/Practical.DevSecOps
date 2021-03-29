@@ -1,0 +1,1 @@
+- [Create an Azure AD app & service principal in the portal - Microsoft identity platform | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)

@@ -1,0 +1,2 @@
+- [Create a basic group and add members - Azure Active Directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal)
+- [Manage app & resource access using groups - Azure AD | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-manage-groups)

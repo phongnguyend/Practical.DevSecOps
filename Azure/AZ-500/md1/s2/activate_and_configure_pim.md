@@ -1,0 +1,2 @@
+- [Deploy Privileged Identity Management (PIM) - Azure AD | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-deployment-plan)
+- [Start using PIM - Azure Active Directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-getting-started)

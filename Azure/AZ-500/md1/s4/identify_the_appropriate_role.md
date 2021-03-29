@@ -1,0 +1,1 @@
+- [List Azure role assignments using the Azure portal - Azure RBAC | Microsoft Docs](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-list-portal)

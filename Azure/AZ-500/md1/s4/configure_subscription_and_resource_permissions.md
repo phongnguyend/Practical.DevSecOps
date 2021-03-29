@@ -1,0 +1,2 @@
+- [Assign Azure roles using the Azure portal - Azure RBAC | Microsoft Docs](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal)
+- [Understand scope for Azure RBAC | Microsoft Docs](https://docs.microsoft.com/en-us/azure/role-based-access-control/scope-overview)

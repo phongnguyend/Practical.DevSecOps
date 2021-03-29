@@ -1,0 +1,2 @@
+- [On-premises password writeback with self-service password reset - Azure Active Directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-sspr-writeback)
+- [Enable Azure Active Directory password writeback | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-sspr-writeback)

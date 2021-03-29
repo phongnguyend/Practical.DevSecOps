@@ -1,0 +1,4 @@
+- [What are access reviews? - Azure Active Directory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/governance/access-reviews-overview)
+- [Create an access review of Azure AD roles in PIM - Azure AD | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-how-to-start-security-review)
+- [Create an access review of Azure resource roles in PIM - Azure AD | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-resource-roles-start-access-review)
+- [Create an access review of groups & applications - Azure AD | Microsoft Docs](https://docs.microsoft.com/en-us/azure/active-directory/governance/create-access-review)
