@@ -209,3 +209,12 @@ az webapp log config --application-logging false --name $appName --resource-grou
 az webapp log show --name $appName --resource-group $resourceGroup
   ```
 </details>
+
+<details>
+  <summary><b>Azure Sentinel + Log Analytics Workspace</b></summary>
+  
+  ```
+az group create --name SENTINEL --location southeastasia 
+az monitor log-analytics workspace create -g SENTINEL -n LogAnalyticsWorkspace
+  ```
+</details>
