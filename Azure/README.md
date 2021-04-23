@@ -36,13 +36,14 @@
 - [Microsoft Learning | DP-201: Designing an Azure Data Solution](https://github.com/MicrosoftLearning/DP-201-Designing-an-Azure-Data-Solution/)
 ##
 ## [Microsoft Certified: Azure Solutions Architect Expert](https://docs.microsoft.com/en-us/learn/certifications/azure-solutions-architect)
-- [Microsoft Learning | AZ-303: Microsoft Azure Architect Technologies](https://github.com/MicrosoftLearning/AZ-303-Microsoft-Azure-Architect-Technologies)
-- [Microsoft Learning | AZ-304: Microsoft Azure Architect Design](https://github.com/MicrosoftLearning/AZ-304-Microsoft-Azure-Architect-Design)
+- [ExamTopics | Microsoft AZ-303 Exam](https://www.examtopics.com/exams/microsoft/az-303/)
+- [ExamTopics | Microsoft AZ-304 Exam](https://www.examtopics.com/exams/microsoft/az-304/)
 - [Udemy | AZ-303 Azure Architecture Technologies Exam Prep](https://www.udemy.com/course/70534-azure/)
 - [Udemy | AZ-304 Azure Architect Design Exam Prep](https://www.udemy.com/course/az301-azure/)
 - [Pluralsight | AZ-303](https://www.pluralsight.com/search?q=AZ-303&categories=all)
 - [Pluralsight | AZ-304](https://www.pluralsight.com/search?q=AZ-304&categories=all)
 ##
 ## [Microsoft Certified: DevOps Engineer Expert](https://docs.microsoft.com/en-us/learn/certifications/devops-engineer)
+- [ExamTopics | Microsoft AZ-400 Exam](https://www.examtopics.com/exams/microsoft/az-400/)
 - [Pluralsight | AZ-400](https://www.pluralsight.com/search?q=AZ-400&categories=all)
 
