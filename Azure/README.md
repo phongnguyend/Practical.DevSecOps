@@ -28,7 +28,7 @@
 - [Udemy | Microsoft AZ-500 Certification: Azure Security Technologies](https://www.udemy.com/course/az-500-course/)
 - [Pluralsight | AZ-500](https://www.pluralsight.com/search?q=AZ-500&categories=all)
 ##
-## [Microsoft Certified: Azure Network Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-network-engineer) 
+## [Microsoft Certified: Azure Network Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-network-engineer-associate) 
 ##
 ## [Microsoft Certified: Azure Database Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-database-administrator-associate)
 - [Microsoft Learning | DP-300: Administering Relational Databases on Microsoft Azure](https://microsoftlearning.github.io/DP-300T00-Administering-Relational-Databases-on-Azure/)
