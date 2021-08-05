@@ -4,6 +4,7 @@
  - [How to Cut your S3 Cost in Half by Using the S3 Infrequent Access Storage Class](https://www.concurrencylabs.com/blog/save-money-using-s3-infrequent-access/)
 
 ## Useful Commands:
+https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html#cli-aws-s3api
 ```
 aws s3api list-buckets
 aws s3api list-objects --bucket BUCKETNAME --prefix PREFIX
