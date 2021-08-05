@@ -7,6 +7,10 @@
 https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html#cli-aws-s3api
 ```
 aws s3api list-buckets
-aws s3api list-objects --bucket BUCKETNAME --prefix PREFIX
+aws s3api list-objects --bucket BUCKETNAME
 aws s3api put-object --bucket BUCKETNAME --key test.txt --body d:\test.txt
+
+aws s3api list-objects --bucket BUCKETNAME --prefix test
+aws s3api list-objects --bucket BUCKETNAME --query "Contents[?contains(Key, '.txt')]"
+aws s3api list-objects --bucket BUCKETNAME --query "Contents[?contains(LastModified, '2021-08-05')]"
 ```
