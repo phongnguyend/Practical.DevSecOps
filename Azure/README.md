@@ -2,9 +2,6 @@
 # [Certifications:](https://docs.microsoft.com/en-us/learn/certifications/browse/?term=azure&resource_type=certification)
 
 ## [Microsoft Certified: Azure Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-fundamentals)
-- [ExamTopics | Microsoft AZ-900 Certification with Actual Questions](https://www.examtopics.com/exams/microsoft/az-900/)
-- [Udemy | AZ-900: Microsoft Azure Fundamentals Exam Prep](https://www.udemy.com/course/az900-azure/)
-- [Pluralsight | AZ-900](https://www.pluralsight.com/search?q=AZ-900&categories=all)
 ##
 ## [Microsoft Certified: Azure Data Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-data-fundamentals)
 ##
