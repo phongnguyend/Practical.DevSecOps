@@ -192,3 +192,10 @@ git merge upstream/main
 ### Reorder Commits:
 - [git - Reordering of commits - Stack Overflow](https://stackoverflow.com/questions/2740537/reordering-of-commits)
 - [How to reorder last two commits in git? - Stack Overflow](https://stackoverflow.com/questions/33388210/how-to-reorder-last-two-commits-in-git)
+
+### GitHub:
+- Reference Issue/Pull Request in comment/ commit message: #Id
+
+### Azure DevOps:
+- Reference Work Item in comment/ commit message: #Id
+- Reference Pull Request in comment/ commit message: !Id
