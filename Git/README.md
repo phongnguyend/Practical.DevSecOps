@@ -148,6 +148,13 @@
 - [Sourcetree | Free Git GUI for Mac and Windows](https://www.sourcetreeapp.com/)
 - [TortoiseGit – Windows Shell Interface to Git](https://tortoisegit.org/)
 - [Git in Visual Studio](https://azuredevopslabs.com/labs/devopsserver/github/)
+  + [Git settings and preferences in Visual Studio](https://docs.microsoft.com/en-us/visualstudio/version-control/git-settings?view=vs-2019)
+    + [Rebase local branch when pulling](https://docs.microsoft.com/en-us/visualstudio/version-control/git-settings?view=vs-2019#rebase-local-branch-when-pulling)
+      + `git pull` vs `git pull --rebase` vs `git pull --rebase=preserve`
+      + https://megakemp.com/2019/03/20/the-case-for-pull-rebase/
+      + https://stackoverflow.com/questions/21364636/git-pull-rebase-preserve-merges
+    + [Prune remote branches during fetch](https://docs.microsoft.com/en-us/visualstudio/version-control/git-settings?view=vs-2019#prune-remote-branches-during-fetch)
+- [Git in Visual Studio Code](https://code.visualstudio.com/docs/editor/versioncontrol#_git-support)
 - [GitHub Desktop](https://desktop.github.com/)
 
 ### Visual Studio Code Extensions:
