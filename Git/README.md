@@ -138,6 +138,7 @@
   git config --list
   git config --list --show-origin
   ```
+- https://stackoverflow.com/questions/2114111/where-does-git-config-global-get-write-to
 - Configure Notepad++ as Editor:
   ```
   git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
