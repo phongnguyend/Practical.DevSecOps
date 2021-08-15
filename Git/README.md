@@ -21,6 +21,7 @@
   git push
   git pull
   git pull --rebase
+  git pull --rebase=preserve
   ```
 - The 4 Areas of a Git Project:
   + Working Directory
