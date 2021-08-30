@@ -164,6 +164,8 @@
 
 ### Visual Studio Extensions:
 - [GitFlow for Visual Studio 2019](https://marketplace.visualstudio.com/items?itemName=vs-publisher-57624.GitFlowforVisualStudio2019)
+- [Pull Requests for Visual Studio](https://marketplace.visualstudio.com/items?itemName=VSIDEVersionControlMSFT.pr4vs&ssr=false)
+- [GitHub Extension for Visual Studio](https://marketplace.visualstudio.com/items?itemName=GitHub.GitHubExtensionforVisualStudio)
 
 ### Advanced Git Techniques
 - Git Attributes
