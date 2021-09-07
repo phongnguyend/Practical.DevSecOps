@@ -1,1 +1,8 @@
-
+- [nginx for Windows](http://nginx.org/en/docs/windows.html)
+- [NGINX Reverse Proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
+- [How to Set up & Use NGINX as a Reverse Proxy](https://phoenixnap.com/kb/nginx-reverse-proxy)
+- [How to install OpenSSL in Windows](https://stackoverflow.com/questions/50625283/how-to-install-openssl-in-windows-10)
+- [Extracting the certificate and keys from a .pfx file](https://www.ibm.com/docs/en/arl/9.7?topic=certification-extracting-certificate-keys-from-pfx-file)
+- [NGINX – Easiest way to setup SSL using .pfx files](https://blog.knoldus.com/easiest-way-to-setup-ssl-on-nginx-using-pfx-files/)
+- [Securing the Node Service Behind a Proxy](https://www.ibm.com/docs/en/ahts/3.9.6?topic=suhsna-securing-node-service-behind-proxy)
+- [Run Nginx as a service in Windows](https://soumendrak.medium.com/run-nginx-as-a-service-in-windows-7d30a5b3d184)
