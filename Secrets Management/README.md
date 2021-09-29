@@ -1,1 +1,4 @@
 - [HashiCorp Vault](https://github.com/hashicorp/vault)
+- [Key Vault | Microsoft Azure](https://azure.microsoft.com/en-us/services/key-vault/)
+- [AWS Key Management Service (KMS)](https://aws.amazon.com/kms/)
+- [Secret Manager | Google Cloud](https://cloud.google.com/security-key-management)
