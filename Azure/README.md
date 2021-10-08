@@ -32,8 +32,8 @@
 - [Microsoft Learning | DP-300: Administering Relational Databases on Microsoft Azure](https://microsoftlearning.github.io/DP-300T00-Administering-Relational-Databases-on-Azure/)
 ##
 ## [Microsoft Certified: Azure Data Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-data-engineer)
-- [Microsoft Learning | DP-200: Implementing an Azure Data Solution](https://github.com/MicrosoftLearning/DP-200-Implementing-an-Azure-Data-Solution/)
-- [Microsoft Learning | DP-201: Designing an Azure Data Solution](https://github.com/MicrosoftLearning/DP-201-Designing-an-Azure-Data-Solution/)
+- [Microsoft Learning | DP-203: Data Engineering on Microsoft Azure](https://github.com/MicrosoftLearning/DP-203-Data-Engineer)
+- [Pluralsight | DP-203](https://www.pluralsight.com/search?q=DP-203&categories=all)
 ##
 ## [Microsoft Certified: Azure Solutions Architect Expert](https://docs.microsoft.com/en-us/learn/certifications/azure-solutions-architect)
 - [ExamTopics | Microsoft AZ-303 Exam](https://www.examtopics.com/exams/microsoft/az-303/)
