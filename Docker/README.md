@@ -1,12 +1,12 @@
 
 ### Install Docker
-[Install Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
+- [Install Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
+- [Install Docker Engine on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
 
 ### VSCode Extensions:
-
-[Working with Docker on Visual Studio Code](https://code.visualstudio.com/docs/azure/docker)
-
-[Docker for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
+- [Working with Docker on Visual Studio Code](https://code.visualstudio.com/docs/azure/docker)
+- [Docker for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
+- [Install and Configure Vistual Studio Code Extension](https://code.visualstudio.com/docs/remote/ssh-tutorial)
 
 ### Commands:
 ```
@@ -55,6 +55,7 @@ docker network ls
 
 ### docker-compose
 ```
+docker-compose --version
 docker-compose --help
 docker-compose up
 docker-compose up servicename
