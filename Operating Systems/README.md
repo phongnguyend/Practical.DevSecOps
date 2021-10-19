@@ -6,3 +6,215 @@
 - [Oracle Linux](https://www.oracle.com/linux/)
 - [Kali Linux](https://www.kali.org/)
 - [SUSE](https://www.suse.com/)
+
+### Linux Bash Commands:
+#### Files and Directories:
+- Print current location
+  ```
+  pwd
+  ```
+- Back to home directory
+  ```
+  cd
+  ```
+- Back to parent directory
+  ```
+  cd ..
+  ```
+- Go to root directory
+  ```
+  cd /
+  ```
+- List files and directories
+  ```
+  ls
+  ```
+- List files and directories (including hidden)
+  ```
+  ls -a
+  ```
+- List files and directories (long format)
+  ```
+  ls -l
+  ```
+- List files and directories (multiple options)
+  ```
+  ls -a -l
+  ls -la
+  ```
+- Read text file
+  ```
+  cat <filename>
+  more <filename>
+  less <filename>
+  head <filename>
+  tail <filename>
+  ```
+- Edit text file
+  ```
+  nano <filename>
+  vi <filename>
+  ```
+- Create a file
+  ```
+  touch <filename>
+  ```
+- Remove a file
+  ```
+  rm <filename>
+  ```
+- Create a directory
+  ```
+  mkdir <directory>
+  ```
+- Move/rename a file
+  ```
+  mv <filename> <directory>
+  mv <filename1> <filename2> <filename3> <directory>
+  mv <filename> <newfilename>
+  ls -l
+  ```
+- Copy a file
+  ```
+  cp <filename> <newfilename>
+  ls -l
+  cp <filename> <directory>/
+  cp <filename> <directory>/<newfilename>
+  cp <filename1> <filename2> <filename3> <directory>/
+  ls -l <directory>/
+  cp <directory>/* <directory>/
+  cp -r <directory>/ <directory>/
+  ```
+- Remove non-empty directory
+  ```
+  rmdir <directory>
+  ```
+- Remove directory recursively
+  ```
+  rm -r <directory>
+  ```
+- Create hard link
+  ```
+  ln file link
+  ls -l
+  ls -i
+  ```
+- Create symbolic link
+  ```
+  ln -s file link
+  ls -l
+  ls -i
+  ```
+- Search text in text file
+  ```
+  grep <text> <filename>
+  grep <text> <filename> | sort
+  grep <text> <filename> | sort > out.txt
+  ```
+- Count lines, words in text file
+  ```
+  wc <filename>
+  wc -l <filename>
+  wc -w <filename>
+  ```
+- Search files
+  ```
+  find ./ -name *.txt
+  ```
+- Transform text: replace text
+  ```
+  sed 's/abc/xyz' file
+  ```
+- Compare 2 files
+  ```
+  diff file1 file2
+  diff -c file1 file2
+  diff -u file1 file2
+  ```
+- Compress files
+  ```
+  tar cvf images.tar *jpeg
+  tar tvf images.tar
+  tar xvf images.tar
+  
+  tar cvfz images.tar.gz *jpeg
+  tar tvfz images.tar.gz
+  tar xvfz images.tar.gz
+  
+  tar cvfj images.tar.bz2 *jpeg
+  tar tvfj images.tar.bz2
+  tar xvfj images.tar.bz2
+  ```
+
+#### Users and Groups:
+- Current User
+  ```
+  whoami
+  id
+  groups
+  groups <user>
+  ```
+- Create/delete User
+  ```
+  sudo useradd <user> -m -d /home/<user>
+  sudo passwd <user>
+  sudo chage -maxdays 90 <user>
+  ls /home
+  cat /etc/passwd
+  tail -n 1 /etc/passwd
+  tail -n 1 /etc/group
+  sudo tail -n 1 /etc/shadow
+  sudo userdel <user>
+  ```
+- Add user to the sudo group
+  ```
+  sudo usermod -aG sudo <user>
+  ```
+- Create/delete group
+  ```
+  sudo addgroup <group>
+  tail -n 1 /etc/group
+  sudo delgroup <group>
+  ```
+- Login
+  ```
+  su - <user>
+  exit
+  ```
+- Change file owner
+  ```
+  ls -l <filename>
+  sudo chown <user> <filename>
+  ls -l <filename>
+  sudo chgrp <group> <filename>
+  ls -l <filename>
+  ```
+
+#### File permissions:
+- View permissions
+  ```
+  ls -l
+  ```
+- Permission infor:
+  + read (r), write (w), execute (x), no (-)
+  + user (u), group (g), other (o)
+- Change permission: ```chmod [references][operator][modes] filename```
+  ```
+  chmod u+x file1
+  chmod u-x file2
+  ```
+
+#### Utilities:
+- Brace Expansion
+  ```
+  echo file{1..10}.txt
+  echo file{01..10}.txt
+  echo {a,b,c}{01..10}.txt
+  echo {A..Z}{01..10}.txt
+  ```
+- Environment Variables
+  ```
+  echo $PATH
+  echo $HOME
+  export PATH="$PATH:$HOME/.dotnet/tools"
+  ```
