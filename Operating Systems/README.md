@@ -214,10 +214,24 @@
   ```
 - Environment Variables
   ```
+  env
   echo $PATH
   echo $HOME
   export PATH="$PATH:$HOME/.dotnet/tools"
   ```
+ - Aliases
+   ```
+   alias
+   alias ..='cd ..'
+   alias ll='ls -lah'
+   alias ports='netstat -tulanp'
+   ```
+ - Default Text Editor:
+   ```
+   echo $EDITOR
+   export EDITOR=nano
+   export EDITOR=vi
+   ```
 
 #### Processes and Jobs:
 - Processes
@@ -269,4 +283,35 @@
   sudo killall --user <user> --signal STOP
   pkill
   xkill // UI
+  ```
+
+#### Bash & Z-Shell Config Files:
+- Bash Config Files: Interactive Login
+  ```
+  cat /etc/profile
+  cat ~/.bash_profile
+  cat ~/.bash_login
+  cat ~/.profile
+  cat ~/.bash_logout
+  ```
+- Bash Config Files: Interactive Non-Login
+  ```
+  cat /etc/bash.bashrc
+  cat ~/.bashrc
+  ```
+- Z-Shell Config Files: Interactive Login
+  ```
+  cat /etc/zshenv
+  cat ~/.zshenv
+  cat ~/.zprofile
+  cat ~/.zshrc
+  cat ~/.zlogin
+  cat ~/.zlogout
+  ```
+- Z-Shell Config Files: Interactive Non-Login
+  ```
+  cat /etc/zshenv
+  cat ~/.zshenv
+  cat /etc/zshrc
+  cat ~/.zshrc
   ```
