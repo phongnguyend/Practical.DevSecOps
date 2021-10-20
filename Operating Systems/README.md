@@ -218,3 +218,55 @@
   echo $HOME
   export PATH="$PATH:$HOME/.dotnet/tools"
   ```
+
+#### Processes and Jobs:
+- Processes
+  ```
+  ps
+  ps aux
+  ps aux | head
+  ps aux | grep python
+  pgrep python
+  pgrep -a python
+  pgrep -fa python
+  pgrep -u root
+  top
+  htop
+  ```
+- Process Id, Parent Process Id, Process Group Id, Session Id:
+  ```
+  ps xao pid,ppid,pgid,sid,comm | head
+  ```
+- Process Groups, Jobs:
+  + Foreground Jobs
+    ```
+	ncdu -x /
+	Ctrl + Z
+	jobs
+	fg 1
+	fg
+	```
+  + Background Jobs
+    ```
+	ncdu -x / &
+	bg
+	```
+  + Suspended Jobs
+- Change Process Priority
+  ```
+  nice
+  htop
+  ```
+- Signals & Interrupts
+  ```
+  kill -INT <PID> // Ctrl + C
+  kill -KILL <PID>
+  kill -STOP <PID>
+  kill -CONT <PID>
+  kill -QUIT <PID>
+  htop
+  killall
+  sudo killall --user <user> --signal STOP
+  pkill
+  xkill // UI
+  ```
