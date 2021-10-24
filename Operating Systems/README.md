@@ -45,10 +45,22 @@
 - Read text file
   ```
   cat <filename>
+  
+  # Create and input a file. Ctrl + D to terminate.
+  cat > <filename>
+  
+  cat -b file1 file2
+  cat -b file file2 > file3
+  
   more <filename>
   less <filename>
+  
   head <filename>
+  head /var/log/syslog
+  head -n 20 /var/log/syslog
+  
   tail <filename>
+  tail -n 20 /var/log/syslog
   ```
 - Edit text file
   ```
@@ -108,6 +120,31 @@
 - Search text in text file
   ```
   grep <text> <filename>
+  
+  grep "System" /var/log/syslog
+  
+  # case insensitive
+  grep -i "System" /var/log/syslog
+  
+  # word
+  grep -i -w "System" /var/log/syslog 
+  
+  # -n: line number
+  grep -i -n "System" /var/log/syslog 
+  
+  # -B: before, -A: after
+  grep -i -n -B 3 -A 3 "System" /var/log/syslog 
+  
+  # count
+  grep -c "System" /var/log/syslog 
+  
+  # recursive
+  grep -r "System" /var/log/
+  
+  # list file names only
+  grep -r -l "System" /var/log/
+  
+  # pipe
   grep <text> <filename> | sort
   grep <text> <filename> | sort > out.txt
   ```
@@ -117,9 +154,17 @@
   wc -l <filename>
   wc -w <filename>
   ```
-- Search files
+- Search files & directories
   ```
-  find ./ -name *.txt
+  find ./ -type f -name *.txt
+  find ./ -type f -name '.*' # find hidden files
+  find ./ -type d -name bin
+  find ./ -type d -empty
+  find ./ -user <user>
+  find ./ -group <group>
+  find /var/log -type f -amin -60
+  find /var/log -type f -cmin -60
+  find /var/log -type f -size +1024M
   ```
 - Transform text: replace text
   ```
@@ -273,7 +318,7 @@
   ```
 - Signals & Interrupts
   ```
-  kill -INT <PID> // Ctrl + C
+  kill -INT <PID> # Ctrl + C
   kill -KILL <PID>
   kill -STOP <PID>
   kill -CONT <PID>
@@ -282,7 +327,7 @@
   killall
   sudo killall --user <user> --signal STOP
   pkill
-  xkill // UI
+  xkill # UI
   ```
 
 #### Bash & Z-Shell Config Files:
