@@ -360,3 +360,33 @@
   cat /etc/zshrc
   cat ~/.zshrc
   ```
+### Scripting:
+#### Variables and Arguments:
+- Create ```myscript.sh```
+  ```
+  nano myscript.sh
+  #!/bin/bash
+  ```
+- Variables:
+  ```
+  firstName=Phong
+  lastName=Nguyen
+  echo "${firstName}, $lastName"
+  ```
+- Save and Run:
+  ```
+  ls -l myscript.sh
+  chmod u+x myscript.sh
+  ls -l myscript.sh
+  ./myscript.sh
+  ```
+- Arguments:
+  ```
+  firstName=$1
+  lastName=$2
+  echo "Hello: ${firstName}, $lastName"
+  ```
+- Save and Run:
+  ```
+  ./myscript.sh Phong Nguyen
+  ```
