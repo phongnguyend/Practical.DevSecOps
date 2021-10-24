@@ -390,3 +390,39 @@
   ```
   ./myscript.sh Phong Nguyen
   ```
+#### Conditional Execution:
+- ```if-then-else-fi```
+  ```
+  nano myscript.sh
+  
+  if [[ ! $1 ]]; then
+    echo "First Name is required."
+    exit 1
+  else
+    firstName=$1
+  fi
+  
+  if [[ ! $2 ]]; then
+    echo "Last Name is required."
+    exit 1
+  else
+    lastName=$2
+  fi
+  
+  echo "Hello: ${firstName}, $lastName"
+  ```
+- Expressions:
+  ```
+  [[ $str ]] # string is not empty
+  [[ $str="something" ]] # string equals "something"
+  [[ -e $filename ]] # file exists
+  [[ -d $dirname ]] # directory exists
+  
+  [[ ! $str ]] # string is empty
+  [[ ! $str="something" ]] # string does not equal "something"
+  [[ ! -e $filename ]] # file does not exist
+  [[ ! -d $dirname ]] # directory does not exist
+  
+  [[ $1 && $2]] # and
+  [[ $1 || $2]] # or
+  ```
