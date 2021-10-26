@@ -510,3 +510,43 @@
   
   say_hello Phong
   ```
+#### Loops
+- while
+  ```
+  declare -i x=0
+  while (( x < 10 )); do echo $x; x=x+1; done
+  ```
+- until
+  ```
+  declare -i x=10
+  until (( x == 0 )); do echo $x; x=x-1; done
+  ```
+- for
+  ```
+  for ((i=0; i<5; i++)); do echo $i; done
+  for ((i=5; i>0; i--)); do echo $i; done
+
+  for f in $(ls); do stat -c "%n %F" $f; done
+  for i in {1..5}; do echo $i; done
+
+  declare -a users=("bob" "sue" "jake")
+  declare -p users
+  echo ${#users[*]}
+  for ((i=0; i<${#users[*]}; i++)); do echo ${users[$i]}; done
+  ```
+- continue
+  ```
+  for i in {1..5}; do
+    if [[ $i<3 ]]; then continue; 
+    fi
+    echo $i; 
+  done
+  ```
+- break
+  ```
+  for i in {1..5}; do
+    if [[ $i>3 ]]; then break; 
+    fi
+    echo $i; 
+  done
+  ```
