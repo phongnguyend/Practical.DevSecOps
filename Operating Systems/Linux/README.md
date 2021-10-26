@@ -425,4 +425,13 @@
   
   [[ $1 && $2]] # and
   [[ $1 || $2]] # or
+  
+  # Create if exists:
+  [[ -e test_dir ]] || mkdir test_dir
+  
+  # Create file if has write permission:
+  [[ -w test_dir ]] && touch test_dir/test_file
+  
+  # Check result of previous command:
+  echo $?
   ```
