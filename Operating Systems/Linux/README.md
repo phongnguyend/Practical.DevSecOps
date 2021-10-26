@@ -455,3 +455,58 @@
   chmod u+x season.sh
   ./season.sh
   ```
+ #### Functions:
+ - List functions:
+   ```
+   declare -f
+   declare -f functionName
+   declare -F
+   ```
+- Create function:
+  ```
+  function say_hello () {
+    echo hello
+  }
+  
+  # call function
+  say_hello
+  ```
+- Export function:
+  ```
+  function say_hello () {
+    echo hello
+  }
+  
+  # call function
+  say_hello
+  
+  # open new shell
+  bash
+  
+  # call function
+  say_hello
+  
+  # exit
+  exit
+  
+  # export function
+  declare -xf say_hello
+  
+  # open new shell
+  bash
+  
+  # call function
+  say_hello
+  
+  # exit
+  exit
+  ```
+- Pass arguments:
+  ```
+  function say_hello () {
+    local name=$1
+    echo "hello ${name}!"
+  }
+  
+  say_hello Phong
+  ```
