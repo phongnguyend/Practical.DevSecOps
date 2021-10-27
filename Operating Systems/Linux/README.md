@@ -395,6 +395,28 @@
   ```bash
   ./myscript.sh Phong Nguyen
   ```
+#### Calculation:
+```bash
+z=1+2
+echo $z # 1+2
+
+let z=1+2
+echo $z # 3
+
+expr 1 + 2 # 3
+z=$(expr 1 + 2)
+echo $z # 3
+
+echo $(( 1 + 2 ))
+z=$(( 1 + 2 ))
+echo $z # 3
+
+x=1
+y=2
+echo $(( x + y )) # 3
+
+(( x < y )) && echo "x < y"
+```
 #### Conditional Execution:
 - ```if-then-else-fi```
   ```bash
@@ -581,9 +603,14 @@
   ```
 - noclobber
   ```bash
+  # check current status
   set -o | grep noclobber
+  
+  # enable
   set -o noclobber
   set -o | grep noclobber
+  
+  # disable
   set +o noclobber
   set -o | grep noclobber
   ```
