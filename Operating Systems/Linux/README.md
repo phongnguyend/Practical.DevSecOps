@@ -10,40 +10,40 @@
 ### Linux Bash Commands:
 #### Files and Directories:
 - Print current location
-  ```
+  ```bash
   pwd
   ```
 - Back to home directory
-  ```
+  ```bash
   cd
   ```
 - Back to parent directory
-  ```
+  ```bash
   cd ..
   ```
 - Go to root directory
-  ```
+  ```bash
   cd /
   ```
 - List files and directories
-  ```
+  ```bash
   ls
   ```
 - List files and directories (including hidden)
-  ```
+  ```bash
   ls -a
   ```
 - List files and directories (long format)
-  ```
+  ```bash
   ls -l
   ```
 - List files and directories (multiple options)
-  ```
+  ```bash
   ls -a -l
   ls -la
   ```
 - Read text file
-  ```
+  ```bash
   cat <filename>
   
   # Create and input a file. Ctrl + D to terminate.
@@ -63,31 +63,31 @@
   tail -n 20 /var/log/syslog
   ```
 - Edit text file
-  ```
+  ```bash
   nano <filename>
   vi <filename>
   ```
 - Create a file
-  ```
+  ```bash
   touch <filename>
   ```
 - Remove a file
-  ```
+  ```bash
   rm <filename>
   ```
 - Create a directory
-  ```
+  ```bash
   mkdir <directory>
   ```
 - Move/rename a file
-  ```
+  ```bash
   mv <filename> <directory>
   mv <filename1> <filename2> <filename3> <directory>
   mv <filename> <newfilename>
   ls -l
   ```
 - Copy a file
-  ```
+  ```bash
   cp <filename> <newfilename>
   ls -l
   cp <filename> <directory>/
@@ -98,27 +98,27 @@
   cp -r <directory>/ <directory>/
   ```
 - Remove non-empty directory
-  ```
+  ```bash
   rmdir <directory>
   ```
 - Remove directory recursively
-  ```
+  ```bash
   rm -r <directory>
   ```
 - Create hard link
-  ```
+  ```bash
   ln file link
   ls -l
   ls -i
   ```
 - Create symbolic link
-  ```
+  ```bash
   ln -s file link
   ls -l
   ls -i
   ```
 - Search text in text file
-  ```
+  ```bash
   grep <text> <filename>
   
   grep "System" /var/log/syslog
@@ -149,13 +149,13 @@
   grep <text> <filename> | sort > out.txt
   ```
 - Count lines, words in text file
-  ```
+  ```bash
   wc <filename>
   wc -l <filename>
   wc -w <filename>
   ```
 - Search files & directories
-  ```
+  ```bash
   find ./ -type f -name *.txt
   find ./ -type f -name '.*' # find hidden files
   find ./ -type d -name bin
@@ -167,17 +167,17 @@
   find /var/log -type f -size +1024M
   ```
 - Transform text: replace text
-  ```
+  ```bash
   sed 's/abc/xyz' file
   ```
 - Compare 2 files
-  ```
+  ```bash
   diff file1 file2
   diff -c file1 file2
   diff -u file1 file2
   ```
 - Compress files
-  ```
+  ```bash
   tar cvf images.tar *jpeg
   tar tvf images.tar
   tar xvf images.tar
@@ -193,14 +193,14 @@
 
 #### Users and Groups:
 - Current User
-  ```
+  ```bash
   whoami
   id
   groups
   groups <user>
   ```
 - Create/delete User
-  ```
+  ```bash
   sudo useradd <user> -m -d /home/<user>
   sudo passwd <user>
   sudo chage -maxdays 90 <user>
@@ -212,22 +212,22 @@
   sudo userdel <user>
   ```
 - Add user to the sudo group
-  ```
+  ```bash
   sudo usermod -aG sudo <user>
   ```
 - Create/delete group
-  ```
+  ```bash
   sudo addgroup <group>
   tail -n 1 /etc/group
   sudo delgroup <group>
   ```
 - Login
-  ```
+  ```bash
   su - <user>
   exit
   ```
 - Change file owner
-  ```
+  ```bash
   ls -l <filename>
   sudo chown <user> <filename>
   ls -l <filename>
@@ -237,50 +237,55 @@
 
 #### File permissions:
 - View permissions
-  ```
+  ```bash
   ls -l
   ```
 - Permission infor:
   + read (r), write (w), execute (x), no (-)
   + user (u), group (g), other (o)
 - Change permission: ```chmod [references][operator][modes] filename```
-  ```
+  ```bash
   chmod u+x file1
   chmod u-x file2
   ```
 
 #### Utilities:
 - Brace Expansion
-  ```
+  ```bash
   echo file{1..10}.txt
   echo file{01..10}.txt
   echo {a,b,c}{01..10}.txt
   echo {A..Z}{01..10}.txt
   ```
 - Environment Variables
-  ```
+  ```bash
   env
   echo $PATH
   echo $HOME
   export PATH="$PATH:$HOME/.dotnet/tools"
   ```
  - Aliases
-   ```
+   ```bash
    alias
    alias ..='cd ..'
    alias ll='ls -lah'
    alias ports='netstat -tulanp'
    ```
  - Default Text Editor:
-   ```
+   ```bash
    echo $EDITOR
    export EDITOR=nano
    export EDITOR=vi
    ```
+- Check Bash version:
+  ```bash
+  bash --version
+  echo $BASH_VERSION
+  ```
 
 #### Processes and Jobs:
 - Processes
-  ```
+  ```bash
   ps
   ps aux
   ps aux | head
@@ -293,12 +298,12 @@
   htop
   ```
 - Process Id, Parent Process Id, Process Group Id, Session Id:
-  ```
+  ```bash
   ps xao pid,ppid,pgid,sid,comm | head
   ```
 - Process Groups, Jobs:
   + Foreground Jobs
-    ```
+    ```bash
 	ncdu -x /
 	Ctrl + Z
 	jobs
@@ -306,18 +311,18 @@
 	fg
 	```
   + Background Jobs
-    ```
+    ```bash
 	ncdu -x / &
 	bg
 	```
   + Suspended Jobs
 - Change Process Priority
-  ```
+  ```bash
   nice
   htop
   ```
 - Signals & Interrupts
-  ```
+  ```bash
   kill -INT <PID> # Ctrl + C
   kill -KILL <PID>
   kill -STOP <PID>
@@ -332,7 +337,7 @@
 
 #### Bash & Z-Shell Config Files:
 - Bash Config Files: Interactive Login
-  ```
+  ```bash
   cat /etc/profile
   cat ~/.bash_profile
   cat ~/.bash_login
@@ -340,12 +345,12 @@
   cat ~/.bash_logout
   ```
 - Bash Config Files: Interactive Non-Login
-  ```
+  ```bash
   cat /etc/bash.bashrc
   cat ~/.bashrc
   ```
 - Z-Shell Config Files: Interactive Login
-  ```
+  ```bash
   cat /etc/zshenv
   cat ~/.zshenv
   cat ~/.zprofile
@@ -354,7 +359,7 @@
   cat ~/.zlogout
   ```
 - Z-Shell Config Files: Interactive Non-Login
-  ```
+  ```bash
   cat /etc/zshenv
   cat ~/.zshenv
   cat /etc/zshrc
@@ -363,36 +368,36 @@
 ### Scripting:
 #### Variables and Arguments:
 - Create ```myscript.sh```
-  ```
+  ```bash
   nano myscript.sh
   #!/bin/bash
   ```
 - Variables:
-  ```
+  ```bash
   firstName=Phong
   lastName=Nguyen
   echo "${firstName}, $lastName"
   ```
 - Save and Run:
-  ```
+  ```bash
   ls -l myscript.sh
   chmod u+x myscript.sh
   ls -l myscript.sh
   ./myscript.sh
   ```
 - Arguments:
-  ```
+  ```bash
   firstName=$1
   lastName=$2
   echo "Hello: ${firstName}, $lastName"
   ```
 - Save and Run:
-  ```
+  ```bash
   ./myscript.sh Phong Nguyen
   ```
 #### Conditional Execution:
 - ```if-then-else-fi```
-  ```
+  ```bash
   nano myscript.sh
   
   if [[ ! $1 ]]; then
@@ -412,7 +417,7 @@
   echo "Hello: ${firstName}, $lastName"
   ```
 - Expressions:
-  ```
+  ```bash
   [[ $str ]] # string is not empty
   [[ $str="something" ]] # string equals "something"
   [[ -e $filename ]] # file exists
@@ -436,7 +441,7 @@
   echo $?
   ```
 - Case Statements:
-  ```
+  ```bash
   nano season.sh
 
   #!/bin/bash
@@ -457,13 +462,13 @@
   ```
  #### Functions:
  - List functions:
-   ```
+   ```bash
    declare -f
    declare -f functionName
    declare -F
    ```
 - Create function:
-  ```
+  ```bash
   function say_hello () {
     echo hello
   }
@@ -472,7 +477,7 @@
   say_hello
   ```
 - Export function:
-  ```
+  ```bash
   function say_hello () {
     echo hello
   }
@@ -502,7 +507,7 @@
   exit
   ```
 - Pass arguments:
-  ```
+  ```bash
   function say_hello () {
     local name=$1
     echo "hello ${name}!"
@@ -512,17 +517,17 @@
   ```
 #### Loops
 - while
-  ```
+  ```bash
   declare -i x=0
   while (( x < 10 )); do echo $x; x=x+1; done
   ```
 - until
-  ```
+  ```bash
   declare -i x=10
   until (( x == 0 )); do echo $x; x=x-1; done
   ```
 - for
-  ```
+  ```bash
   for ((i=0; i<5; i++)); do echo $i; done
   for ((i=5; i>0; i--)); do echo $i; done
 
@@ -535,7 +540,7 @@
   for ((i=0; i<${#users[*]}; i++)); do echo ${users[$i]}; done
   ```
 - continue
-  ```
+  ```bash
   for i in {1..5}; do
     if [[ $i<3 ]]; then continue; 
     fi
@@ -543,10 +548,42 @@
   done
   ```
 - break
-  ```
+  ```bash
   for i in {1..5}; do
     if [[ $i>3 ]]; then break; 
     fi
     echo $i; 
   done
+  ```
+### Configure Shell Options:
+- List Options:
+   ```bash
+   shopt
+   set -o
+   ```
+- autocd
+  ```bash
+  # check current status
+  shopt autocd
+  
+  # enable
+  shopt -s autocd
+  
+  # disable
+  shopt -u autocd
+  ```
+- Restricted Shell
+  ```bash
+  shopt restricted_shell
+  rbash
+  shopt restricted_shell
+  exit
+  ```
+- noclobber
+  ```bash
+  set -o | grep noclobber
+  set -o noclobber
+  set -o | grep noclobber
+  set +o noclobber
+  set -o | grep noclobber
   ```
