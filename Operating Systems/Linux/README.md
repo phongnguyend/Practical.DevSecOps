@@ -395,6 +395,7 @@
   ```bash
   ./myscript.sh Phong Nguyen
   ```
+
 #### Calculation:
 ```bash
 z=1+2
@@ -417,6 +418,31 @@ echo $(( x + y )) # 3
 
 (( x < y )) && echo "x < y"
 ```
+
+#### Arrays:
+```bash
+declare -a users
+users[0]=bob
+users[1]=smith
+declare -p users
+echo ${users[0]}
+
+declare -a users
+users=("bob" "smith")
+declare -p users
+echo ${users[0]}
+
+declare -a users
+users=([0]=bob [1]=smith)
+declare -p users
+echo ${users[0]}
+
+declare -A map
+map=([key1]=value1 [key2]=value2)
+declare -p map
+echo ${map[key1]}
+```
+
 #### Conditional Execution:
 - ```if-then-else-fi```
   ```bash
