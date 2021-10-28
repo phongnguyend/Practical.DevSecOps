@@ -269,6 +269,10 @@
   echo $PATH
   echo $HOME
   export PATH="$PATH:$HOME/.dotnet/tools"
+  
+  # current process id
+  echo $$
+  
   ```
  - Aliases
    ```bash
@@ -276,6 +280,16 @@
    alias ..='cd ..'
    alias ll='ls -lah'
    alias ports='netstat -tulanp'
+   
+   # check type of command
+   type -a ..
+   type -a ll
+   type -a ports
+   
+   # remove alias
+   unalias ..
+   unalias ll
+   unalias ports
    ```
  - Default Text Editor:
    ```bash
@@ -287,6 +301,13 @@
   ```bash
   bash --version
   echo $BASH_VERSION
+  ```
+- Check command type:
+  ```
+  type -a bash
+  type -a pwd
+  which -a bash
+  which -a pwd
   ```
 
 #### Processes and Jobs:
