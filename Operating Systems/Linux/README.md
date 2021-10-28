@@ -44,28 +44,34 @@
   ```
 - Read text file
   ```bash
-  cat <filename>
+  cat filename
   
   # Create and input a file. Ctrl + D to terminate.
-  cat > <filename>
+  cat > filename
+  
+  # Create and input. Enter END to terminate.
+  cat > filename << END
+  line1
+  line2
+  END
   
   cat -b file1 file2
   cat -b file file2 > file3
   
-  more <filename>
-  less <filename>
+  more filename
+  less filename
   
-  head <filename>
+  head filename
   head /var/log/syslog
   head -n 20 /var/log/syslog
   
-  tail <filename>
+  tail filename
   tail -n 20 /var/log/syslog
   ```
 - Edit text file
   ```bash
-  nano <filename>
-  vi <filename>
+  nano filename
+  vi filename
   ```
 - Create a file
   ```bash
@@ -640,3 +646,33 @@ echo ${map[key1]}
   set +o noclobber
   set -o | grep noclobber
   ```
+
+#### Shell Redirection:
+```bash
+ls /etc/hosts
+ls /etc/host
+ls /etc/hosts /etc/host
+ls /etc/hosts /etc/host > stdout.txt
+ls /etc/hosts /etc/host 2> stderr.txt
+ls /etc/hosts /etc/host &> all.txt
+cat stdout.txt
+cat stderr.txt
+cat all.txt
+rm stdout.txt stderr.txt all.txt
+
+# group commands
+( ls /etc/hosts; ls /etc/host )
+( ls /etc/hosts; ls /etc/host ) > stdout.txt
+( ls /etc/hosts; ls /etc/host ) 2> stderr.txt
+( ls /etc/hosts; ls /etc/host ) &> all.txt
+cat stdout.txt
+cat stderr.txt
+cat all.txt
+rm stdout.txt stderr.txt all.txt
+
+bash > shell.out.txt
+ls
+exit
+cat shell.out.txt
+rm shell.out.txt
+```
