@@ -397,9 +397,19 @@
   lastName=$2
   echo "Hello: ${firstName}, $lastName"
   ```
-- Save and Run:
+- Save (Ctrl + O, Enter, Ctrl + X) and Run:
   ```bash
+  # check file type
+  file myscript.sh
+  
+  # run
   ./myscript.sh Phong Nguyen
+  
+  # or
+  bash myscript.sh Phong Nguyen
+  
+  # debug
+  bash -x myscript.sh Phong Nguyen
   ```
 
 #### Calculation:
@@ -645,6 +655,21 @@ echo ${map[key1]}
   # disable
   set +o noclobber
   set -o | grep noclobber
+  ```
+- Debugging Option
+  ```bash
+  # check current status
+  set -o | grep xtrace
+  
+  # enable
+  set -x
+  set -o xtrace
+  set -o | grep xtrace
+  
+  # disable
+  set +x
+  set +o xtrace
+  set -o | grep xtrace
   ```
 
 #### Shell Redirection:
