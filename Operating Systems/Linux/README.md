@@ -273,6 +273,7 @@
   # current process id
   echo $$
   
+  echo $SSH_CLIENT
   ```
  - Aliases
    ```bash
@@ -470,6 +471,48 @@
       *) echo "Usage: $0 [-c|-d] <arg>"
     esac
   done
+  ```
+- Read Input:
+  ```bash
+  read
+  echo $REPLY
+  
+  read myVar
+  echo $myVar
+  
+  echo "Enter username: "; read
+  echo $REPLY
+  
+  read -p "Enter username: "
+  echo $REPLY
+  
+  echo "Enter password: "; read -s
+  echo $REPLY
+  
+  read -s -p "Enter password: "
+  echo $REPLY
+  
+  read -n2 myVar
+  echo $myVar
+  echo "Length: ${#myVar}"
+  ```
+- Default values:
+  ```bash
+  read username
+  echo $username
+  echo ${username:-defaultvalue} # null or unset
+  echo ${username-defaultvalue} # unset
+
+  unset username
+  echo $username
+  echo ${username:-defaultvalue} # null or unset
+  echo ${username-defaultvalue} # unset
+  ```
+- String replacement:
+  ```bash
+  var1=aabbcc
+  echo ${var1/a/A} # Aabbcc
+  echo ${var1//a/A} # AAbbcc
   ```
 
 #### Calculation:
