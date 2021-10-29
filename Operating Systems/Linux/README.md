@@ -332,17 +332,20 @@
 - Process Groups, Jobs:
   + Foreground Jobs
     ```bash
-	ncdu -x /
-	Ctrl + Z
-	jobs
-	fg 1
-	fg
-	```
+    ncdu -x /
+    Ctrl + Z
+    jobs
+    fg 1
+    fg
+    ```
   + Background Jobs
     ```bash
-	ncdu -x / &
-	bg
-	```
+    sleep 30; echo done
+    sleep 30 &
+    (sleep 30; echo done) &
+    jobs
+    bg
+    ```
   + Suspended Jobs
 - Change Process Priority
   ```bash
@@ -361,6 +364,27 @@
   sudo killall --user <user> --signal STOP
   pkill
   xkill # UI
+  ```
+- Schedule Jobs using ```at```
+  ```bash
+  echo $(date)
+  
+  at noon
+  echo hello > hello_at.txt
+  Ctr + D
+  
+  at 12:01
+  echo hello > hello_at2.txt
+  Ctr + D
+  
+  # list jobs in queue
+  atq
+  
+  # job details
+  at -c <id>
+  
+  #remove job
+  atrm <id>
   ```
 
 #### Bash & Z-Shell Config Files:
