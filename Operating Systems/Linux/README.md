@@ -386,6 +386,14 @@
   #remove job
   atrm <id>
   ```
+- Schedule Jobs using ```crontab```
+  ```bash
+  # list jobs
+  crontab -l
+  
+  # edit jobs
+  crontab -e
+  ```
 
 #### Bash & Z-Shell Config Files:
 - Bash Config Files: Interactive Login
