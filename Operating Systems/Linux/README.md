@@ -414,6 +414,10 @@
   ```
 - Arguments:
   ```bash
+  echo "The script is: $0"
+  echo "The number of arguments is: $#"
+  echo "The arguments list is: $*"
+  echo "The arguments as an array are: $@"
   firstName=$1
   lastName=$2
   echo "Hello: ${firstName}, $lastName"
@@ -431,6 +435,23 @@
   
   # debug
   bash -x myscript.sh Phong Nguyen
+  ```
+- shift
+  ```
+  #!/bin/bash
+  firstName=$1
+  shift
+  lastName=$1
+  echo "Hello: ${firstName}, $lastName"
+  ```
+- while + shift
+  ```
+  #!/bin/bash
+  while (( "$#" ))
+  do
+    echo "$1"
+    shift
+  done
   ```
 
 #### Calculation:
