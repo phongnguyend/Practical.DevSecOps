@@ -437,7 +437,7 @@
   bash -x myscript.sh Phong Nguyen
   ```
 - shift
-  ```
+  ```bash
   #!/bin/bash
   firstName=$1
   shift
@@ -445,12 +445,30 @@
   echo "Hello: ${firstName}, $lastName"
   ```
 - while + shift
-  ```
+  ```bash
   #!/bin/bash
   while (( "$#" ))
   do
     echo "$1"
     shift
+  done
+  ```
+- Options:
+  ```bash
+  #!/bin/bash
+  while getopts ':abc:d:' opt
+  do
+    case "$opt" in
+      a) echo "Option: $opt, Arg: $OPTARG" # $OPTARG is null
+  	  break ;;
+      b) echo "Option: $opt, Arg: $OPTARG" # $OPTARG is null
+  	  break ;;
+      c) echo "Option: $opt, Arg: $OPTARG" # $OPTARG is required
+  	  break ;;
+      d) echo "Option: $opt, Arg: $OPTARG" # $OPTARG is required
+  	  break ;;
+      *) echo "Usage: $0 [-c|-d] <arg>"
+    esac
   done
   ```
 
