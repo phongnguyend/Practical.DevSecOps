@@ -113,6 +113,33 @@
   # display repeated times
   sort filename | uniq -i -c
   ```
+- Extract column:
+  ```bash
+  # select first column of csv file
+  cut -f 1 -d \, filename
+  
+  # select second column of csv file
+  cut -f 2 -d \, filename
+  
+  # select both first and second columns of csv file
+  cut -f 1,2 -d \, filename
+  ```
+- Merge text lines:
+  ```bash
+  # separated by tab
+  paste file1 file2
+  paste -d \\t file1 file2
+  
+  # separated by :
+  paste -d : file1 file2
+  
+  # separated by ,
+  paste -d , file1 file2
+  ```
+- Join text lines:
+  ```bash
+  join file1 file2
+  ```
 - Edit text file
   ```bash
   nano filename
