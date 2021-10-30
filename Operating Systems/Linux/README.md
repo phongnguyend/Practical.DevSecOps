@@ -68,6 +68,51 @@
   tail filename
   tail -n 20 /var/log/syslog
   ```
+- Display line number:
+  ```bash
+  # display line number
+  cat -n filename
+  # ignore empty line
+  cat -b filename
+  
+  # ignore empty line by default
+  nl filename
+  # include empty line
+  nl -b a filename
+  ```
+- Transform text:
+  ```bash
+  # replace lower -> upper
+  cat filename | tr \[:lower:] \[:upper:]
+  
+  # replace "tab" -> ","
+  cat filename | tr \\t \,
+  
+  # remove empty line
+  cat filename | tr -s \\n
+  
+  # pipe
+  cat filename | tr \[:lower:] \[:upper:] | tr \\t \, | tr -s \\n
+  ```
+- Order text:
+  ```bash
+  # ascending
+  sort filename
+  
+  # descending
+  sort -r filename
+  
+  # remove duplicated
+  sort -u filename
+  sort filename | uniq
+  
+  # remove duplicated (ignore case)
+  sort -u -f filename
+  sort filename | uniq -i
+  
+  # display repeated times
+  sort filename | uniq -i -c
+  ```
 - Edit text file
   ```bash
   nano filename
