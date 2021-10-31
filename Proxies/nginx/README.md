@@ -1,1 +1,2 @@
-
+- [Reverse Proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
+- [Load Balancing](https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/)
