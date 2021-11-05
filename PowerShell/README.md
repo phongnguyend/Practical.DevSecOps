@@ -57,3 +57,18 @@ Test-Cluster -Node Node1, Node2
 New-Cluster -Name MyCluster -Node Node1, Node2
 Get-Cluster
 ```
+
+### Delete Files Older Than ... Days
+```ps1
+# https://stackoverflow.com/questions/17829785/delete-files-older-than-15-days-using-powershell
+
+$limit = (Get-Date).AddDays(-180)
+$path = "E:\Temp\"
+
+# delete files
+Get-ChildItem -Path $path -Recurse -File | Where CreationTime -lt $limit | Remove-Item -Force -Verbose
+
+# delete empty folders
+Get-ChildItem -Path $path -Recurse -Force | Where-Object { $_.PSIsContainer -and (Get-ChildItem -Path $_.FullName -Recurse -Force | Where-Object { !$_.PSIsContainer }) -eq $null } | Remove-Item -Force -Recurse -Verbose
+
+```
