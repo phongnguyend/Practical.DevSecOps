@@ -72,3 +72,11 @@ Get-ChildItem -Path $path -Recurse -File | Where CreationTime -lt $limit | Remov
 Get-ChildItem -Path $path -Recurse -Force | Where-Object { $_.PSIsContainer -and (Get-ChildItem -Path $_.FullName -Recurse -Force | Where-Object { !$_.PSIsContainer }) -eq $null } | Remove-Item -Force -Recurse -Verbose
 
 ```
+
+### Install/Enable Telnet Client on Windows:
+```ps1
+Install-WindowsFeature -Name Telnet-Client
+```
+```ps1
+Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient"
+```
