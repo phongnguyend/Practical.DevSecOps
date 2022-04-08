@@ -14,3 +14,6 @@
 
 ### Visual Studio Code Extension
 - [Dapr for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-dapr)
+
+### SDKs
+- [.NET](https://docs.dapr.io/developing-applications/sdks/dotnet/)
