@@ -1,0 +1,4 @@
+- [Service Mesh Ultimate Guide 2021 - Second Edition: Next Generation Microservices Development - InfoQ](https://www.infoq.com/articles/service-mesh-ultimate-guide-2021/)
+- [What's a service mesh? - Red Hat](https://www.redhat.com/en/topics/microservices/what-is-a-service-mesh)
+- [Observability: From Service Discovery to Service Mesh - The New Stack](https://thenewstack.io/observability-from-service-discovery-to-service-mesh/)
+- [The Difference Between API Gateways and Service Mesh - Cloud Native Computing Foundation](https://www.cncf.io/blog/2020/03/06/the-difference-between-api-gateways-and-service-mesh/)
