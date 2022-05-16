@@ -11,6 +11,7 @@
 - [Whizlabs | Microsoft Azure Exam AZ-204 Certification](https://www.whizlabs.com/microsoft-azure-certification-az-204/)
 - [Udemy | AZ-204 Developing for Microsoft Azure Exam Prep](https://www.udemy.com/course/70532-azure/)
 - [Pluralsight | AZ-204](https://www.pluralsight.com/search?q=AZ-204&categories=all)
+- [Microsoft Learning | AZ-204: Developing solutions for Microsoft Azure](https://github.com/MicrosoftLearning/AZ-204-DevelopingSolutionsforMicrosoftAzure)
 ##
 ## [Microsoft Certified: Azure Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-administrator)
 - [ExamTopics | Microsoft AZ-104 Exam](https://www.examtopics.com/exams/microsoft/az-104/)
@@ -18,6 +19,7 @@
 - [Whizlabs | Microsoft Azure Exam AZ-104 Certification](https://www.whizlabs.com/microsoft-azure-certification-az-104/)
 - [Udemy | AZ-104 Azure Administrator Exam Certification](https://www.udemy.com/course/70533-azure/)
 - [Pluralsight | AZ-104](https://www.pluralsight.com/search?q=AZ-104&categories=all)
+- [Microsoft Learning | AZ-104: Microsoft Azure Administrator](https://github.com/MicrosoftLearning/AZ-104-MicrosoftAzureAdministrator)
 ##
 ## [Microsoft Certified: Azure Security Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-security-engineer) 
 - [ExamTopics | Microsoft AZ-500 Exam](https://www.examtopics.com/exams/microsoft/az-500/)
