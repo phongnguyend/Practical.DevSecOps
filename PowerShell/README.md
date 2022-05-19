@@ -80,3 +80,13 @@ Install-WindowsFeature -Name Telnet-Client
 ```ps1
 Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient"
 ```
+
+### Install SFTP Server (OpenSSH) on Windows:
+```ps1
+# https://github.com/PowerShell/Win32-OpenSSH/wiki/Install-Win32-OpenSSH-Using-MSI
+Invoke-WebRequest https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-x64-v8.9.1.0.msi -OutFile C:\OpenSSH-x64-v8.9.1.0.msi
+```
+```ps1
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ';' + ${Env:ProgramFiles} + '\OpenSSH', [System.EnvironmentVariableTarget]::Machine)
+Get-Service -Name ssh*
+```
