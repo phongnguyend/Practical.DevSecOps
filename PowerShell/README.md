@@ -90,3 +90,15 @@ Invoke-WebRequest https://github.com/PowerShell/Win32-OpenSSH/releases/download/
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ';' + ${Env:ProgramFiles} + '\OpenSSH', [System.EnvironmentVariableTarget]::Machine)
 Get-Service -Name ssh*
 ```
+
+### Find Which Process Listening on Specific Port:
+```ps1
+# TCP
+Get-Process -Id (Get-NetTCPConnection -LocalPort Port).OwningProcess
+
+# UDP
+Get-Process -Id (Get-NetUDPEndpoint -LocalPort Port).OwningProcess
+
+# Using CMD
+netstat -a -n -o | find "Port"
+```
