@@ -30,6 +30,7 @@
 ##
 ## [Microsoft Certified: Azure Network Engineer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-network-engineer-associate)
 - [Whizlabs | Microsoft Azure Exam AZ-700 Certification](https://www.whizlabs.com/microsoft-azure-exam-az-700/)
+- [Udemy | AZ-700](https://www.udemy.com/courses/search/?src=ukw&q=AZ-700)
 - [Pluralsight | AZ-700](https://www.pluralsight.com/search?q=AZ-700&categories=all)
 ##
 ## [Microsoft Certified: Azure Database Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-database-administrator-associate)
@@ -41,10 +42,13 @@
 ##
 ## [Microsoft Certified: Azure Solutions Architect Expert](https://docs.microsoft.com/en-us/learn/certifications/azure-solutions-architect)
 - [ExamTopics | Microsoft AZ-305 Exam](https://www.examtopics.com/exams/microsoft/az-305/)
+- [Whizlabs | Microsoft Azure Exam AZ-305 Certification](https://www.whizlabs.com/designing-microsoft-azure-infrastructure-solutions-az-305/)
 - [Udemy | AZ-305 Designing Microsoft Azure Infrastructure Solutions](https://www.udemy.com/course/az301-azure/)
 - [Pluralsight | AZ-305](https://www.pluralsight.com/search?q=AZ-305&categories=all)
 ##
 ## [Microsoft Certified: DevOps Engineer Expert](https://docs.microsoft.com/en-us/learn/certifications/devops-engineer)
 - [ExamTopics | Microsoft AZ-400 Exam](https://www.examtopics.com/exams/microsoft/az-400/)
+- [Whizlabs | Microsoft Azure Exam AZ-400 Certification](https://www.whizlabs.com/microsoft-azure-certification-az-400/)
+- [Udemy | AZ-400](https://www.udemy.com/courses/search/?src=ukw&q=AZ-400)
 - [Pluralsight | AZ-400](https://www.pluralsight.com/search?q=AZ-400&categories=all)
 
