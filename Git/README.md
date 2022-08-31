@@ -210,3 +210,7 @@ git merge upstream/main
 ### Azure DevOps:
 - Reference Work Item in comment/ commit message: #Id
 - Reference Pull Request in comment/ commit message: !Id
+
+### Git Internals:
+- [Git's database internals I: packed object store | The GitHub Blog](https://github.blog/2022-08-29-gits-database-internals-i-packed-object-store/)
+- [Git's database internals II: commit history queries | The GitHub Blog](https://github.blog/2022-08-30-gits-database-internals-ii-commit-history-queries/)
