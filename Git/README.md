@@ -214,3 +214,6 @@ git merge upstream/main
 ### Git Internals:
 - [Git's database internals I: packed object store | The GitHub Blog](https://github.blog/2022-08-29-gits-database-internals-i-packed-object-store/)
 - [Git's database internals II: commit history queries | The GitHub Blog](https://github.blog/2022-08-30-gits-database-internals-ii-commit-history-queries/)
+- [Git's database internals III: file history queries | The GitHub Blog](https://github.blog/2022-08-31-gits-database-internals-iii-file-history-queries/)
+- [Git's database internals IV: distributed synchronization | The GitHub Blog](https://github.blog/2022-09-01-gits-database-internals-iv-distributed-synchronization/)
+- [Git's database internals V: scalability | The GitHub Blog](https://github.blog/2022-09-02-gits-database-internals-v-scalability/)
