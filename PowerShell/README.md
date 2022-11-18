@@ -102,3 +102,26 @@ Get-Process -Id (Get-NetUDPEndpoint -LocalPort Port).OwningProcess
 # Using CMD
 netstat -a -n -o | find "Port"
 ```
+
+### Setup File Watcher
+```ps1
+$watcher = New-Object System.IO.FileSystemWatcher
+$watcher.IncludeSubdirectories = $true
+$watcher.Path = 'D:\FolderWhereStuffChanges'
+$watcher.EnableRaisingEvents = $true
+$action =
+{
+    $path = $event.SourceEventArgs.FullPath
+    $changetype = $event.SourceEventArgs.ChangeType
+    Write-Host "$path was $changetype at $(get-date)"
+	Out-File -FilePath D:\outlog.txt -Append -InputObject "$path was $changetype at $(get-date)"
+}
+Register-ObjectEvent $watcher 'Created' -Action $action
+Register-ObjectEvent $watcher 'Deleted' -Action $action
+
+```
+- Unregister Events
+```ps1
+Get-EventSubscriber
+Get-EventSubscriber | Unregister-Event
+```
