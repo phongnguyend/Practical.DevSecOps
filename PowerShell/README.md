@@ -125,3 +125,9 @@ Register-ObjectEvent $watcher 'Deleted' -Action $action
 Get-EventSubscriber
 Get-EventSubscriber | Unregister-Event
 ```
+
+### Test a Connection To a Remote Host
+```ps1
+Test-NetConnection 16.12.10.46 -Port 443 -InformationLevel Detailed
+telnet 16.12.10.46 443
+```
