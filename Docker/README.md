@@ -8,6 +8,10 @@
 - [Docker for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
 - [Install and Configure Vistual Studio Code Extension](https://code.visualstudio.com/docs/remote/ssh-tutorial)
 
+### Monitoring Tools:
+- [https://github.com/nicolargo/glances](https://github.com/nicolargo/glances)
+- [https://www.portainer.io](https://www.portainer.io)
+
 ### Commands:
 ```
 docker -v
