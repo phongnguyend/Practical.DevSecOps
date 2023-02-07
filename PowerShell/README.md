@@ -73,6 +73,12 @@ Get-ChildItem -Path $path -Recurse -Force | Where-Object { $_.PSIsContainer -and
 
 ```
 
+### Delete Folders Recursively
+```ps1
+# delete dotnet bin and obj folders recursively
+Get-ChildItem .\ -include bin,obj -Recurse | foreach ($_) { remove-item $_.fullname -Force -Recurse }
+```
+
 ### Install/Enable Telnet Client on Windows:
 ```ps1
 Install-WindowsFeature -Name Telnet-Client
