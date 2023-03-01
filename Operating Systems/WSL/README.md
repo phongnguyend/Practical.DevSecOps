@@ -19,3 +19,5 @@
    ```ps1
    wsl --set-version Ubuntu-22.04 2
    ```
+- Configure wsl.conf and .wslconfig
+  + [Advanced settings configuration in WSL | Microsoft Learn](https://learn.microsoft.com/en-us/windows/wsl/wsl-config)
