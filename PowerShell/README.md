@@ -137,3 +137,9 @@ Get-EventSubscriber | Unregister-Event
 Test-NetConnection 16.12.10.46 -Port 443 -InformationLevel Detailed
 telnet 16.12.10.46 443
 ```
+
+### Invoke Http Request
+```ps1
+Invoke-WebRequest -Uri https://github.com -UseBasicParsing
+```
+###
