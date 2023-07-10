@@ -12,3 +12,6 @@ echo %PATH%
 ```ps1
 $env:PATH
 ```
+```ps1
+$env:Path -split ';'
+```
