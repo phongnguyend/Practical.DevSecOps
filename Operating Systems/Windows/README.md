@@ -2,3 +2,13 @@
 ```
 certutil.exe -generateSSTFromWU c:\roots.sst
 ```
+
+### Check PATH Variable
+- CMD
+```
+echo %PATH%
+```
+- Powershell
+```ps1
+$env:PATH
+```
