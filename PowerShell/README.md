@@ -143,3 +143,21 @@ telnet 16.12.10.46 443
 Invoke-WebRequest -Uri https://github.com -UseBasicParsing
 ```
 ###
+
+### Map Network Path
+```ps1
+# use New-SmbMapping
+$destination1 = "\\server\folder"
+$user = ".\username"
+$pwd = "password"
+New-SmbMapping -RemotePath $destination1 -Username $user -Password $pwd
+
+# use net use
+$destination1 = "\\server\folder"
+$user = "server\username"
+$pwd = "password"
+net use $destination1 /user:$user $pwd
+
+# remove mapped
+net use * /d /y
+```
