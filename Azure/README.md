@@ -51,4 +51,10 @@
 - [Whizlabs | Microsoft Azure Exam AZ-400 Certification](https://www.whizlabs.com/microsoft-azure-certification-az-400/)
 - [Udemy | AZ-400](https://www.udemy.com/courses/search/?src=ukw&q=AZ-400)
 - [Pluralsight | AZ-400](https://www.pluralsight.com/search?q=AZ-400&categories=all)
+##
+## [Microsoft Certified: Cybersecurity Architect Expert](https://learn.microsoft.com/en-us/certifications/cybersecurity-architect-expert/)
+- [ExamTopics | Microsoft SC-100 Exam](https://www.examtopics.com/exams/microsoft/sc-100/)
+- [Whizlabs | Microsoft Azure Exam SC-100 Certification](https://www.whizlabs.com/microsoft-azure-certification-sc-100/)
+- [Udemy | SC-100](https://www.udemy.com/courses/search/?q=SC-100)
+- [Pluralsight | SC-100](https://www.pluralsight.com/search?q=SC-100&categories=all)
 
