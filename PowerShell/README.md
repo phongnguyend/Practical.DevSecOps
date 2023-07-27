@@ -161,3 +161,10 @@ net use $destination1 /user:$user $pwd
 # remove mapped
 net use * /d /y
 ```
+
+### Replace Text in File
+```ps1
+$path = "C:\text.txt"
+(Get-Content $path) -Replace 'ABC', 'XYZ' | Set-Content $path
+(Get-Content $path) -Replace '123', '456' | Set-Content $path
+```
