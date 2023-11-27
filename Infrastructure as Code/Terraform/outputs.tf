@@ -1,4 +1,4 @@
-output "aws_instance_public_dns" {
-  value       = "http://${aws_instance.nginx1.public_dns}"
-  description = "Public DNS for EC2 instance"
+output "aws_alb_public_dns" {
+  value       = "http://${aws_lb.nginx.dns_name}"
+  description = "Public DNS for the ALB"
 }

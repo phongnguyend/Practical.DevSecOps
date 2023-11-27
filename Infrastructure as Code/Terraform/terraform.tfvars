@@ -1,2 +1,2 @@
 billing_code = "Terraform"
-project = "Terraform"
+project      = "Terraform"
