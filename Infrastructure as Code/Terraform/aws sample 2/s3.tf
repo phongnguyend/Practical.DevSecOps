@@ -45,15 +45,21 @@ resource "aws_s3_bucket_policy" "web_bucket" {
   ]
 }
     POLICY
+}
+
+resource "aws_s3_object" "website" {
+  bucket = aws_s3_bucket.web_bucket.bucket
+  key    = "/website/index.html"
+  source = "./website/index.html"
+
+  tags = local.common_tags
 
 }
 
-resource "aws_s3_object" "website_content" {
-  for_each = local.website_content
-
+resource "aws_s3_object" "graphic" {
   bucket = aws_s3_bucket.web_bucket.bucket
-  key    = each.value
-  source = "${path.root}/${each.value}"
+  key    = "/website/Globo_logo_Vert.png"
+  source = "./website/Globo_logo_Vert.png"
 
   tags = local.common_tags
 

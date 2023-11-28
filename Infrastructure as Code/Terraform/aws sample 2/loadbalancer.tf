@@ -2,11 +2,11 @@
 data "aws_elb_service_account" "root" {}
 
 resource "aws_lb" "nginx" {
-  name               = "${local.naming_prefix}-alb"
+  name               = "my-web-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = aws_subnet.public_subnets[*].id
+  subnets            = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id]
   depends_on         = [aws_s3_bucket_policy.web_bucket]
 
   enable_deletion_protection = false
@@ -21,7 +21,7 @@ resource "aws_lb" "nginx" {
 }
 
 resource "aws_lb_target_group" "nginx" {
-  name     = "${local.naming_prefix}-alb-tg"
+  name     = "nginx-alb-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.app.id
@@ -39,14 +39,17 @@ resource "aws_lb_listener" "nginx" {
     target_group_arn = aws_lb_target_group.nginx.arn
   }
 
-  tags = merge(local.common_tags, {
-    Name = "${local.naming_prefix}-nginx"
-  })
+  tags = local.common_tags
 }
 
-resource "aws_lb_target_group_attachment" "nginx" {
-  count            = var.instance_count
+resource "aws_lb_target_group_attachment" "nginx1" {
   target_group_arn = aws_lb_target_group.nginx.arn
-  target_id        = aws_instance.nginx[count.index].id
+  target_id        = aws_instance.nginx1.id
+  port             = 80
+}
+
+resource "aws_lb_target_group_attachment" "nginx2" {
+  target_group_arn = aws_lb_target_group.nginx.arn
+  target_id        = aws_instance.nginx2.id
   port             = 80
 }
