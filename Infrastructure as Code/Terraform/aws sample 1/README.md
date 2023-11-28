@@ -19,12 +19,12 @@ terraform init
 ```
 ```
 # Linux and MacOS
-export AWS_ACCESS_KEY_ID=ACCESS_KEY
-export AWS_SECRET_ACCESS_KEY=ACCESS_SECRET
+export TF_VAR_aws_access_key=ACCESS_KEY
+export TF_VAR_aws_secret_key=ACCESS_SECRET
 
 # Powershell
-$env:AWS_ACCESS_KEY_ID="ACCESS_KEY"
-$env:AWS_SECRET_ACCESS_KEY="ACCESS_SECRET"
+$env:TF_VAR_aws_access_key="ACCESS_KEY"
+$env:TF_VAR_aws_secret_key="ACCESS_SECRET"
 ```
 ```
 terraform plan
