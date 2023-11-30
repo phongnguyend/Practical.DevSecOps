@@ -1,6 +1,7 @@
+
 variable "aws_region" {
   type        = string
-  description = "AWS region to use for resources."
+  description = "AWS Region"
   default     = "ap-southeast-1"
 }
 
@@ -36,7 +37,7 @@ variable "map_public_ip_on_launch" {
 
 variable "instance_type" {
   type        = string
-  description = "Type for EC2 Instance"
+  description = "Type for EC2 Instnace"
   default     = "t3.micro"
 }
 
