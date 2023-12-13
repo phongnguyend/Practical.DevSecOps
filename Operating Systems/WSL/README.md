@@ -32,5 +32,5 @@
 - Login into an install
   ```ps1
   wsl --distribution Ubuntu
-  wsl --distribution Ubuntu -user phongnguyend
+  wsl --distribution Ubuntu --user phongnguyend
   ```
