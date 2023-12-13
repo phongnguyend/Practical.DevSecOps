@@ -6,7 +6,7 @@
   ```ps1
   wsl --install -d <Distribution Name>
   ```
-- List installed Instances
+- List installed instances
   ```ps1
   wsl -l -v
   ```
@@ -29,7 +29,7 @@
 - Configure wsl.conf and .wslconfig
   + [Advanced settings configuration in WSL | Microsoft Learn](https://learn.microsoft.com/en-us/windows/wsl/wsl-config)
 
-- Login into an install
+- Login into an instance
   ```ps1
   wsl --distribution Ubuntu
   wsl --distribution Ubuntu --user phongnguyend
