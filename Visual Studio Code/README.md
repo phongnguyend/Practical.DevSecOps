@@ -5,3 +5,9 @@
 - Toggle Comment/Uncomment Code: ```Ctrl + /```
 - Format Selection: ```Ctrl + K, Ctrl + F```
 - Format Document: ```Shift + Alt + F```
+
+### Must Have Extensions:
+- [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- [Blockman - Highlight Nested Code Blocks](https://marketplace.visualstudio.com/items?itemName=leodevbro.blockman)
+- [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
+- [vscode-icons](https://marketplace.visualstudio.com/items?itemName=robertohuertasm.vscode-icons)
