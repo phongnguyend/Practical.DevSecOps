@@ -7,6 +7,7 @@
 - Format Document: ```Shift + Alt + F```
 - Multiple cursors:
   + ```Alt + Click```
+  + ```Alt + Shift + Click```
   +  Highlight selected text ->```Ctrl + D``` multiple times
   +  Highlight selected text -> ```Ctrl + F``` -> ```Alt + Enter```
 
