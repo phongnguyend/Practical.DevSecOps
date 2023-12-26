@@ -22,6 +22,7 @@
 - [CSS Peek](https://marketplace.visualstudio.com/items?itemName=pranaygp.vscode-css-peek)
 - [Better Comments](https://marketplace.visualstudio.com/items?itemName=aaron-bond.better-comments)
 - [Auto Rename Tag](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-rename-tag)
+- [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
 
 ### Docs:
 - [Multicursor Modifier](https://code.visualstudio.com/docs/editor/codebasics#_multicursor-modifier)
