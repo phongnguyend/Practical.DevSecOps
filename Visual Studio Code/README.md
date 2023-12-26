@@ -5,6 +5,10 @@
 - Toggle Comment/Uncomment Code: ```Ctrl + /```
 - Format Selection: ```Ctrl + K, Ctrl + F```
 - Format Document: ```Shift + Alt + F```
+- Multiple cursors:
+  + ```Alt + Click```
+  +  Highlight selected text ->```Ctrl + D``` multiple times
+  +  Highlight selected text -> ```Ctrl + F``` -> ```Alt + Enter```
 
 ### Must Have Extensions:
 - [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
