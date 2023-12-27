@@ -10,6 +10,13 @@
   + ```Alt + Shift + Click```
   +  Highlight selected text ->```Ctrl + D``` multiple times
   +  Highlight selected text -> ```Ctrl + F``` -> ```Alt + Enter```
+- List out installed extensions:
+  ```ps1
+  code --list-extensions
+  ```
+  ```ps1
+  code --list-extensions | % { "code --install-extension $_" }
+  ```
 
 ### Must Have Extensions:
 - [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
