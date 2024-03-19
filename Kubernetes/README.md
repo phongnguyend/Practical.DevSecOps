@@ -28,4 +28,5 @@
 - [Lens - The Kubernetes IDE](https://github.com/lensapp/lens)
 
 ## Connect from WSL2 to Docker Desktop Kubernetes via kubectl
+- [Install and Set Up kubectl on Linux](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 - Copy ```config``` file from ```C:\Users\<User>\.kube``` to ```root/.kube``` or ```/home/<user>/.kube```
