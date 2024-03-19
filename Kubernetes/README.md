@@ -13,9 +13,8 @@
 ## Deployments
 
 ## Installation:
-[Install kubectl on Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows)
-
-[Installing minikube on Windows](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+- [Install and Set Up kubectl on Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/)
+- [Install and Set Up kubectl on Linux](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 
 ## Package Managers
 - Helm
