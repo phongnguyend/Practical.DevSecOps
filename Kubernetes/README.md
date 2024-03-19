@@ -27,3 +27,6 @@
 - [Visual Studio Code Kubernetes Extension](https://marketplace.visualstudio.com/items?itemName=ms-kubernetes-tools.vscode-kubernetes-tools)
 - [kompose | Go from Docker Compose to Kubernetes](https://github.com/kubernetes/kompose)
 - [Lens - The Kubernetes IDE](https://github.com/lensapp/lens)
+
+## Connect from WSL2 to Docker Desktop Kubernetes via kubectl
+- Copy ```config``` file from ```C:\Users\<User>\.kube``` to ```root/.kube``` or ```/home/<user>/.kube```
