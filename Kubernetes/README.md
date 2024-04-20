@@ -30,3 +30,10 @@
 ## Connect from WSL2 to Docker Desktop Kubernetes via kubectl
 - [Install and Set Up kubectl on Linux](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 - Copy ```config``` file from ```C:\Users\<User>\.kube``` to ```root/.kube``` or ```/home/<user>/.kube```
+
+## Install NGINX Ingress Controller
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
+kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx --watch
+kubectl get services ingress-nginx-controller --namespace=ingress-nginx
+```
