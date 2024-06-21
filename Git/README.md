@@ -204,6 +204,19 @@ git merge upstream/main
 - [git - Reordering of commits - Stack Overflow](https://stackoverflow.com/questions/2740537/reordering-of-commits)
 - [How to reorder last two commits in git? - Stack Overflow](https://stackoverflow.com/questions/33388210/how-to-reorder-last-two-commits-in-git)
 
+### Update Author Last Commit
+- [git - How can I change the commit author for a single commit? - Stack Overflow](https://stackoverflow.com/questions/3042437/how-can-i-change-the-commit-author-for-a-single-commit)
+```
+git commit --amend --author="Author Name <email@address.com>" --no-edit
+git push --force-with-lease
+```
+```
+git config --local user.name "Alex Smith"
+git config --local user.email alex@email.com
+git commit --amend --reset-author --no-edit
+git push --force-with-lease
+```
+
 ### GitHub:
 - Reference Issue/Pull Request in comment/ commit message: #Id
 
