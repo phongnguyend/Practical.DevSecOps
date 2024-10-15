@@ -8,10 +8,16 @@ certutil.exe -generateSSTFromWU c:\roots.sst
 ```
 echo %PATH%
 ```
-- Powershell
+- PowerShell
 ```ps1
 $env:PATH
 ```
 ```ps1
 $env:Path -split ';'
+```
+
+### Check Last Restarted Time
+Open CMD or PowerShell
+```ps1
+systeminfo
 ```
