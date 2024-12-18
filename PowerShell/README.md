@@ -147,6 +147,10 @@ telnet 16.12.10.46 443
 ```ps1
 Invoke-WebRequest -Uri https://github.com -UseBasicParsing
 ```
+```ps1
+Invoke-WebRequest -Uri https://github.com -Headers @{"key1"="value1";"key2"="value2"}
+```
+
 ###
 
 ### Map Network Path
