@@ -69,12 +69,14 @@ Get-Cluster
 
 $limit = (Get-Date).AddDays(-180)
 $path = "E:\Temp\"
+# $path = $env:TEMP
 
 # delete files
 Get-ChildItem -Path $path -Recurse -File | Where CreationTime -lt $limit | Remove-Item -Force -Verbose
 
 # delete empty folders
-Get-ChildItem -Path $path -Recurse -Force | Where-Object { $_.PSIsContainer -and (Get-ChildItem -Path $_.FullName -Recurse -Force | Where-Object { !$_.PSIsContainer }) -eq $null } | Remove-Item -Force -Recurse -Verbose
+Get-ChildItem -Path $path -Recurse -Force | Where CreationTime -lt $limit | Where-Object { $_.PSIsContainer -and (Get-ChildItem -Path $_.FullName -Recurse -Force | Where-Object { !$_.PSIsContainer }) -eq $null } | Remove-Item -Force -Recurse -Verbose
+
 
 ```
 
