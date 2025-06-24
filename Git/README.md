@@ -204,6 +204,12 @@ git merge upstream/main
 - [git - Reordering of commits - Stack Overflow](https://stackoverflow.com/questions/2740537/reordering-of-commits)
 - [How to reorder last two commits in git? - Stack Overflow](https://stackoverflow.com/questions/33388210/how-to-reorder-last-two-commits-in-git)
 
+### Update Message Last Commit
+```
+git commit --amend -m "new message"
+git push --force-with-lease
+```
+
 ### Update Author Last Commit
 - [git - How can I change the commit author for a single commit? - Stack Overflow](https://stackoverflow.com/questions/3042437/how-can-i-change-the-commit-author-for-a-single-commit)
 ```
