@@ -1,0 +1,59 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  - group: bicep-deploy-vars
+
+stages:
+- stage: Deploy
+  jobs:
+  - job: DeployAndConfigure
+    displayName: Deploy Bicep & Set Connection Strings
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'Visual Studio Enterprise – MPN (00000000-0000-0000-0000-000000000000)'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Deploying Bicep template..."
+
+          az deployment group create \
+            --resource-group $(resourceGroupName) \
+            --template-file infra/main.bicep \
+            --parameters \
+              adminUsername=$(adminUsername) \
+              adminPassword=$(adminPassword) \
+              location=$(location) \
+              sqlServerName=$(sqlServerName) \
+              resourceGroupName=$(resourceGroupName) \
+              appServicePlanName=$(appServicePlanName) \
+              webAppNames=$(webAppNames) \
+              dbNames=$(dbNames)
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'Visual Studio Enterprise – MPN (00000000-0000-0000-0000-000000000000)'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Setting connection strings for web apps..."
+
+          for env in DEV QC; do
+            dbName="PracticalPrivateEndpoints-$env"
+            webAppName="PracticalPrivateEndpoints-${env}-API"
+
+            connectionString=$(az sql db show-connection-string -s $(sqlServerName) -n $dbName -c ado.net --out tsv)
+            connectionString=${connectionString/<username>/$(adminUsername)}
+            connectionString=${connectionString/<password>/$(adminPassword)}
+            
+            echo "Updating connection string for $webAppName"
+            az webapp config appsettings set \
+              --resource-group $(resourceGroupName) \
+              --name $webAppName \
+              --settings "ConnectionStrings__DefaultConnection=$connectionString"
+          done
