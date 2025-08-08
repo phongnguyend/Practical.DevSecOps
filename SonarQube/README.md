@@ -3,21 +3,13 @@
 - [Install the Server](https://docs.sonarqube.org/latest/setup/install-server/)
 - [SonarScanner for MSBuild](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-msbuild/)
 
-## Install JDK
-![alt text](imgs/download-jdk.png)
-##
-![alt text](imgs/install-jdk.png)
-##
-![alt text](imgs/install-jdk2.png)
-##
-![alt text](imgs/install-jdk3.png)
-##
+## Install OpenJDK [(Link)](https://adoptium.net/en-GB/temurin/releases/?version=21)
+![alt text](imgs/download-openjdk.png)
 
-## Install SonarQube
+## Install SonarQube [(Link)](https://www.sonarsource.com/products/sonarqube/downloads/)
 ![alt text](imgs/download-sonarqube.png)
-## SonarQube 7.x
-![alt text](imgs/install-sonarqube.png)
 ## SonarQube 2025
+![alt text](imgs/install-sonarqube.png)
 ```
 cd sonarqube-25.8.0.112029\bin\windows-x86-64
 SonarService.bat install
