@@ -1,0 +1,222 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "southeastasia"
+    },
+    "enablePrivateEndpoints": {
+      "value": true
+    },
+    "enableVNetIntegration": {
+      "value": true
+    },
+    "enableApplicationGateway": {
+      "value": true
+    },
+    "enableApiManagement": {
+      "value": true
+    },
+    "enableTestVM": {
+      "value": true
+    },
+    "enableSqlServer": {
+      "value": true
+    },
+    "enableKeyVault": {
+      "value": true
+    },
+    "enableAppConfiguration": {
+      "value": true
+    },
+    "enableBlobStorage": {
+      "value": true
+    },
+    "enableCosmosDb": {
+      "value": true
+    },
+    "enableFunctionApps": {
+      "value": true
+    },
+    "enableServiceBus": {
+      "value": true
+    },
+    "enableApplicationInsights": {
+      "value": true
+    },
+    "sqlServerName": {
+      "value": "practicalpe-test-sql"
+    },
+    "adminUsername": {
+      "value": "sqladmin"
+    },
+    "appServicePlanName": {
+      "value": "practicalpe-test-asp"
+    },
+    "vnetName": {
+      "value": "practicalpe-test-vnet"
+    },
+    "keyVaultName": {
+      "value": "practicalpe-test-kv"
+    },
+    "appConfigName": {
+      "value": "practicalpe-test-config"
+    },
+    "storageAccountName": {
+      "value": "practicalpetstblob"
+    },
+    "functionAppsStorageAccountName": {
+      "value": "practicalpetstfunc"
+    },
+    "apiManagementName": {
+      "value": "practicalpe-test-apim"
+    },
+    "publisherEmail": {
+      "value": "test@practical.devsecops"
+    },
+    "publisherName": {
+      "value": "Practical DevSecOps Test Team"
+    },
+    "customerPublicWebAppName": {
+      "value": "practicalpe-test-customer-public"
+    },
+    "customerSiteWebAppName": {
+      "value": "practicalpe-test-customer-site"
+    },
+    "adminPublicWebAppName": {
+      "value": "practicalpe-test-admin-public"
+    },
+    "adminSiteWebAppName": {
+      "value": "practicalpe-test-admin-site"
+    },
+    "videoApiWebAppName": {
+      "value": "practicalpe-test-video-api"
+    },
+    "musicApiWebAppName": {
+      "value": "practicalpe-test-music-api"
+    },
+    "customerDbName": {
+      "value": "PracticalPE-TEST-CUSTOMER-DB"
+    },
+    "adminDbName": {
+      "value": "PracticalPE-TEST-ADMIN-DB"
+    },
+    "videoDbName": {
+      "value": "PracticalPE-TEST-VIDEO-DB"
+    },
+    "musicDbName": {
+      "value": "PracticalPE-TEST-MUSIC-DB"
+    },
+    "vmAdminUsername": {
+      "value": "testadmin"
+    },
+    "apiManagementSku": {
+      "value": "Standard"
+    },
+    "apiManagementCapacity": {
+      "value": 1
+    },
+    "enableWAF": {
+      "value": true
+    },
+    "wafMode": {
+      "value": "Detection"
+    },
+    "wafRuleSetVersion": {
+      "value": "3.2"
+    },
+    "wafRequestBodyCheck": {
+      "value": true
+    },
+    "wafMaxRequestBodySizeInKb": {
+      "value": 128
+    },
+    "wafFileUploadLimitInMb": {
+      "value": 100
+    },
+    "storageAccountType": {
+      "value": "Standard_GRS"
+    },
+    "blobContainerNames": {
+      "value": [
+        "documents",
+        "images",
+        "backups",
+        "logs",
+        "test-data"
+      ]
+    },
+    "cosmosAccountName": {
+      "value": "practicalpe-test-cosmos"
+    },
+    "cosmosConsistencyLevel": {
+      "value": "Session"
+    },
+    "cosmosEnableAutomaticFailover": {
+      "value": true
+    },
+    "cosmosAdminDbName": {
+      "value": "PracticalPE-TEST-ADMIN-COSMOS-DB"
+    },
+    "cosmosCustomerDbName": {
+      "value": "PracticalPE-TEST-CUSTOMER-COSMOS-DB"
+    },
+    "cosmosMusicDbName": {
+      "value": "PracticalPE-TEST-MUSIC-COSMOS-DB"
+    },
+    "cosmosVideoDbName": {
+      "value": "PracticalPE-TEST-VIDEO-COSMOS-DB"
+    },
+    "adminFunctionAppName": {
+      "value": "practicalpe-test-admin-func"
+    },
+    "customerFunctionAppName": {
+      "value": "practicalpe-test-customer-func"
+    },
+    "musicFunctionAppName": {
+      "value": "practicalpe-test-music-func"
+    },
+    "videoFunctionAppName": {
+      "value": "practicalpe-test-video-func"
+    },
+    "applicationInsightsWorkspaceName": {
+      "value": "practicalpe-test-law"
+    },
+    "retentionInDays": {
+      "value": 60
+    },
+    "serviceBusNamespaceName": {
+      "value": "practicalpe-test-sb"
+    },
+    "serviceBusSku": {
+      "value": "Standard"
+    },
+    "serviceBusCapacity": {
+      "value": 1
+    },
+    "serviceBusTopicNames": {
+      "value": [
+        "customer-events",
+        "admin-events",
+        "video-events",
+        "music-events"
+      ]
+    },
+    "serviceBusQueueNames": {
+      "value": [
+        "customer-queue",
+        "admin-queue",
+        "video-queue",
+        "music-queue"
+      ]
+    },
+    "serviceBusSubscriptionNames": {
+      "value": [
+        "customer-subscription",
+        "admin-subscription",
+        "video-subscription",
+        "music-subscription"
+      ]
+    }
+  }
+}

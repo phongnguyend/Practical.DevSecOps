@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "southeastasia"
+    },
+    "enablePrivateEndpoints": {
+      "value": true
+    },
+    "enableVNetIntegration": {
+      "value": true
+    },
+    "enableKeyVault": {
+      "value": true
+    },
+    "enableCosmosDb": {
+      "value": true
+    },
+    "enableSqlServer": {
+      "value": true
+    },
+    "enableFunctionApp": {
+      "value": true
+    },
+    "productServiceName": {
+      "value": "product-prod"
+    },
+    "appServicePlanName": {
+      "value": "practicalpe-prod-product-asp"
+    },
+    "productApiWebAppName": {
+      "value": "practicalpe-prod-product-api"
+    },
+    "productFunctionAppName": {
+      "value": "practicalpe-prod-product-func"
+    },
+    "productKeyVaultName": {
+      "value": "practicalpe-prod-prod-kv"
+    },
+    "productFunctionStorageAccountName": {
+      "value": "practicalpeprodfunc2"
+    },
+    "sqlServerName": {
+      "value": "practicalpe-prod-product-sql"
+    },
+    "adminUsername": {
+      "value": "productadmin"
+    },
+    "productDbName": {
+      "value": "PracticalPE-PROD-PRODUCT-DB"
+    },
+    "cosmosAccountName": {
+      "value": "practicalpe-prod-product-cosmos"
+    },
+    "cosmosConsistencyLevel": {
+      "value": "Session"
+    },
+    "cosmosEnableAutomaticFailover": {
+      "value": true
+    },
+    "productCosmosDbName": {
+      "value": "PracticalPE-PROD-PRODUCT-COSMOS-DB"
+    },
+    "baseVnetName": {
+      "value": "practicalpe-prod-vnet"
+    },
+    "baseVnetResourceGroup": {
+      "value": "rg-practicalpe-prod"
+    },
+    "enableApiManagement": {
+      "value": true
+    },
+    "apiManagementName": {
+      "value": "practicalpe-prod-apim"
+    }
+  }
+}
