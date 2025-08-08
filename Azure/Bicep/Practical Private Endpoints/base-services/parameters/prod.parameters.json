@@ -1,0 +1,229 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "southeastasia"
+    },
+    "enablePrivateEndpoints": {
+      "value": true
+    },
+    "enableVNetIntegration": {
+      "value": true
+    },
+    "enableApplicationGateway": {
+      "value": true
+    },
+    "enableApiManagement": {
+      "value": true
+    },
+    "enableTestVM": {
+      "value": false
+    },
+    "enableSqlServer": {
+      "value": true
+    },
+    "enableKeyVault": {
+      "value": true
+    },
+    "enableAppConfiguration": {
+      "value": true
+    },
+    "enableBlobStorage": {
+      "value": true
+    },
+    "enableCosmosDb": {
+      "value": true
+    },
+    "enableFunctionApps": {
+      "value": true
+    },
+    "enableServiceBus": {
+      "value": true
+    },
+    "enableApplicationInsights": {
+      "value": true
+    },
+    "sqlServerName": {
+      "value": "practicalpe-prod-sql"
+    },
+    "adminUsername": {
+      "value": "sqladmin"
+    },
+    "appServicePlanName": {
+      "value": "practicalpe-prod-asp"
+    },
+    "vnetName": {
+      "value": "practicalpe-prod-vnet"
+    },
+    "keyVaultName": {
+      "value": "practicalpe-prod-kv"
+    },
+    "appConfigName": {
+      "value": "practicalpe-prod-config"
+    },
+    "storageAccountName": {
+      "value": "practicalpeprodblob"
+    },
+    "functionAppsStorageAccountName": {
+      "value": "practicalpeprodfunc"
+    },
+    "apiManagementName": {
+      "value": "practicalpe-prod-apim"
+    },
+    "publisherEmail": {
+      "value": "production@practical.devsecops"
+    },
+    "publisherName": {
+      "value": "Practical DevSecOps Production Team"
+    },
+    "customerPublicWebAppName": {
+      "value": "practicalpe-prod-customer-public"
+    },
+    "customerSiteWebAppName": {
+      "value": "practicalpe-prod-customer-site"
+    },
+    "adminPublicWebAppName": {
+      "value": "practicalpe-prod-admin-public"
+    },
+    "adminSiteWebAppName": {
+      "value": "practicalpe-prod-admin-site"
+    },
+    "videoApiWebAppName": {
+      "value": "practicalpe-prod-video-api"
+    },
+    "musicApiWebAppName": {
+      "value": "practicalpe-prod-music-api"
+    },
+    "customerDbName": {
+      "value": "PracticalPE-PROD-CUSTOMER-DB"
+    },
+    "adminDbName": {
+      "value": "PracticalPE-PROD-ADMIN-DB"
+    },
+    "videoDbName": {
+      "value": "PracticalPE-PROD-VIDEO-DB"
+    },
+    "musicDbName": {
+      "value": "PracticalPE-PROD-MUSIC-DB"
+    },
+    "vmAdminUsername": {
+      "value": "prodadmin"
+    },
+    "apiManagementSku": {
+      "value": "Premium"
+    },
+    "apiManagementCapacity": {
+      "value": 3
+    },
+    "enableWAF": {
+      "value": true
+    },
+    "wafMode": {
+      "value": "Prevention"
+    },
+    "wafRuleSetVersion": {
+      "value": "3.2"
+    },
+    "wafRequestBodyCheck": {
+      "value": true
+    },
+    "wafMaxRequestBodySizeInKb": {
+      "value": 512
+    },
+    "wafFileUploadLimitInMb": {
+      "value": 500
+    },
+    "storageAccountType": {
+      "value": "Premium_ZRS"
+    },
+    "blobContainerNames": {
+      "value": [
+        "documents",
+        "images",
+        "backups",
+        "logs",
+        "audit-logs",
+        "compliance-reports"
+      ]
+    },
+    "cosmosAccountName": {
+      "value": "practicalpe-prod-cosmos"
+    },
+    "cosmosConsistencyLevel": {
+      "value": "BoundedStaleness"
+    },
+    "cosmosEnableAutomaticFailover": {
+      "value": true
+    },
+    "cosmosAdminDbName": {
+      "value": "PracticalPE-PROD-ADMIN-COSMOS-DB"
+    },
+    "cosmosCustomerDbName": {
+      "value": "PracticalPE-PROD-CUSTOMER-COSMOS-DB"
+    },
+    "cosmosMusicDbName": {
+      "value": "PracticalPE-PROD-MUSIC-COSMOS-DB"
+    },
+    "cosmosVideoDbName": {
+      "value": "PracticalPE-PROD-VIDEO-COSMOS-DB"
+    },
+    "adminFunctionAppName": {
+      "value": "practicalpe-prod-admin-func"
+    },
+    "customerFunctionAppName": {
+      "value": "practicalpe-prod-customer-func"
+    },
+    "musicFunctionAppName": {
+      "value": "practicalpe-prod-music-func"
+    },
+    "videoFunctionAppName": {
+      "value": "practicalpe-prod-video-func"
+    },
+    "applicationInsightsWorkspaceName": {
+      "value": "practicalpe-prod-law"
+    },
+    "retentionInDays": {
+      "value": 365
+    },
+    "serviceBusNamespaceName": {
+      "value": "practicalpe-prod-sb"
+    },
+    "serviceBusSku": {
+      "value": "Premium"
+    },
+    "serviceBusCapacity": {
+      "value": 4
+    },
+    "serviceBusTopicNames": {
+      "value": [
+        "customer-events",
+        "admin-events",
+        "video-events",
+        "music-events",
+        "audit-events",
+        "compliance-events"
+      ]
+    },
+    "serviceBusQueueNames": {
+      "value": [
+        "customer-queue",
+        "admin-queue",
+        "video-queue",
+        "music-queue",
+        "audit-queue",
+        "compliance-queue"
+      ]
+    },
+    "serviceBusSubscriptionNames": {
+      "value": [
+        "customer-subscription",
+        "admin-subscription",
+        "video-subscription",
+        "music-subscription",
+        "audit-subscription",
+        "compliance-subscription"
+      ]
+    }
+  }
+}

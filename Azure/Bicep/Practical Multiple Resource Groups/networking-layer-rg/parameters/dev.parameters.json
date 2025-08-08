@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "southeastasia"
+    },
+    "enablePrivateEndpoints": {
+      "value": false
+    },
+    "enableApplicationGateway": {
+      "value": true
+    },
+    "enableApiManagement": {
+      "value": false
+    },
+    "enableAppConfiguration": {
+      "value": true
+    },
+    "enableBlobStorage": {
+      "value": true
+    },
+    "enableCosmosDb": {
+      "value": true
+    },
+    "enableServiceBus": {
+      "value": false
+    },
+    "vnetName": {
+      "value": "practicalmrg-dev-vnet"
+    },
+    "apiManagementName": {
+      "value": "practicalmrg-dev-apim"
+    },
+    "publisherEmail": {
+      "value": "dev@practical.devsecops"
+    },
+    "publisherName": {
+      "value": "Practical DevSecOps Dev Team"
+    },
+    "customerPublicWebAppName": {
+      "value": "practicalmrg-dev-customer-public"
+    },
+    "customerSiteWebAppName": {
+      "value": "practicalmrg-dev-customer-site"
+    },
+    "adminPublicWebAppName": {
+      "value": "practicalmrg-dev-admin-public"
+    },
+    "adminSiteWebAppName": {
+      "value": "practicalmrg-dev-admin-site"
+    },
+    "videoApiWebAppName": {
+      "value": "practicalmrg-dev-video-api"
+    },
+    "musicApiWebAppName": {
+      "value": "practicalmrg-dev-music-api"
+    },
+    "apiManagementSku": {
+      "value": "Developer"
+    },
+    "apiManagementCapacity": {
+      "value": 1
+    },
+    "enableWAF": {
+      "value": false
+    },
+    "wafMode": {
+      "value": "Detection"
+    },
+    "wafRuleSetVersion": {
+      "value": "3.2"
+    },
+    "wafRequestBodyCheck": {
+      "value": true
+    },
+    "wafMaxRequestBodySizeInKb": {
+      "value": 128
+    },
+    "wafFileUploadLimitInMb": {
+      "value": 100
+    }
+  }
+}

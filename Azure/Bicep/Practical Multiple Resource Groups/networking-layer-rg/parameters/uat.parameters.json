@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "southeastasia"
+    },
+    "enablePrivateEndpoints": {
+      "value": false
+    },
+    "enableApplicationGateway": {
+      "value": true
+    },
+    "enableApiManagement": {
+      "value": true
+    },
+    "enableAppConfiguration": {
+      "value": true
+    },
+    "enableBlobStorage": {
+      "value": true
+    },
+    "enableCosmosDb": {
+      "value": true
+    },
+    "enableServiceBus": {
+      "value": true
+    },
+    "vnetName": {
+      "value": "practicalmrg-uat-vnet"
+    },
+    "apiManagementName": {
+      "value": "practicalmrg-uat-apim"
+    },
+    "publisherEmail": {
+      "value": "uat@practical.devsecops"
+    },
+    "publisherName": {
+      "value": "Practical DevSecOps UAT Team"
+    },
+    "customerPublicWebAppName": {
+      "value": "practicalmrg-uat-customer-public"
+    },
+    "customerSiteWebAppName": {
+      "value": "practicalmrg-uat-customer-site"
+    },
+    "adminPublicWebAppName": {
+      "value": "practicalmrg-uat-admin-public"
+    },
+    "adminSiteWebAppName": {
+      "value": "practicalmrg-uat-admin-site"
+    },
+    "videoApiWebAppName": {
+      "value": "practicalmrg-uat-video-api"
+    },
+    "musicApiWebAppName": {
+      "value": "practicalmrg-uat-music-api"
+    },
+    "apiManagementSku": {
+      "value": "Standard"
+    },
+    "apiManagementCapacity": {
+      "value": 1
+    },
+    "enableWAF": {
+      "value": true
+    },
+    "wafMode": {
+      "value": "Detection"
+    },
+    "wafRuleSetVersion": {
+      "value": "3.2"
+    },
+    "wafRequestBodyCheck": {
+      "value": true
+    },
+    "wafMaxRequestBodySizeInKb": {
+      "value": 128
+    },
+    "wafFileUploadLimitInMb": {
+      "value": 100
+    }
+  }
+}
