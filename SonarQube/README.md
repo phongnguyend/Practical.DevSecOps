@@ -32,7 +32,7 @@ SonarService.bat install
 ![alt text](imgs/configure-mssqlserver2.png)
 ##
 
-## Configre Sonar Scanner MSBuild
+## Configure Sonar Scanner MSBuild
 ![alt text](imgs/download-sonar-scanner-msbuild.png)
 ##
 ![alt text](imgs/download-sonar-scanner-msbuild1.png)
@@ -40,8 +40,18 @@ SonarService.bat install
 ![alt text](imgs/configure-sonar-scanner-msbuild.png)
 ##
 
-```ps
+```ps1
 "C:\sonar-scanner-msbuild-4.7.1.2311-net46\SonarScanner.MSBuild.exe" begin /k:"Project-Key" /v:"%build.number%"
 "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" "%teamcity.build.checkoutDir%\SolutionName.sln" /t:Rebuild /v:m
 "C:\sonar-scanner-msbuild-4.7.1.2311-net46\SonarScanner.MSBuild.exe" end
+```
+## Configure Sonar Scanner DotNet
+- Install .NET SDK [(Link)](https://dotnet.microsoft.com/en-us/download)
+```ps1
+dotnet tool install --global dotnet-sonarscanner
+```
+```ps1
+dotnet sonarscanner begin /k:"MyApp" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="YOUR_TOKEN"
+dotnet build
+dotnet sonarscanner end /d:sonar.login="YOUR_TOKEN"
 ```
