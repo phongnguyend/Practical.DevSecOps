@@ -15,8 +15,13 @@
 
 ## Install SonarQube
 ![alt text](imgs/download-sonarqube.png)
-##
+## SonarQube 7.x
 ![alt text](imgs/install-sonarqube.png)
+## SonarQube 2025
+```
+cd sonarqube-25.8.0.112029\bin\windows-x86-64
+SonarService.bat install
+```
 ##
 ![alt text](imgs/install-sonarqube2.png)
 ##
