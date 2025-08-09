@@ -150,6 +150,9 @@ module customerSiteWebAppModule 'modules/appService.bicep' = {
     webAppName: customerSiteWebAppName
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
     publicNetworkAccess: 'Disabled'
+    createPrivateEndpoint: true
+    privateEndpointSubnetId: vnetModule.outputs.privateEndpointSubnetId
+    privateDnsZoneId: privateDnsZone.id
   }
 }
 
@@ -172,6 +175,9 @@ module adminSiteWebAppModule 'modules/appService.bicep' = {
     webAppName: adminSiteWebAppName
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
     publicNetworkAccess: 'Disabled'
+    createPrivateEndpoint: true
+    privateEndpointSubnetId: vnetModule.outputs.privateEndpointSubnetId
+    privateDnsZoneId: privateDnsZone.id
   }
 }
 
@@ -183,6 +189,9 @@ module videoApiWebAppModule 'modules/appService.bicep' = {
     webAppName: videoApiWebAppName
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
     publicNetworkAccess: 'Disabled'
+    createPrivateEndpoint: true
+    privateEndpointSubnetId: vnetModule.outputs.privateEndpointSubnetId
+    privateDnsZoneId: privateDnsZone.id
   }
 }
 
@@ -194,52 +203,7 @@ module musicApiWebAppModule 'modules/appService.bicep' = {
     webAppName: musicApiWebAppName
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
     publicNetworkAccess: 'Disabled'
-  }
-}
-
-// Private Endpoint for Customer Site Web App
-module customerSitePrivateEndpointModule 'modules/privateEndpoint.bicep' = {
-  name: 'customerSitePrivateEndpointDeployment'
-  params: {
-    location: location
-    privateEndpointName: 'PracticalPrivateEndpoints-CUSTOMER-SITE-pe'
-    webAppId: customerSiteWebAppModule.outputs.webAppId
-    privateEndpointSubnetId: vnetModule.outputs.privateEndpointSubnetId
-    privateDnsZoneId: privateDnsZone.id
-  }
-}
-
-// Private Endpoint for Admin Site Web App
-module adminSitePrivateEndpointModule 'modules/privateEndpoint.bicep' = {
-  name: 'adminSitePrivateEndpointDeployment'
-  params: {
-    location: location
-    privateEndpointName: 'PracticalPrivateEndpoints-ADMIN-SITE-pe'
-    webAppId: adminSiteWebAppModule.outputs.webAppId
-    privateEndpointSubnetId: vnetModule.outputs.privateEndpointSubnetId
-    privateDnsZoneId: privateDnsZone.id
-  }
-}
-
-// Private Endpoint for Video API Web App
-module videoApiPrivateEndpointModule 'modules/privateEndpoint.bicep' = {
-  name: 'videoApiPrivateEndpointDeployment'
-  params: {
-    location: location
-    privateEndpointName: 'PracticalPrivateEndpoints-VIDEO-API-pe'
-    webAppId: videoApiWebAppModule.outputs.webAppId
-    privateEndpointSubnetId: vnetModule.outputs.privateEndpointSubnetId
-    privateDnsZoneId: privateDnsZone.id
-  }
-}
-
-// Private Endpoint for Music API Web App
-module musicApiPrivateEndpointModule 'modules/privateEndpoint.bicep' = {
-  name: 'musicApiPrivateEndpointDeployment'
-  params: {
-    location: location
-    privateEndpointName: 'PracticalPrivateEndpoints-MUSIC-API-pe'
-    webAppId: musicApiWebAppModule.outputs.webAppId
+    createPrivateEndpoint: true
     privateEndpointSubnetId: vnetModule.outputs.privateEndpointSubnetId
     privateDnsZoneId: privateDnsZone.id
   }
@@ -397,8 +361,8 @@ output webAppsInfo array = [
     name: customerSiteWebAppModule.outputs.webAppName
     id: customerSiteWebAppModule.outputs.webAppId
     defaultHostName: customerSiteWebAppModule.outputs.defaultHostName
-    hasPrivateEndpoint: true
-    privateEndpointId: customerSitePrivateEndpointModule.outputs.privateEndpointId
+    hasPrivateEndpoint: customerSiteWebAppModule.outputs.hasPrivateEndpoint
+    privateEndpointId: customerSiteWebAppModule.outputs.privateEndpointId
     privateDnsName: '${customerSiteWebAppModule.outputs.webAppName}.privatelink.azurewebsites.net'
     publicUrl: 'https://${customerSiteWebAppModule.outputs.defaultHostName}'
     isPublicAccessEnabled: false
@@ -419,8 +383,8 @@ output webAppsInfo array = [
     name: adminSiteWebAppModule.outputs.webAppName
     id: adminSiteWebAppModule.outputs.webAppId
     defaultHostName: adminSiteWebAppModule.outputs.defaultHostName
-    hasPrivateEndpoint: true
-    privateEndpointId: adminSitePrivateEndpointModule.outputs.privateEndpointId
+    hasPrivateEndpoint: adminSiteWebAppModule.outputs.hasPrivateEndpoint
+    privateEndpointId: adminSiteWebAppModule.outputs.privateEndpointId
     privateDnsName: '${adminSiteWebAppModule.outputs.webAppName}.privatelink.azurewebsites.net'
     publicUrl: 'https://${adminSiteWebAppModule.outputs.defaultHostName}'
     isPublicAccessEnabled: false
@@ -430,8 +394,8 @@ output webAppsInfo array = [
     name: videoApiWebAppModule.outputs.webAppName
     id: videoApiWebAppModule.outputs.webAppId
     defaultHostName: videoApiWebAppModule.outputs.defaultHostName
-    hasPrivateEndpoint: true
-    privateEndpointId: videoApiPrivateEndpointModule.outputs.privateEndpointId
+    hasPrivateEndpoint: videoApiWebAppModule.outputs.hasPrivateEndpoint
+    privateEndpointId: videoApiWebAppModule.outputs.privateEndpointId
     privateDnsName: '${videoApiWebAppModule.outputs.webAppName}.privatelink.azurewebsites.net'
     publicUrl: 'https://${videoApiWebAppModule.outputs.defaultHostName}'
     isPublicAccessEnabled: false
@@ -441,8 +405,8 @@ output webAppsInfo array = [
     name: musicApiWebAppModule.outputs.webAppName
     id: musicApiWebAppModule.outputs.webAppId
     defaultHostName: musicApiWebAppModule.outputs.defaultHostName
-    hasPrivateEndpoint: true
-    privateEndpointId: musicApiPrivateEndpointModule.outputs.privateEndpointId
+    hasPrivateEndpoint: musicApiWebAppModule.outputs.hasPrivateEndpoint
+    privateEndpointId: musicApiWebAppModule.outputs.privateEndpointId
     privateDnsName: '${musicApiWebAppModule.outputs.webAppName}.privatelink.azurewebsites.net'
     publicUrl: 'https://${musicApiWebAppModule.outputs.defaultHostName}'
     isPublicAccessEnabled: false
