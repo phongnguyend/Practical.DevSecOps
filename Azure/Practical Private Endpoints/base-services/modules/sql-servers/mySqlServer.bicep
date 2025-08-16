@@ -4,6 +4,7 @@ param sqlServerName string
 param adminUsername string
 @secure()
 param adminPassword string
+param tags object = {}
 
 // VNet integration configuration
 param allowedSubnets array = []
@@ -17,6 +18,7 @@ resource sqlServer 'Microsoft.Sql/servers@2023-08-01' = {
     administratorLoginPassword: adminPassword
     version: '12.0'
   }
+  tags: tags
 }
 
 // Firewall rule to allow Azure services

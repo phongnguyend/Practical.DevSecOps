@@ -3,6 +3,7 @@ param location string
 param vnetName string
 param vnetAddressPrefix string = '10.0.0.0/16'
 param apiManagementNSGId string
+param tags object = {}
 
 // Virtual Network with Application Gateway and Private Endpoint subnets
 resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
@@ -89,6 +90,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
       }
     ]
   }
+  tags: tags
 }
 
 // Outputs

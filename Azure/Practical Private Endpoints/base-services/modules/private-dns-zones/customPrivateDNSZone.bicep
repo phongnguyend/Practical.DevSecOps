@@ -3,6 +3,7 @@ param vnetId string
 param vnetName string
 param customDomainName string = 'rookies.internal'
 param applicationGatewayPublicIP string = '0.0.0.0'
+param tags object = {}
 
 // Web app names for CNAME records
 param customerSiteWebAppName string
@@ -14,6 +15,7 @@ param musicApiWebAppName string
 resource customPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: customDomainName
   location: location
+  tags: tags
 }
 
 // Link Custom Private DNS Zone to VNet

@@ -2,12 +2,14 @@
 param vnetId string
 param zoneName string = 'privatelink.blob.${environment().suffixes.storage}'
 param vnetName string
+param tags object = {}
 
 // Private DNS Zone for Blob Storage
 resource blobPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: zoneName
   location: 'global'
   properties: {}
+  tags: tags
 }
 
 // Virtual Network Link

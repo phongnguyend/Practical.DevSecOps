@@ -1,12 +1,14 @@
 // App Configuration Private DNS Zone Module
 param vnetId string
 param zoneName string = 'privatelink.azconfig.io'
+param tags object = {}
 
 // Private DNS Zone for App Configuration
 resource appConfigPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: zoneName
   location: 'global'
   properties: {}
+  tags: tags
 }
 
 // Virtual Network Link

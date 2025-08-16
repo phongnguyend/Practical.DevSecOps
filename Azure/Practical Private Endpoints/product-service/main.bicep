@@ -42,17 +42,20 @@ resource existingVnet 'Microsoft.Network/virtualNetworks@2023-04-01' existing = 
   scope: resourceGroup(baseVnetResourceGroup)
 }
 
+// Common tags variable
+var commonTags = {
+  Environment: 'Development'
+  Project: 'PracticalPrivateEndpoints'
+  Service: 'Product'
+}
+
 // App Service Plan Module
 module productAppServicePlanModule 'modules/app-service-plans/productAppServicePlan.bicep' = {
   name: 'productAppServicePlanDeployment'
   params: {
     location: location
     appServicePlanName: appServicePlanName
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
-    }
+    tags: commonTags
   }
 }
 
@@ -65,11 +68,7 @@ module productApiWebAppModule 'modules/app-services/productApiWebApp.bicep' = {
     productApiWebAppName: productApiWebAppName
     enablePrivateEndpoints: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
-    }
+    tags: commonTags
   }
 }
 
@@ -83,11 +82,7 @@ module productFunctionAppModule 'modules/azure-functions/productFunctionApp.bice
     functionStorageAccountName: productFunctionStorageAccountName
     enablePrivateEndpoints: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
-    }
+    tags: commonTags
   }
 }
 
@@ -113,12 +108,9 @@ module productFunctionStorageModule 'modules/storage-accounts/productFunctionsSt
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
     allowBlobPublicAccess: !enablePrivateEndpoints
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
+    tags: union(commonTags, {
       Purpose: 'FunctionAppRuntimeStorage'
-    }
+    })
   }
 }
 
@@ -130,11 +122,7 @@ module productSqlServerModule 'modules/sql-servers/productSqlServer.bicep' = if 
     sqlServerName: sqlServerName
     adminUsername: adminUsername
     adminPassword: adminPassword
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
-    }
+    tags: commonTags
   }
 }
 
@@ -148,11 +136,7 @@ module productSqlDatabase 'modules/sql-server-databases/productDb.bicep' = if (e
     location: location
     sqlServerName: sqlServerName
     productDbName: productDbName
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
-    }
+    tags: commonTags
   }
 }
 
@@ -164,11 +148,7 @@ module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (en
     keyVaultName: productKeyVaultName
     productApiPrincipalId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
     productFunctionPrincipalId: enableFunctionApp ? productFunctionAppModule!.outputs.productFunctionAppPrincipalId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
-    }
+    tags: commonTags
   }
 }
 
@@ -198,11 +178,7 @@ module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep
         }
       ] : []
     )
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-      Service: 'Product'
-    }
+    tags: commonTags
   }
 }
 
@@ -215,6 +191,7 @@ module productCosmosDbDatabase 'modules/cosmos-databases/productDb.bicep' = if (
   params: {
     cosmosAccountName: cosmosAccountName
     productCosmosDbName: productCosmosDbName
+    tags: commonTags
   }
 }
 

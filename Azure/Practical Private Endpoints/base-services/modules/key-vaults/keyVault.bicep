@@ -4,6 +4,7 @@ param tenantId string = tenant().tenantId
 param enableSoftDelete bool = true
 param softDeleteRetentionInDays int = 90
 param enablePurgeProtection bool = true
+param tags object = {}
 
 // VNet integration configuration
 param allowedSubnets array = []
@@ -39,6 +40,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       virtualNetworkRules: length(allowedSubnets) > 0 ? virtualNetworkRules : []
     }
   }
+  tags: tags
 }
 
 // Sample secrets for demonstration

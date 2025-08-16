@@ -8,6 +8,7 @@ param adminPassword string
 param subnetId string
 param includePublicIP bool = true
 param computerName string = 'testvm'
+param tags object = {}
 
 // Public IP for Test VM (optional)
 resource testVMPublicIP 'Microsoft.Network/publicIPAddresses@2023-09-01' = if (includePublicIP) {
@@ -20,6 +21,7 @@ resource testVMPublicIP 'Microsoft.Network/publicIPAddresses@2023-09-01' = if (i
   properties: {
     publicIPAllocationMethod: 'Static'
   }
+  tags: tags
 }
 
 // Network Security Group for Test VM
@@ -69,6 +71,7 @@ resource testVMNSG 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
       }
     ]
   }
+  tags: tags
 }
 
 // Network Interface for Test VM
@@ -94,6 +97,7 @@ resource testVMNIC 'Microsoft.Network/networkInterfaces@2023-09-01' = {
       id: testVMNSG.id
     }
   }
+  tags: tags
 }
 
 // Windows Virtual Machine for testing
@@ -135,6 +139,7 @@ resource testVM 'Microsoft.Compute/virtualMachines@2023-09-01' = {
       ]
     }
   }
+  tags: tags
 }
 
 // Outputs

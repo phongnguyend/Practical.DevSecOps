@@ -1,5 +1,6 @@
 param cosmosAccountName string
 param cosmosMusicDbName string
+param tags object = {}
 
 // Reference to existing Cosmos Account
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-09-15' existing = {

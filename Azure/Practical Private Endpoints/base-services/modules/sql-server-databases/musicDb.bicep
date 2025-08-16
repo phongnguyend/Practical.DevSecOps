@@ -9,6 +9,7 @@ param maxSizeBytes int = 2147483648
 param backupStorageRedundancy string = 'Local'
 param skuName string = 'Basic'
 param skuTier string = 'Basic'
+param tags object = {}
 
 // Reference to existing SQL Server
 resource sqlServer 'Microsoft.Sql/servers@2023-08-01' existing = {
@@ -29,6 +30,7 @@ resource musicDatabase 'Microsoft.Sql/servers/databases@2023-08-01' = {
     name: skuName
     tier: skuTier
   }
+  tags: tags
 }
 
 // Outputs

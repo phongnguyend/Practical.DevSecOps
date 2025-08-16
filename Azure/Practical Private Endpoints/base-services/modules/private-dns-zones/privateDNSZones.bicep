@@ -15,12 +15,14 @@ param adminSiteWebAppName string = ''
 param videoApiWebAppName string = ''
 param musicApiWebAppName string = ''
 param applicationGatewayPublicIP string = '0.0.0.0'
+param tags object = {}
 
 // App Configuration Private DNS Zone Module (conditional)
 module appConfigPrivateDnsZone 'appConfigurationPrivateDNSZone.bicep' = if (enableAppConfiguration && enablePrivateEndpoints) {
   name: 'appConfigPrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
+    tags: tags
   }
 }
 
@@ -30,6 +32,7 @@ module blobStoragePrivateDnsZone 'blobStoragePrivateDNSZone.bicep' = if (enableB
   params: {
     vnetId: vnetId
     vnetName: vnetName
+    tags: tags
   }
 }
 
@@ -38,6 +41,7 @@ module cosmosPrivateDnsZone 'cosmosPrivateDNSZone.bicep' = if (enableCosmosDb &&
   name: 'cosmosPrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
+    tags: tags
   }
 }
 
@@ -46,6 +50,7 @@ module serviceBusPrivateDnsZone 'serviceBusPrivateDNSZone.bicep' = if (enableSer
   name: 'serviceBusPrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
+    tags: tags
   }
 }
 
@@ -54,6 +59,7 @@ module appServicePrivateDnsZone 'appServicePrivateDNSZone.bicep' = if (enablePri
   name: 'appServicePrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
+    tags: tags
   }
 }
 
@@ -69,6 +75,7 @@ module customPrivateDnsZone 'customPrivateDNSZone.bicep' = if (enablePrivateEndp
     videoApiWebAppName: videoApiWebAppName
     musicApiWebAppName: musicApiWebAppName
     applicationGatewayPublicIP: applicationGatewayPublicIP
+    tags: tags
   }
 }
 

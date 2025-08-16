@@ -9,6 +9,7 @@ param videoApiUrl string
 param musicApiUrl string
 param apiManagementSku string = 'Standard'
 param apiManagementCapacity int = 1
+param tags object = {}
 
 // API Management Service
 resource apiManagement 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
@@ -27,6 +28,7 @@ resource apiManagement 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
       subnetResourceId: '${vnetId}/subnets/${apiManagementSubnetName}'
     } : null
   }
+  tags: tags
 }
 
 // Deploy Video API (all components)

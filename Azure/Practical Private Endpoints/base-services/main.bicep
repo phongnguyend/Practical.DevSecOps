@@ -113,12 +113,19 @@ param serviceBusSubscriptionNames array = [
   'music-subscription'
 ]
 
+// Common tags variable
+var commonTags = {
+  Environment: 'Development'
+  Project: 'PracticalPrivateEndpoints'
+}
+
 // API Management NSG Module
 module apiManagementNSGModule 'modules/network-security-groups/apiManagementNSG.bicep' = {
   name: 'apiManagementNSGDeployment'
   params: {
     location: location
     name: '${vnetName}-apim-nsg'
+    tags: commonTags
   }
 }
 
@@ -130,6 +137,7 @@ module vnetModule 'modules/virtual-networks/virtualNetwork.bicep' = {
     vnetName: vnetName
     vnetAddressPrefix: '10.0.0.0/16'
     apiManagementNSGId: apiManagementNSGModule.outputs.apiManagementNSGId
+    tags: commonTags
   }
 }
 
@@ -142,6 +150,7 @@ module sqlServerModule 'modules/sql-servers/mySqlServer.bicep' = if (enableSqlSe
     adminUsername: adminUsername
     adminPassword: adminPassword
     allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    tags: commonTags
   }
 }
 
@@ -155,6 +164,7 @@ module customerDatabaseModule 'modules/sql-server-databases/customerDb.bicep' = 
     location: location
     sqlServerName: sqlServerName
     databaseName: customerDbName
+    tags: commonTags
   }
 }
 
@@ -167,6 +177,7 @@ module adminDatabaseModule 'modules/sql-server-databases/adminDb.bicep' = if (en
     location: location
     sqlServerName: sqlServerName
     databaseName: adminDbName
+    tags: commonTags
   }
 }
 
@@ -179,6 +190,7 @@ module videoDatabaseModule 'modules/sql-server-databases/videoDb.bicep' = if (en
     location: location
     sqlServerName: sqlServerName
     databaseName: videoDbName
+    tags: commonTags
   }
 }
 
@@ -191,6 +203,7 @@ module musicDatabaseModule 'modules/sql-server-databases/musicDb.bicep' = if (en
     location: location
     sqlServerName: sqlServerName
     databaseName: musicDbName
+    tags: commonTags
   }
 }
 
@@ -209,6 +222,7 @@ module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (enableKeyVault) 
       videoApiWebAppModule.outputs.keyVaultAccessPolicy
       musicApiWebAppModule.outputs.keyVaultAccessPolicy
     ]
+    tags: commonTags
   }
 }
 
@@ -228,6 +242,7 @@ module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' =
     videoApiWebAppName: videoApiWebAppName
     musicApiWebAppName: musicApiWebAppName
     applicationGatewayPublicIP: enableApplicationGateway ? applicationGatewayModule!.outputs.publicIPAddress : '0.0.0.0'
+    tags: commonTags
   }
 }
 
@@ -354,10 +369,7 @@ module blobStorageModule 'modules/storage-accounts/myStorageAccount.bicep' = if 
         }
       ] : []
     ) : []
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -374,10 +386,7 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
     privateDnsZoneId: (enablePrivateEndpoints && enableCosmosDb) ? privateDnsZonesModule!.outputs.cosmosPrivateDnsZoneId : ''
     allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
     enablePublicNetworkAccess: !enablePrivateEndpoints
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
     // Consolidated Role Assignment Parameters
     roleAssignments: enableCosmosDb ? concat(
       // Web App Role Assignments (Cosmos DB Data Contributor)
@@ -436,6 +445,7 @@ module cosmosAdminDatabaseModule 'modules/cosmos-databases/adminDb.bicep' = if (
   params: {
     cosmosAccountName: cosmosAccountName
     cosmosAdminDbName: cosmosAdminDbName
+    tags: commonTags
   }
   dependsOn: [
     cosmosDbAccountModule
@@ -447,6 +457,7 @@ module cosmosCustomerDatabaseModule 'modules/cosmos-databases/customerDb.bicep' 
   params: {
     cosmosAccountName: cosmosAccountName
     cosmosCustomerDbName: cosmosCustomerDbName
+    tags: commonTags
   }
   dependsOn: [
     cosmosDbAccountModule
@@ -458,6 +469,7 @@ module cosmosMusicDatabaseModule 'modules/cosmos-databases/musicDb.bicep' = if (
   params: {
     cosmosAccountName: cosmosAccountName
     cosmosMusicDbName: cosmosMusicDbName
+    tags: commonTags
   }
   dependsOn: [
     cosmosDbAccountModule
@@ -469,6 +481,7 @@ module cosmosVideoDatabaseModule 'modules/cosmos-databases/videoDb.bicep' = if (
   params: {
     cosmosAccountName: cosmosAccountName
     cosmosVideoDbName: cosmosVideoDbName
+    tags: commonTags
   }
   dependsOn: [
     cosmosDbAccountModule
@@ -538,10 +551,7 @@ module serviceBusNamespaceModule 'modules/service-bus-namespaces/my-namespace/se
         }
       ] : []
     )
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -553,10 +563,7 @@ module logAnalyticsWorkspaceModule 'modules/log-analytics-workspaces/logAnalytic
     location: location
     workspaceName: applicationInsightsWorkspaceName
     retentionInDays: retentionInDays
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -579,10 +586,7 @@ module applicationInsightsModule 'modules/application-insights/applicationInsigh
     customerFunctionAppName: customerFunctionAppName
     musicFunctionAppName: musicFunctionAppName
     videoFunctionAppName: videoFunctionAppName
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -592,10 +596,7 @@ module appServicePlanModule 'modules/app-service-plans/myAppServicePlan.bicep' =
   params: {
     location: location
     appServicePlanName: appServicePlanName
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -608,10 +609,7 @@ module customerPublicWebAppModule 'modules/app-services/customerPublicWebApp.bic
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -626,10 +624,7 @@ module customerSiteWebAppModule 'modules/app-services/customerSiteWebApp.bicep' 
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -641,10 +636,7 @@ module adminPublicWebAppModule 'modules/app-services/adminPublicWebApp.bicep' = 
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -659,10 +651,7 @@ module adminSiteWebAppModule 'modules/app-services/adminSiteWebApp.bicep' = {
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -677,10 +666,7 @@ module videoApiWebAppModule 'modules/app-services/videoApiWebApp.bicep' = {
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -695,10 +681,7 @@ module musicApiWebAppModule 'modules/app-services/musicApiWebApp.bicep' = {
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -715,10 +698,7 @@ module adminFunctionAppModule 'modules/azure-functions/adminFunctionApp.bicep' =
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -734,10 +714,7 @@ module customerFunctionAppModule 'modules/azure-functions/customerFunctionApp.bi
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -753,10 +730,7 @@ module musicFunctionAppModule 'modules/azure-functions/musicFunctionApp.bicep' =
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -772,10 +746,7 @@ module videoFunctionAppModule 'modules/azure-functions/videoFunctionApp.bicep' =
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule!.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -793,11 +764,9 @@ module functionAppsStorageModule 'modules/storage-accounts/functionAppsStorageAc
     allowBlobPublicAccess: !enablePrivateEndpoints
     // No role assignments needed - function apps use connection strings for runtime storage
     roleAssignments: []
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
+    tags: union(commonTags, {
       Purpose: 'FunctionAppsRuntimeStorage'
-    }
+    })
   }
 }
 
@@ -823,10 +792,7 @@ module applicationGatewayModule 'modules/application-gateways/my-gateway/applica
       maxRequestBodySizeInKb: wafMaxRequestBodySizeInKb
       fileUploadLimitInMb: wafFileUploadLimitInMb
     }
-    tags: {
-      Environment: 'Development'
-      Project: 'PracticalPrivateEndpoints'
-    }
+    tags: commonTags
   }
 }
 
@@ -844,6 +810,7 @@ module apiManagementModule 'modules/api-managements/my-api-management/myApiManag
     musicApiUrl: 'https://${musicApiWebAppName}.azurewebsites.net'
     apiManagementSku: apiManagementSku
     apiManagementCapacity: apiManagementCapacity
+    tags: commonTags
   }
 }
 
@@ -858,6 +825,7 @@ module testVMModule 'modules/virtual-machines/testVM.bicep' = if (enableTestVM) 
     adminPassword: vmAdminPassword
     subnetId: vnetModule.outputs.testVMSubnetId
     includePublicIP: true
+    tags: commonTags
   }
 }
 

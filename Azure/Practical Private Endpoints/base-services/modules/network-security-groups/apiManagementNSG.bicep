@@ -1,6 +1,7 @@
 // API Management Network Security Group Module
 param location string
 param name string
+param tags object = {}
 
 // Network Security Group for API Management subnet
 resource apiManagementNSG 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
@@ -101,6 +102,7 @@ resource apiManagementNSG 'Microsoft.Network/networkSecurityGroups@2023-09-01' =
       }
     ]
   }
+  tags: tags
 }
 
 // Outputs
