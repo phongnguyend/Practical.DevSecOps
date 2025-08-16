@@ -1,8 +1,7 @@
 param location string
 param keyVaultName string
-param productApiPrincipalId string
-param productFunctionPrincipalId string = ''
 param tags object = {}
+param accessPolicies array = []
 
 // Key Vault
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -21,32 +20,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     softDeleteRetentionInDays: 7
     enablePurgeProtection: false
     enableRbacAuthorization: false
-    accessPolicies: concat(
-      [
-        // Product API Access Policy
-        {
-          tenantId: tenant().tenantId
-          objectId: productApiPrincipalId
-          permissions: {
-            keys: ['get', 'list']
-            secrets: ['get', 'list']
-            certificates: ['get', 'list']
-          }
-        }
-      ],
-      // Product Function App Access Policy (if enabled)
-      productFunctionPrincipalId != '' ? [
-        {
-          tenantId: tenant().tenantId
-          objectId: productFunctionPrincipalId
-          permissions: {
-            keys: ['get', 'list']
-            secrets: ['get', 'list']
-            certificates: ['get', 'list']
-          }
-        }
-      ] : []
-    )
+    accessPolicies: accessPolicies
   }
   tags: tags
 }

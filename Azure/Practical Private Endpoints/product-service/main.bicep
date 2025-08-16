@@ -146,8 +146,32 @@ module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (en
   params: {
     location: location
     keyVaultName: productKeyVaultName
-    productApiPrincipalId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
-    productFunctionPrincipalId: enableFunctionApp ? productFunctionAppModule!.outputs.productFunctionAppPrincipalId : ''
+    accessPolicies: concat(
+      [
+        // Product API Access Policy
+        {
+          tenantId: tenant().tenantId
+          objectId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
+          permissions: {
+            keys: ['get', 'list']
+            secrets: ['get', 'list']
+            certificates: ['get', 'list']
+          }
+        }
+      ],
+      // Product Function App Access Policy (if enabled)
+      enableFunctionApp ? [
+        {
+          tenantId: tenant().tenantId
+          objectId: productFunctionAppModule!.outputs.productFunctionAppPrincipalId
+          permissions: {
+            keys: ['get', 'list']
+            secrets: ['get', 'list']
+            certificates: ['get', 'list']
+          }
+        }
+      ] : []
+    )
     tags: commonTags
   }
 }
