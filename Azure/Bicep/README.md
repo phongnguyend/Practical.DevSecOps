@@ -1,0 +1,2 @@
+# Templates
+- [Microsoft.Network/virtualNetworks - Bicep, ARM template & Terraform AzAPI reference | Microsoft Learn](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks?pivots=deployment-language-bicep)
