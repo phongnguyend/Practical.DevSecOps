@@ -95,16 +95,3 @@ output principalId string = videoApiWebApp.identity.principalId
 output hasPrivateEndpoint bool = createPrivateEndpoint
 output privateEndpointId string = createPrivateEndpoint ? privateEndpoint.id : ''
 output privateEndpointName string = createPrivateEndpoint ? privateEndpoint.name : ''
-
-// Key Vault Access Policy for this web app
-output keyVaultAccessPolicy object = {
-  tenantId: tenant().tenantId
-  objectId: videoApiWebApp.identity.principalId
-  permissions: {
-    keys: []
-    secrets: [
-      'get'
-    ]
-    certificates: []
-  }
-}

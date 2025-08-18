@@ -217,14 +217,55 @@ module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (enableKeyVault) 
     location: location
     keyVaultName: keyVaultName
     allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
-    accessPolicies: [
-      customerPublicWebAppModule.outputs.keyVaultAccessPolicy
-      customerSiteWebAppModule.outputs.keyVaultAccessPolicy
-      adminPublicWebAppModule.outputs.keyVaultAccessPolicy
-      adminSiteWebAppModule.outputs.keyVaultAccessPolicy
-      videoApiWebAppModule.outputs.keyVaultAccessPolicy
-      musicApiWebAppModule.outputs.keyVaultAccessPolicy
-    ]
+    // Consolidated Role Assignment Parameters for Key Vault access
+    roleAssignments: enableKeyVault ? concat(
+      // Web App Role Assignments (Key Vault Secrets User)
+      [
+        {
+          principalId: customerPublicWebAppModule.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: customerSiteWebAppModule.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: adminPublicWebAppModule.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: adminSiteWebAppModule.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: videoApiWebAppModule.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: musicApiWebAppModule.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+      ],
+      // Function App Role Assignments (Key Vault Secrets User) - only when enabled
+      enableFunctionApps ? [
+        {
+          principalId: adminFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: customerFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: musicFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+        {
+          principalId: videoFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+        }
+      ] : []
+    ) : []
     tags: commonTags
   }
 }

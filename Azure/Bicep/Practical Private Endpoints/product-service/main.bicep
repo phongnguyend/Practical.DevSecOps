@@ -146,29 +146,19 @@ module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (en
   params: {
     location: location
     keyVaultName: productKeyVaultName
-    accessPolicies: concat(
+    roleAssignments: concat(
       [
-        // Product API Access Policy
+        // Product API Role Assignment
         {
-          tenantId: tenant().tenantId
-          objectId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
-          permissions: {
-            keys: ['get', 'list']
-            secrets: ['get', 'list']
-            certificates: ['get', 'list']
-          }
+          principalId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
         }
       ],
-      // Product Function App Access Policy (if enabled)
+      // Product Function App Role Assignment (if enabled)
       enableFunctionApp ? [
         {
-          tenantId: tenant().tenantId
-          objectId: productFunctionAppModule!.outputs.productFunctionAppPrincipalId
-          permissions: {
-            keys: ['get', 'list']
-            secrets: ['get', 'list']
-            certificates: ['get', 'list']
-          }
+          principalId: productFunctionAppModule!.outputs.productFunctionAppPrincipalId
+          roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
         }
       ] : []
     )

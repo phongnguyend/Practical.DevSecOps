@@ -96,16 +96,3 @@ output hasPrivateEndpoint bool = createPrivateEndpoint
 output privateEndpointId string = createPrivateEndpoint ? privateEndpoint.id : ''
 output privateEndpointName string = createPrivateEndpoint ? privateEndpoint.name : ''
 
-// Key Vault Access Policy for this web app
-output keyVaultAccessPolicy object = {
-  tenantId: tenant().tenantId
-  objectId: musicApiWebApp.identity.principalId
-  permissions: {
-    keys: []
-    secrets: [
-      'get'
-    ]
-    certificates: []
-  }
-}
-

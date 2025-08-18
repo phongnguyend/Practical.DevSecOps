@@ -214,13 +214,31 @@ module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (enableKeyVault) 
     location: location
     keyVaultName: keyVaultName
     allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
-    accessPolicies: [
-      customerPublicWebAppModule.outputs.keyVaultAccessPolicy
-      customerSiteWebAppModule.outputs.keyVaultAccessPolicy
-      adminPublicWebAppModule.outputs.keyVaultAccessPolicy
-      adminSiteWebAppModule.outputs.keyVaultAccessPolicy
-      videoApiWebAppModule.outputs.keyVaultAccessPolicy
-      musicApiWebAppModule.outputs.keyVaultAccessPolicy
+    roleAssignments: [
+      {
+        principalId: customerPublicWebAppModule.outputs.principalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
+      {
+        principalId: customerSiteWebAppModule.outputs.principalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
+      {
+        principalId: adminPublicWebAppModule.outputs.principalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
+      {
+        principalId: adminSiteWebAppModule.outputs.principalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
+      {
+        principalId: videoApiWebAppModule.outputs.principalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
+      {
+        principalId: musicApiWebAppModule.outputs.principalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
     ]
     tags: commonTags
   }

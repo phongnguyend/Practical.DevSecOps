@@ -9,8 +9,8 @@ param tags object = {}
 // VNet integration configuration
 param allowedSubnets array = []
 
-// Access policies for different services with different permissions
-param accessPolicies array = []
+// Role assignments for different services with different permissions
+param roleAssignments array = []
 
 // Generate virtual network rules from allowed subnets
 var virtualNetworkRules = [for subnetId in allowedSubnets: {
@@ -28,8 +28,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enableSoftDelete: enableSoftDelete
     softDeleteRetentionInDays: softDeleteRetentionInDays
     enablePurgeProtection: enablePurgeProtection
-    enableRbacAuthorization: false
-    accessPolicies: accessPolicies
+    enableRbacAuthorization: true
     sku: {
       family: 'A'
       name: 'standard'
@@ -42,6 +41,17 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
   tags: tags
 }
+
+// Role assignments for Key Vault access
+resource keyVaultRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for assignment in roleAssignments: {
+  name: guid(keyVault.id, assignment.principalId, assignment.roleDefinitionId)
+  scope: keyVault
+  properties: {
+    principalId: assignment.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', assignment.roleDefinitionId)
+    principalType: 'ServicePrincipal'
+  }
+}]
 
 // Sample secrets for demonstration
 resource sqlConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {

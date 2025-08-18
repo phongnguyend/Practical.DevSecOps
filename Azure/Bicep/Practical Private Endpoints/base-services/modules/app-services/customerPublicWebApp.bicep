@@ -46,17 +46,3 @@ output principalId string = customerPublicWebApp.identity.principalId
 output hasPrivateEndpoint bool = false
 output privateEndpointId string = ''
 output privateEndpointName string = ''
-
-// Key Vault Access Policy for this web app
-output keyVaultAccessPolicy object = {
-  tenantId: tenant().tenantId
-  objectId: customerPublicWebApp.identity.principalId
-  permissions: {
-    keys: []
-    secrets: [
-      'get'
-      'list'
-    ]
-    certificates: []
-  }
-}

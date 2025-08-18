@@ -1,7 +1,7 @@
 param location string
 param keyVaultName string
 param tags object = {}
-param accessPolicies array = []
+param roleAssignments array = []
 
 // Key Vault
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -19,11 +19,21 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enableSoftDelete: true
     softDeleteRetentionInDays: 7
     enablePurgeProtection: false
-    enableRbacAuthorization: false
-    accessPolicies: accessPolicies
+    enableRbacAuthorization: true
   }
   tags: tags
 }
+
+// Role assignments for Key Vault access
+resource keyVaultRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for assignment in roleAssignments: {
+  name: guid(keyVault.id, assignment.principalId, assignment.roleDefinitionId)
+  scope: keyVault
+  properties: {
+    principalId: assignment.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', assignment.roleDefinitionId)
+    principalType: 'ServicePrincipal'
+  }
+}]
 
 // Outputs
 output keyVaultId string = keyVault.id
