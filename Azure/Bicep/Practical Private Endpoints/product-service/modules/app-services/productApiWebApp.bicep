@@ -9,6 +9,7 @@ param tags object = {}
 resource productApiWebApp 'Microsoft.Web/sites@2023-01-01' = {
   name: productApiWebAppName
   location: location
+  kind: 'app,linux'
   identity: {
     type: 'SystemAssigned'
   }
@@ -17,7 +18,7 @@ resource productApiWebApp 'Microsoft.Web/sites@2023-01-01' = {
     httpsOnly: true
     publicNetworkAccess: enablePrivateEndpoints ? 'Disabled' : 'Enabled'
     siteConfig: {
-      netFrameworkVersion: 'v8.0'
+      linuxFxVersion: 'DOTNET|8.0'
       appSettings: [
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'

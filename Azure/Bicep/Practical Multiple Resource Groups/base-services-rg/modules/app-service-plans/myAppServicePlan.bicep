@@ -10,11 +10,14 @@ param tags object = {}
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-01-01' = {
   name: appServicePlanName
   location: location
-  kind: 'app'
+  kind: 'linux'
   tags: tags
   sku: {
     name: skuName
     tier: skuTier
+  }
+  properties: {
+    reserved: true
   }
 }
 

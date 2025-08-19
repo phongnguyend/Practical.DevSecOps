@@ -16,7 +16,7 @@ param vnetIntegrationSubnetId string = ''
 // Function-specific settings
 param functionWorkerRuntime string = 'dotnet-isolated'
 param functionsVersion string = '~4'
-param netFrameworkVersion string = 'v8.0'
+param linuxFxVersion string = 'DOTNET|8.0'
 
 // Tags
 param tags object = {}
@@ -31,7 +31,7 @@ resource customerFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
   name: functionAppName
   location: location
   tags: tags
-  kind: 'functionapp'
+  kind: 'functionapp,linux'
   identity: {
     type: 'SystemAssigned'
   }
@@ -41,6 +41,7 @@ resource customerFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
     publicNetworkAccess: createPrivateEndpoint ? 'Disabled' : 'Enabled'
     virtualNetworkSubnetId: enableVNetIntegration ? vnetIntegrationSubnetId : null
     siteConfig: {
+      linuxFxVersion: linuxFxVersion
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
@@ -73,7 +74,6 @@ resource customerFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
       ]
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
-      netFrameworkVersion: netFrameworkVersion
       cors: {
         allowedOrigins: [
           'https://portal.azure.com'

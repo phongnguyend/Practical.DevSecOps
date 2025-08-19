@@ -10,7 +10,7 @@ param tags object = {}
 resource productFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
   name: productFunctionAppName
   location: location
-  kind: 'functionapp'
+  kind: 'functionapp,linux'
   identity: {
     type: 'SystemAssigned'
   }
@@ -19,7 +19,7 @@ resource productFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
     httpsOnly: true
     publicNetworkAccess: enablePrivateEndpoints ? 'Disabled' : 'Enabled'
     siteConfig: {
-      netFrameworkVersion: 'v8.0'
+      linuxFxVersion: 'DOTNET|8.0'
       appSettings: [
         {
           name: 'AzureWebJobsStorage'

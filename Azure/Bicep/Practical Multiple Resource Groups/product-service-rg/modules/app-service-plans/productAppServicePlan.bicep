@@ -10,9 +10,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-01-01' = {
     name: 'S1'
     tier: 'Standard'
   }
-  kind: 'app'
+  kind: 'linux'
   properties: {
-    reserved: false
+    reserved: true
   }
   tags: tags
 }

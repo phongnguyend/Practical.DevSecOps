@@ -5,7 +5,7 @@ param appServicePlanId string
 param tags object = {}
 
 // Admin Site specific settings
-param windowsFxVersion string = 'DOTNET|8.0'
+param linuxFxVersion string = 'DOTNET|8.0'
 param alwaysOn bool = true
 param httpsOnly bool = true
 param minTlsVersion string = '1.2'
@@ -24,7 +24,7 @@ param vnetIntegrationSubnetId string = ''
 resource adminSiteWebApp 'Microsoft.Web/sites@2023-01-01' = {
   name: webAppName
   location: location
-  kind: 'app'
+  kind: 'app,linux'
   tags: tags
   identity: {
     type: 'SystemAssigned'
@@ -32,7 +32,7 @@ resource adminSiteWebApp 'Microsoft.Web/sites@2023-01-01' = {
   properties: {
     serverFarmId: appServicePlanId
     siteConfig: {
-      windowsFxVersion: windowsFxVersion
+      linuxFxVersion: linuxFxVersion
       alwaysOn: alwaysOn
       ftpsState: ftpsState
       minTlsVersion: minTlsVersion

@@ -9,7 +9,7 @@ param enableVNetIntegration bool = false
 param vnetIntegrationSubnetId string = ''
 
 // Customer Public specific settings
-param windowsFxVersion string = 'DOTNET|8.0'
+param linuxFxVersion string = 'DOTNET|8.0'
 param alwaysOn bool = true
 param httpsOnly bool = true
 param minTlsVersion string = '1.2'
@@ -27,7 +27,7 @@ resource customerPublicWebApp 'Microsoft.Web/sites@2023-01-01' = {
   properties: {
     serverFarmId: appServicePlanId
     siteConfig: {
-      windowsFxVersion: windowsFxVersion
+  linuxFxVersion: linuxFxVersion
       alwaysOn: alwaysOn
       ftpsState: ftpsState
       minTlsVersion: minTlsVersion

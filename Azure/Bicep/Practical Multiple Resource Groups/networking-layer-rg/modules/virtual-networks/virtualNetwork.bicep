@@ -78,7 +78,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
               service: 'Microsoft.KeyVault'
             }
             {
-              service: 'Microsoft.DocumentDB'
+              service: 'Microsoft.AzureCosmosDB'
             }
             {
               service: 'Microsoft.ServiceBus'
