@@ -27,10 +27,10 @@
       "value": false
     },
     "vnetName": {
-      "value": "practicalmrg-test-vnet"
+      "value": "practicalmrg-vnet-test"
     },
     "apiManagementName": {
-      "value": "practicalmrg-test-apim"
+      "value": "practicalmrg-apim-test"
     },
     "publisherEmail": {
       "value": "test@practical.devsecops"
@@ -39,22 +39,22 @@
       "value": "Practical DevSecOps Test Team"
     },
     "customerPublicWebAppName": {
-      "value": "practicalmrg-test-customer-public"
+      "value": "practicalmrg-customer-public-test"
     },
     "customerSiteWebAppName": {
-      "value": "practicalmrg-test-customer-site"
+      "value": "practicalmrg-customer-site-test"
     },
     "adminPublicWebAppName": {
-      "value": "practicalmrg-test-admin-public"
+      "value": "practicalmrg-admin-public-test"
     },
     "adminSiteWebAppName": {
-      "value": "practicalmrg-test-admin-site"
+      "value": "practicalmrg-admin-site-test"
     },
     "videoApiWebAppName": {
-      "value": "practicalmrg-test-video-api"
+      "value": "practicalmrg-video-api-test"
     },
     "musicApiWebAppName": {
-      "value": "practicalmrg-test-music-api"
+      "value": "practicalmrg-music-api-test"
     },
     "apiManagementSku": {
       "value": "Developer"

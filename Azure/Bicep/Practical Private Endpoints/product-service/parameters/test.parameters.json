@@ -27,31 +27,31 @@
       "value": "product-test"
     },
     "appServicePlanName": {
-      "value": "practicalpe-test-product-asp"
+      "value": "practicalpe-product-asp-test"
     },
     "productApiWebAppName": {
-      "value": "practicalpe-test-product-api"
+      "value": "practicalpe-product-api-test"
     },
     "productFunctionAppName": {
-      "value": "practicalpe-test-product-func"
+      "value": "practicalpe-product-func-test"
     },
     "productKeyVaultName": {
-      "value": "practicalpe-test-prod-kv"
+      "value": "practicalpe-product-kv-test"
     },
     "productFunctionStorageAccountName": {
-      "value": "practicalpetstprodfunc"
+      "value": "practicalpeproductfunctest"
     },
     "sqlServerName": {
-      "value": "practicalpe-test-product-sql"
+      "value": "practicalpe-product-sql-test"
     },
     "adminUsername": {
       "value": "productadmin"
     },
     "productDbName": {
-      "value": "PracticalPE-TEST-PRODUCT-DB"
+      "value": "PracticalPE-PRODUCT-DB-TEST"
     },
     "cosmosAccountName": {
-      "value": "practicalpe-test-product-cosmos"
+      "value": "practicalpe-product-cosmos-test"
     },
     "cosmosConsistencyLevel": {
       "value": "Session"
@@ -60,10 +60,10 @@
       "value": true
     },
     "productCosmosDbName": {
-      "value": "PracticalPE-TEST-PRODUCT-COSMOS-DB"
+      "value": "PracticalPE-PRODUCT-COSMOS-DB-TEST"
     },
     "baseVnetName": {
-      "value": "practicalpe-test-vnet"
+      "value": "practicalpe-vnet-test"
     },
     "baseVnetResourceGroup": {
       "value": "rg-practicalpe-test"
@@ -72,7 +72,7 @@
       "value": true
     },
     "apiManagementName": {
-      "value": "practicalpe-test-apim"
+      "value": "practicalpe-apim-test"
     }
   }
 }

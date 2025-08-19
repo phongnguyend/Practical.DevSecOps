@@ -45,31 +45,31 @@
       "value": true
     },
     "sqlServerName": {
-      "value": "practicalpe-uat-sql"
+      "value": "practicalpe-sql-uat"
     },
     "adminUsername": {
       "value": "sqladmin"
     },
     "appServicePlanName": {
-      "value": "practicalpe-uat-asp"
+      "value": "practicalpe-asp-uat"
     },
     "vnetName": {
-      "value": "practicalpe-uat-vnet"
+      "value": "practicalpe-vnet-uat"
     },
     "keyVaultName": {
-      "value": "practicalpe-uat-kv"
+      "value": "practicalpe-kv-uat"
     },
     "appConfigName": {
-      "value": "practicalpe-uat-config"
+      "value": "practicalpe-config-uat"
     },
     "storageAccountName": {
-      "value": "practicalpeuatblob"
+      "value": "practicalpeblobuat"
     },
     "functionAppsStorageAccountName": {
-      "value": "practicalpeuatfunc"
+      "value": "practicalpefuncuat"
     },
     "apiManagementName": {
-      "value": "practicalpe-uat-apim"
+      "value": "practicalpe-apim-uat"
     },
     "publisherEmail": {
       "value": "uat@practical.devsecops"
@@ -78,34 +78,34 @@
       "value": "Practical DevSecOps UAT Team"
     },
     "customerPublicWebAppName": {
-      "value": "practicalpe-uat-customer-public"
+      "value": "practicalpe-customer-public-uat"
     },
     "customerSiteWebAppName": {
-      "value": "practicalpe-uat-customer-site"
+      "value": "practicalpe-customer-site-uat"
     },
     "adminPublicWebAppName": {
-      "value": "practicalpe-uat-admin-public"
+      "value": "practicalpe-admin-public-uat"
     },
     "adminSiteWebAppName": {
-      "value": "practicalpe-uat-admin-site"
+      "value": "practicalpe-admin-site-uat"
     },
     "videoApiWebAppName": {
-      "value": "practicalpe-uat-video-api"
+      "value": "practicalpe-video-api-uat"
     },
     "musicApiWebAppName": {
-      "value": "practicalpe-uat-music-api"
+      "value": "practicalpe-music-api-uat"
     },
     "customerDbName": {
-      "value": "PracticalPE-UAT-CUSTOMER-DB"
+      "value": "practicalpe-CUSTOMER-DB-uat"
     },
     "adminDbName": {
-      "value": "PracticalPE-UAT-ADMIN-DB"
+      "value": "practicalpe-ADMIN-DB-uat"
     },
     "videoDbName": {
-      "value": "PracticalPE-UAT-VIDEO-DB"
+      "value": "practicalpe-VIDEO-DB-uat"
     },
     "musicDbName": {
-      "value": "PracticalPE-UAT-MUSIC-DB"
+      "value": "practicalpe-MUSIC-DB-uat"
     },
     "vmAdminUsername": {
       "value": "uatadmin"
@@ -146,7 +146,7 @@
       ]
     },
     "cosmosAccountName": {
-      "value": "practicalpe-uat-cosmos"
+      "value": "practicalpe-cosmos-uat"
     },
     "cosmosConsistencyLevel": {
       "value": "Session"
@@ -155,37 +155,37 @@
       "value": true
     },
     "cosmosAdminDbName": {
-      "value": "PracticalPE-UAT-ADMIN-COSMOS-DB"
+      "value": "practicalpe-ADMIN-COSMOS-DB-uat"
     },
     "cosmosCustomerDbName": {
-      "value": "PracticalPE-UAT-CUSTOMER-COSMOS-DB"
+      "value": "practicalpe-CUSTOMER-COSMOS-DB-uat"
     },
     "cosmosMusicDbName": {
-      "value": "PracticalPE-UAT-MUSIC-COSMOS-DB"
+      "value": "practicalpe-MUSIC-COSMOS-DB-uat"
     },
     "cosmosVideoDbName": {
-      "value": "PracticalPE-UAT-VIDEO-COSMOS-DB"
+      "value": "practicalpe-VIDEO-COSMOS-DB-uat"
     },
     "adminFunctionAppName": {
-      "value": "practicalpe-uat-admin-func"
+      "value": "practicalpe-admin-func-uat"
     },
     "customerFunctionAppName": {
-      "value": "practicalpe-uat-customer-func"
+      "value": "practicalpe-customer-func-uat"
     },
     "musicFunctionAppName": {
-      "value": "practicalpe-uat-music-func"
+      "value": "practicalpe-music-func-uat"
     },
     "videoFunctionAppName": {
-      "value": "practicalpe-uat-video-func"
+      "value": "practicalpe-video-func-uat"
     },
     "applicationInsightsWorkspaceName": {
-      "value": "practicalpe-uat-law"
+      "value": "practicalpe-law-uat"
     },
     "retentionInDays": {
       "value": 90
     },
     "serviceBusNamespaceName": {
-      "value": "practicalpe-uat-sb"
+      "value": "practicalpe-sb-uat"
     },
     "serviceBusSku": {
       "value": "Premium"

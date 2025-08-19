@@ -45,31 +45,31 @@
       "value": true
     },
     "sqlServerName": {
-      "value": "practicalpe-prod-sql"
+      "value": "practicalpe-sql-prod"
     },
     "adminUsername": {
       "value": "sqladmin"
     },
     "appServicePlanName": {
-      "value": "practicalpe-prod-asp"
+      "value": "practicalpe-asp-prod"
     },
     "vnetName": {
-      "value": "practicalpe-prod-vnet"
+      "value": "practicalpe-vnet-prod"
     },
     "keyVaultName": {
-      "value": "practicalpe-prod-kv"
+      "value": "practicalpe-kv-prod"
     },
     "appConfigName": {
-      "value": "practicalpe-prod-config"
+      "value": "practicalpe-config-prod"
     },
     "storageAccountName": {
-      "value": "practicalpeprodblob"
+      "value": "practicalpeblobprod"
     },
     "functionAppsStorageAccountName": {
-      "value": "practicalpeprodfunc"
+      "value": "practicalpefuncprod"
     },
     "apiManagementName": {
-      "value": "practicalpe-prod-apim"
+      "value": "practicalpe-apim-prod"
     },
     "publisherEmail": {
       "value": "production@practical.devsecops"
@@ -78,34 +78,34 @@
       "value": "Practical DevSecOps Production Team"
     },
     "customerPublicWebAppName": {
-      "value": "practicalpe-prod-customer-public"
+      "value": "practicalpe-customer-public-prod"
     },
     "customerSiteWebAppName": {
-      "value": "practicalpe-prod-customer-site"
+      "value": "practicalpe-customer-site-prod"
     },
     "adminPublicWebAppName": {
-      "value": "practicalpe-prod-admin-public"
+      "value": "practicalpe-admin-public-prod"
     },
     "adminSiteWebAppName": {
-      "value": "practicalpe-prod-admin-site"
+      "value": "practicalpe-admin-site-prod"
     },
     "videoApiWebAppName": {
-      "value": "practicalpe-prod-video-api"
+      "value": "practicalpe-video-api-prod"
     },
     "musicApiWebAppName": {
-      "value": "practicalpe-prod-music-api"
+      "value": "practicalpe-music-api-prod"
     },
     "customerDbName": {
-      "value": "PracticalPE-PROD-CUSTOMER-DB"
+      "value": "PracticalPE-CUSTOMER-DB-PROD"
     },
     "adminDbName": {
-      "value": "PracticalPE-PROD-ADMIN-DB"
+      "value": "PracticalPE-ADMIN-DB-PROD"
     },
     "videoDbName": {
-      "value": "PracticalPE-PROD-VIDEO-DB"
+      "value": "PracticalPE-VIDEO-DB-PROD"
     },
     "musicDbName": {
-      "value": "PracticalPE-PROD-MUSIC-DB"
+      "value": "PracticalPE-MUSIC-DB-PROD"
     },
     "vmAdminUsername": {
       "value": "prodadmin"
@@ -148,7 +148,7 @@
       ]
     },
     "cosmosAccountName": {
-      "value": "practicalpe-prod-cosmos"
+      "value": "practicalpe-cosmos-prod"
     },
     "cosmosConsistencyLevel": {
       "value": "BoundedStaleness"
@@ -157,37 +157,37 @@
       "value": true
     },
     "cosmosAdminDbName": {
-      "value": "PracticalPE-PROD-ADMIN-COSMOS-DB"
+      "value": "PracticalPE-ADMIN-COSMOS-DB-PROD"
     },
     "cosmosCustomerDbName": {
-      "value": "PracticalPE-PROD-CUSTOMER-COSMOS-DB"
+      "value": "PracticalPE-CUSTOMER-COSMOS-DB-PROD"
     },
     "cosmosMusicDbName": {
-      "value": "PracticalPE-PROD-MUSIC-COSMOS-DB"
+      "value": "PracticalPE-MUSIC-COSMOS-DB-PROD"
     },
     "cosmosVideoDbName": {
-      "value": "PracticalPE-PROD-VIDEO-COSMOS-DB"
+      "value": "PracticalPE-VIDEO-COSMOS-DB-PROD"
     },
     "adminFunctionAppName": {
-      "value": "practicalpe-prod-admin-func"
+      "value": "practicalpe-admin-func-prod"
     },
     "customerFunctionAppName": {
-      "value": "practicalpe-prod-customer-func"
+      "value": "practicalpe-customer-func-prod"
     },
     "musicFunctionAppName": {
-      "value": "practicalpe-prod-music-func"
+      "value": "practicalpe-music-func-prod"
     },
     "videoFunctionAppName": {
-      "value": "practicalpe-prod-video-func"
+      "value": "practicalpe-video-func-prod"
     },
     "applicationInsightsWorkspaceName": {
-      "value": "practicalpe-prod-law"
+      "value": "practicalpe-law-prod"
     },
     "retentionInDays": {
       "value": 365
     },
     "serviceBusNamespaceName": {
-      "value": "practicalpe-prod-sb"
+      "value": "practicalpe-sb-prod"
     },
     "serviceBusSku": {
       "value": "Premium"

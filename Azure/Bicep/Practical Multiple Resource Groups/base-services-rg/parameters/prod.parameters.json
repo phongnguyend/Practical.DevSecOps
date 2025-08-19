@@ -39,22 +39,22 @@
       "value": true
     },
     "sqlServerName": {
-      "value": "practicalmrg-prod-sql"
+      "value": "practicalmrg-sql-prod"
     },
     "adminUsername": {
       "value": "sqladmin"
     },
     "appServicePlanName": {
-      "value": "practicalmrg-prod-asp"
+      "value": "practicalmrg-asp-prod"
     },
     "vnetName": {
-      "value": "practicalmrg-prod-vnet"
+      "value": "practicalmrg-vnet-prod"
     },
     "keyVaultName": {
-      "value": "practicalmrg-prod-kv"
+      "value": "practicalmrg-kv-prod"
     },
     "appConfigName": {
-      "value": "practicalmrg-prod-config"
+      "value": "practicalmrg-config-prod"
     },
     "storageAccountName": {
       "value": "practicalmrgprodblob"
@@ -63,34 +63,34 @@
       "value": "practicalmrgprodfunc"
     },
     "customerPublicWebAppName": {
-      "value": "practicalmrg-prod-customer-public"
+      "value": "practicalmrg-customer-public-prod"
     },
     "customerSiteWebAppName": {
-      "value": "practicalmrg-prod-customer-site"
+      "value": "practicalmrg-customer-site-prod"
     },
     "adminPublicWebAppName": {
-      "value": "practicalmrg-prod-admin-public"
+      "value": "practicalmrg-admin-public-prod"
     },
     "adminSiteWebAppName": {
-      "value": "practicalmrg-prod-admin-site"
+      "value": "practicalmrg-admin-site-prod"
     },
     "videoApiWebAppName": {
-      "value": "practicalmrg-prod-video-api"
+      "value": "practicalmrg-video-api-prod"
     },
     "musicApiWebAppName": {
-      "value": "practicalmrg-prod-music-api"
+      "value": "practicalmrg-music-api-prod"
     },
     "customerDbName": {
-      "value": "PracticalMRG-PROD-CUSTOMER-DB"
+      "value": "PracticalMRG-CUSTOMER-DB-PROD"
     },
     "adminDbName": {
-      "value": "PracticalMRG-PROD-ADMIN-DB"
+      "value": "PracticalMRG-ADMIN-DB-PROD"
     },
     "videoDbName": {
-      "value": "PracticalMRG-PROD-VIDEO-DB"
+      "value": "PracticalMRG-VIDEO-DB-PROD"
     },
     "musicDbName": {
-      "value": "PracticalMRG-PROD-MUSIC-DB"
+      "value": "PracticalMRG-MUSIC-DB-PROD"
     },
     "vmAdminUsername": {
       "value": "prodadmin"
@@ -109,7 +109,7 @@
       ]
     },
     "cosmosAccountName": {
-      "value": "practicalmrg-prod-cosmos"
+      "value": "practicalmrg-cosmos-prod"
     },
     "cosmosConsistencyLevel": {
       "value": "BoundedStaleness"
@@ -118,37 +118,37 @@
       "value": true
     },
     "cosmosAdminDbName": {
-      "value": "PracticalMRG-PROD-ADMIN-COSMOS-DB"
+      "value": "PracticalMRG-ADMIN-COSMOS-DB-PROD"
     },
     "cosmosCustomerDbName": {
-      "value": "PracticalMRG-PROD-CUSTOMER-COSMOS-DB"
+      "value": "PracticalMRG-CUSTOMER-COSMOS-DB-PROD"
     },
     "cosmosMusicDbName": {
-      "value": "PracticalMRG-PROD-MUSIC-COSMOS-DB"
+      "value": "PracticalMRG-MUSIC-COSMOS-DB-PROD"
     },
     "cosmosVideoDbName": {
-      "value": "PracticalMRG-PROD-VIDEO-COSMOS-DB"
+      "value": "PracticalMRG-VIDEO-COSMOS-DB-PROD"
     },
     "adminFunctionAppName": {
-      "value": "practicalmrg-prod-admin-func"
+      "value": "practicalmrg-admin-func-prod"
     },
     "customerFunctionAppName": {
-      "value": "practicalmrg-prod-customer-func"
+      "value": "practicalmrg-customer-func-prod"
     },
     "musicFunctionAppName": {
-      "value": "practicalmrg-prod-music-func"
+      "value": "practicalmrg-music-func-prod"
     },
     "videoFunctionAppName": {
-      "value": "practicalmrg-prod-video-func"
+      "value": "practicalmrg-video-func-prod"
     },
     "applicationInsightsWorkspaceName": {
-      "value": "practicalmrg-prod-law"
+      "value": "practicalmrg-law-prod"
     },
     "retentionInDays": {
       "value": 365
     },
     "serviceBusNamespaceName": {
-      "value": "practicalmrg-prod-sb"
+      "value": "practicalmrg-sb-prod"
     },
     "serviceBusSku": {
       "value": "Premium"
@@ -187,7 +187,7 @@
       ]
     },
     "networkingLayerResourceGroup": {
-      "value": "practical-pe-prod-networking-rg"
+      "value": "practical-pe-networking-rg-prod"
     },
     "appConfigPrivateDnsZoneName": {
       "value": "privatelink.azconfig.io"

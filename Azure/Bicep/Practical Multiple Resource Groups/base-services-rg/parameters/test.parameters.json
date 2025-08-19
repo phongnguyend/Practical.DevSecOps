@@ -39,22 +39,22 @@
       "value": true
     },
     "sqlServerName": {
-      "value": "practicalmrg-test-sql"
+      "value": "practicalmrg-sql-test"
     },
     "adminUsername": {
       "value": "sqladmin"
     },
     "appServicePlanName": {
-      "value": "practicalmrg-test-asp"
+      "value": "practicalmrg-asp-test"
     },
     "vnetName": {
-      "value": "practicalmrg-test-vnet"
+      "value": "practicalmrg-vnet-test"
     },
     "keyVaultName": {
-      "value": "practicalmrg-test-kv"
+      "value": "practicalmrg-kv-test"
     },
     "appConfigName": {
-      "value": "practicalmrg-test-config"
+      "value": "practicalmrg-config-test"
     },
     "storageAccountName": {
       "value": "practicalmrgtstblob"
@@ -63,34 +63,34 @@
       "value": "practicalmrgtstfunc"
     },
     "customerPublicWebAppName": {
-      "value": "practicalmrg-test-customer-public"
+      "value": "practicalmrg-customer-public-test"
     },
     "customerSiteWebAppName": {
-      "value": "practicalmrg-test-customer-site"
+      "value": "practicalmrg-customer-site-test"
     },
     "adminPublicWebAppName": {
-      "value": "practicalmrg-test-admin-public"
+      "value": "practicalmrg-admin-public-test"
     },
     "adminSiteWebAppName": {
-      "value": "practicalmrg-test-admin-site"
+      "value": "practicalmrg-admin-site-test"
     },
     "videoApiWebAppName": {
-      "value": "practicalmrg-test-video-api"
+      "value": "practicalmrg-video-api-test"
     },
     "musicApiWebAppName": {
-      "value": "practicalmrg-test-music-api"
+      "value": "practicalmrg-music-api-test"
     },
     "customerDbName": {
-      "value": "PracticalMRG-TEST-CUSTOMER-DB"
+      "value": "PracticalMRG-CUSTOMER-DB-TEST"
     },
     "adminDbName": {
-      "value": "PracticalMRG-TEST-ADMIN-DB"
+      "value": "PracticalMRG-ADMIN-DB-TEST"
     },
     "videoDbName": {
-      "value": "PracticalMRG-TEST-VIDEO-DB"
+      "value": "PracticalMRG-VIDEO-DB-TEST"
     },
     "musicDbName": {
-      "value": "PracticalMRG-TEST-MUSIC-DB"
+      "value": "PracticalMRG-MUSIC-DB-TEST"
     },
     "vmAdminUsername": {
       "value": "testadmin"
@@ -108,7 +108,7 @@
       ]
     },
     "cosmosAccountName": {
-      "value": "practicalmrg-test-cosmos"
+      "value": "practicalmrg-cosmos-test"
     },
     "cosmosConsistencyLevel": {
       "value": "Session"
@@ -117,37 +117,37 @@
       "value": true
     },
     "cosmosAdminDbName": {
-      "value": "PracticalMRG-TEST-ADMIN-COSMOS-DB"
+      "value": "PracticalMRG-ADMIN-COSMOS-DB-TEST"
     },
     "cosmosCustomerDbName": {
-      "value": "PracticalMRG-TEST-CUSTOMER-COSMOS-DB"
+      "value": "PracticalMRG-CUSTOMER-COSMOS-DB-TEST"
     },
     "cosmosMusicDbName": {
-      "value": "PracticalMRG-TEST-MUSIC-COSMOS-DB"
+      "value": "PracticalMRG-MUSIC-COSMOS-DB-TEST"
     },
     "cosmosVideoDbName": {
-      "value": "PracticalMRG-TEST-VIDEO-COSMOS-DB"
+      "value": "PracticalMRG-VIDEO-COSMOS-DB-TEST"
     },
     "adminFunctionAppName": {
-      "value": "practicalmrg-test-admin-func"
+      "value": "practicalmrg-admin-func-test"
     },
     "customerFunctionAppName": {
-      "value": "practicalmrg-test-customer-func"
+      "value": "practicalmrg-customer-func-test"
     },
     "musicFunctionAppName": {
-      "value": "practicalmrg-test-music-func"
+      "value": "practicalmrg-music-func-test"
     },
     "videoFunctionAppName": {
-      "value": "practicalmrg-test-video-func"
+      "value": "practicalmrg-video-func-test"
     },
     "applicationInsightsWorkspaceName": {
-      "value": "practicalmrg-test-law"
+      "value": "practicalmrg-law-test"
     },
     "retentionInDays": {
       "value": 60
     },
     "serviceBusNamespaceName": {
-      "value": "practicalmrg-test-sb"
+      "value": "practicalmrg-sb-test"
     },
     "serviceBusSku": {
       "value": "Standard"
@@ -180,7 +180,7 @@
       ]
     },
     "networkingLayerResourceGroup": {
-      "value": "practical-pe-test-networking-rg"
+      "value": "practical-pe-networking-rg-test"
     },
     "appConfigPrivateDnsZoneName": {
       "value": "privatelink.azconfig.io"

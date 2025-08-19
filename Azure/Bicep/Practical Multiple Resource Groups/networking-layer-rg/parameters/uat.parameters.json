@@ -27,10 +27,10 @@
       "value": true
     },
     "vnetName": {
-      "value": "practicalmrg-uat-vnet"
+      "value": "practicalmrg-vnet-uat"
     },
     "apiManagementName": {
-      "value": "practicalmrg-uat-apim"
+      "value": "practicalmrg-apim-uat"
     },
     "publisherEmail": {
       "value": "uat@practical.devsecops"
@@ -39,22 +39,22 @@
       "value": "Practical DevSecOps UAT Team"
     },
     "customerPublicWebAppName": {
-      "value": "practicalmrg-uat-customer-public"
+      "value": "practicalmrg-customer-public-uat"
     },
     "customerSiteWebAppName": {
-      "value": "practicalmrg-uat-customer-site"
+      "value": "practicalmrg-customer-site-uat"
     },
     "adminPublicWebAppName": {
-      "value": "practicalmrg-uat-admin-public"
+      "value": "practicalmrg-admin-public-uat"
     },
     "adminSiteWebAppName": {
-      "value": "practicalmrg-uat-admin-site"
+      "value": "practicalmrg-admin-site-uat"
     },
     "videoApiWebAppName": {
-      "value": "practicalmrg-uat-video-api"
+      "value": "practicalmrg-video-api-uat"
     },
     "musicApiWebAppName": {
-      "value": "practicalmrg-uat-music-api"
+      "value": "practicalmrg-music-api-uat"
     },
     "apiManagementSku": {
       "value": "Standard"

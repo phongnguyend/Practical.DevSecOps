@@ -27,31 +27,31 @@
       "value": "product-uat"
     },
     "appServicePlanName": {
-      "value": "practicalpe-uat-product-asp"
+      "value": "practicalpe-product-asp-uat"
     },
     "productApiWebAppName": {
-      "value": "practicalpe-uat-product-api"
+      "value": "practicalpe-product-api-uat"
     },
     "productFunctionAppName": {
-      "value": "practicalpe-uat-product-func"
+      "value": "practicalpe-product-func-uat"
     },
     "productKeyVaultName": {
-      "value": "practicalpe-uat-prod-kv"
+      "value": "practicalpe-product-kv-uat"
     },
     "productFunctionStorageAccountName": {
-      "value": "practicalpeuatprodfunc"
+      "value": "practicalpeproductfuncuat"
     },
     "sqlServerName": {
-      "value": "practicalpe-uat-product-sql"
+      "value": "practicalpe-product-sql-uat"
     },
     "adminUsername": {
       "value": "productadmin"
     },
     "productDbName": {
-      "value": "PracticalPE-UAT-PRODUCT-DB"
+      "value": "PracticalPE-PRODUCT-DB-UAT"
     },
     "cosmosAccountName": {
-      "value": "practicalpe-uat-product-cosmos"
+      "value": "practicalpe-product-cosmos-uat"
     },
     "cosmosConsistencyLevel": {
       "value": "Session"
@@ -60,10 +60,10 @@
       "value": true
     },
     "productCosmosDbName": {
-      "value": "PracticalPE-UAT-PRODUCT-COSMOS-DB"
+      "value": "PracticalPE-PRODUCT-COSMOS-DB-UAT"
     },
     "baseVnetName": {
-      "value": "practicalpe-uat-vnet"
+      "value": "practicalpe-vnet-uat"
     },
     "baseVnetResourceGroup": {
       "value": "rg-practicalpe-uat"
@@ -72,7 +72,7 @@
       "value": true
     },
     "apiManagementName": {
-      "value": "practicalpe-uat-apim"
+      "value": "practicalpe-apim-uat"
     }
   }
 }
