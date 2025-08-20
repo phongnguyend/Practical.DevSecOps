@@ -212,13 +212,28 @@
         "dev-testing-queue"
       ]
     },
-    "serviceBusSubscriptionNames": {
+    "serviceBusSubscriptions": {
       "value": [
-        "customer-subscription",
-        "admin-subscription",
-        "video-subscription",
-        "music-subscription",
-        "dev-testing-subscription"
+        {
+          "topicName": "customer-events",
+          "subscriptionName": "customer-subscription"
+        },
+        {
+          "topicName": "admin-events",
+          "subscriptionName": "admin-subscription"
+        },
+        {
+          "topicName": "video-events",
+          "subscriptionName": "video-subscription"
+        },
+        {
+          "topicName": "music-events",
+          "subscriptionName": "music-subscription"
+        },
+        {
+          "topicName": "dev-testing-events",
+          "subscriptionName": "dev-testing-subscription"
+        }
       ]
     }
   }

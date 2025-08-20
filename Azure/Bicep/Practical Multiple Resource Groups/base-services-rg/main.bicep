@@ -89,11 +89,23 @@ param serviceBusQueueNames array = [
   'video-queue'
   'music-queue'
 ]
-param serviceBusSubscriptionNames array = [
-  'customer-subscription'
-  'admin-subscription'
-  'video-subscription'
-  'music-subscription'
+param serviceBusSubscriptions array = [
+  {
+    topicName: 'customer-events'
+    subscriptionName: 'customer-subscription'
+  }
+  {
+    topicName: 'admin-events'
+    subscriptionName: 'admin-subscription'
+  }
+  {
+    topicName: 'video-events'
+    subscriptionName: 'video-subscription'
+  }
+  {
+    topicName: 'music-events'
+    subscriptionName: 'music-subscription'
+  }
 ]
 
 // Private DNS Zone Names from networking layer
@@ -513,20 +525,22 @@ module cosmosVideoDatabaseModule 'modules/cosmos-databases/videoDb.bicep' = if (
 }
 
 // Service Bus Namespace Module
-module serviceBusNamespaceModule 'modules/service-bus-namespaces/my-namespace/serviceBusNamespace.bicep' = if (enableServiceBus) {
+module serviceBusNamespaceModule 'modules/service-bus-namespaces/myServiceBusNamespace.bicep' = if (enableServiceBus) {
   name: 'serviceBusNamespaceDeployment'
   params: {
     location: location
     namespaceName: serviceBusNamespaceName
     sku: serviceBusSku
     capacity: serviceBusCapacity
+    zoneRedundant: serviceBusSku == 'Premium' ? true : false
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableServiceBus) ? privateDnsZonesModule.outputs.serviceBusPrivateDnsZoneId : ''
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    privateDnsZoneId: (enablePrivateEndpoints && enableServiceBus) ? privateDnsZonesModule!.outputs.serviceBusPrivateDnsZoneId : ''
+    allowedSubnetIds: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    allowedIpRanges: []
     topicNames: serviceBusTopicNames
     queueNames: serviceBusQueueNames
-    subscriptionNames: serviceBusSubscriptionNames
+    subscriptions: serviceBusSubscriptions
     roleAssignments: concat(
       // App Services - Service Bus Data Contributor (can send and receive messages)
       [
@@ -1081,7 +1095,7 @@ output serviceBusInfo object = enableServiceBus ? {
   privateEndpointName: serviceBusNamespaceModule!.outputs.privateEndpointName
   topicNames: serviceBusTopicNames
   queueNames: serviceBusQueueNames
-  subscriptionNames: serviceBusSubscriptionNames
+  subscriptionNames: serviceBusSubscriptions
 } : {
   namespaceName: ''
   namespaceId: ''

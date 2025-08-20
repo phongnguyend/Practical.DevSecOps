@@ -171,12 +171,24 @@
         "music-queue"
       ]
     },
-    "serviceBusSubscriptionNames": {
+    "serviceBusSubscriptions": {
       "value": [
-        "customer-subscription",
-        "admin-subscription",
-        "video-subscription",
-        "music-subscription"
+        {
+          "topicName": "customer-events",
+          "subscriptionName": "customer-subscription"
+        },
+        {
+          "topicName": "admin-events",
+          "subscriptionName": "admin-subscription"
+        },
+        {
+          "topicName": "video-events",
+          "subscriptionName": "video-subscription"
+        },
+        {
+          "topicName": "music-events",
+          "subscriptionName": "music-subscription"
+        }
       ]
     },
     "networkingLayerResourceGroup": {
