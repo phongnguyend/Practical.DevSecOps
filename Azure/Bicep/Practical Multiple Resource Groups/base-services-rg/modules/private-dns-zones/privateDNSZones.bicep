@@ -1,5 +1,5 @@
 @description('Resource group of the networking-layer deployment')
-param networkingLayerResourceGroup string
+param privateDnsZonesResourceGroup string
 
 @description('Private DNS Zone Name for App Configuration')
 param appConfigPrivateDnsZoneName string = 'privatelink.azconfig.io'
@@ -17,11 +17,11 @@ param serviceBusPrivateDnsZoneName string = 'privatelink.servicebus.windows.net'
 param appServicePrivateDnsZoneName string = 'privatelink.azurewebsites.net'
 
 // Construct Private DNS Zone Resource IDs
-var appConfigPrivateDnsZoneId = resourceId(networkingLayerResourceGroup, 'Microsoft.Network/privateDnsZones', appConfigPrivateDnsZoneName)
-var blobStoragePrivateDnsZoneId = resourceId(networkingLayerResourceGroup, 'Microsoft.Network/privateDnsZones', blobStoragePrivateDnsZoneName)
-var cosmosPrivateDnsZoneId = resourceId(networkingLayerResourceGroup, 'Microsoft.Network/privateDnsZones', cosmosPrivateDnsZoneName)
-var serviceBusPrivateDnsZoneId = resourceId(networkingLayerResourceGroup, 'Microsoft.Network/privateDnsZones', serviceBusPrivateDnsZoneName)
-var appServicePrivateDnsZoneId = resourceId(networkingLayerResourceGroup, 'Microsoft.Network/privateDnsZones', appServicePrivateDnsZoneName)
+var appConfigPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', appConfigPrivateDnsZoneName)
+var blobStoragePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', blobStoragePrivateDnsZoneName)
+var cosmosPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', cosmosPrivateDnsZoneName)
+var serviceBusPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', serviceBusPrivateDnsZoneName)
+var appServicePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', appServicePrivateDnsZoneName)
 
 // Outputs
 @description('Private DNS Zone ID for App Configuration')

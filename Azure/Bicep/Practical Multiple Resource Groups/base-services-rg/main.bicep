@@ -134,7 +134,7 @@ var commonTags = {
 module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' = {
   name: 'privateDnsZonesDeployment'
   params: {
-    networkingLayerResourceGroup: networkingLayerResourceGroup
+    privateDnsZonesResourceGroup: networkingLayerResourceGroup
     appConfigPrivateDnsZoneName: appConfigPrivateDnsZoneName
     blobStoragePrivateDnsZoneName: blobStoragePrivateDnsZoneName
     cosmosPrivateDnsZoneName: cosmosPrivateDnsZoneName
