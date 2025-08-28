@@ -728,6 +728,7 @@ module adminFunctionAppModule 'modules/azure-functions/adminFunctionApp.bicep' =
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.adminAppInsights.connectionString : ''
     tags: commonTags
   }
 }
@@ -744,6 +745,7 @@ module customerFunctionAppModule 'modules/azure-functions/customerFunctionApp.bi
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.customerAppInsights.connectionString : ''
     tags: commonTags
   }
 }
@@ -760,6 +762,7 @@ module musicFunctionAppModule 'modules/azure-functions/musicFunctionApp.bicep' =
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.musicAppInsights.connectionString : ''
     tags: commonTags
   }
 }
@@ -776,6 +779,7 @@ module videoFunctionAppModule 'modules/azure-functions/videoFunctionApp.bicep' =
     privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
     enableVNetIntegration: enableVNetIntegration
     vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.videoAppInsights.connectionString : ''
     tags: commonTags
   }
 }

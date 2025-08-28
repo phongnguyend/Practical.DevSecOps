@@ -2,6 +2,7 @@ param location string = 'southeastasia'
 
 // Feature Flags
 param enablePrivateEndpoints bool = false
+param enableVNetIntegration bool = false
 param enableKeyVault bool = false
 param enableCosmosDb bool = false
 param enableSqlServer bool = false
@@ -35,6 +36,12 @@ param baseVnetResourceGroup string = resourceGroup().name
 
 // API Management Parameters (from base-services)
 param apiManagementName string = 'PracticalMultipleResourceGroups-apim'
+
+// Application Insights Parameters (from base-services)
+param applicationInsightsConnectionString string = ''
+
+// Private DNS Zone ID for private endpoints (from base-services)
+param privateDnsZoneId string = ''
 
 // Reference to existing Virtual Network from base-services
 resource existingVnet 'Microsoft.Network/virtualNetworks@2023-04-01' existing = {
@@ -77,11 +84,15 @@ module productFunctionAppModule 'modules/azure-functions/productFunctionApp.bice
   name: 'productFunctionAppDeployment'
   params: {
     location: location
+    functionAppName: productFunctionAppName
     appServicePlanId: productAppServicePlanModule.outputs.appServicePlanId
-    productFunctionAppName: productFunctionAppName
-    functionStorageAccountName: productFunctionStorageAccountName
-    enablePrivateEndpoints: enablePrivateEndpoints
+    storageAccountName: productFunctionStorageAccountName
+    createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
+    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZoneId : ''
+    enableVNetIntegration: enableVNetIntegration
+    vnetIntegrationSubnetId: enableVNetIntegration ? existingVnet.properties.subnets[1].id : '' // VNetIntegrationSubnet
+    applicationInsightsConnectionString: applicationInsightsConnectionString
     tags: commonTags
   }
 }
@@ -158,7 +169,7 @@ module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (en
       // Product Function App Role Assignment (Key Vault Secrets User) - only when enabled
       enableFunctionApp ? [
         {
-          principalId: productFunctionAppModule!.outputs.productFunctionAppPrincipalId
+          principalId: productFunctionAppModule!.outputs.principalId
           roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
         }
       ] : []
@@ -188,7 +199,7 @@ module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep
       ],
       enableFunctionApp ? [
         {
-          principalId: productFunctionAppModule!.outputs.productFunctionAppPrincipalId
+          principalId: productFunctionAppModule!.outputs.principalId
           roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450' // Cosmos DB Built-in Data Contributor
         }
       ] : []
@@ -224,10 +235,10 @@ output productServiceInfo object = {
     principalId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
   }
   productFunction: enableFunctionApp ? {
-    id: productFunctionAppModule!.outputs.productFunctionAppId
-    name: productFunctionAppModule!.outputs.productFunctionAppName
-    url: productFunctionAppModule!.outputs.productFunctionAppUrl
-    principalId: productFunctionAppModule!.outputs.productFunctionAppPrincipalId
+    id: productFunctionAppModule!.outputs.functionAppId
+    name: productFunctionAppModule!.outputs.functionAppName
+    url: productFunctionAppModule!.outputs.functionAppUrl
+    principalId: productFunctionAppModule!.outputs.principalId
   } : {}
   sqlServer: enableSqlServer ? {
     id: productSqlServerModule!.outputs.sqlServerId

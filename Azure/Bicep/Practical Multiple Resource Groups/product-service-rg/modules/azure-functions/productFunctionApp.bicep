@@ -1,81 +1,129 @@
 param location string
+param functionAppName string
 param appServicePlanId string
-param productFunctionAppName string
-param functionStorageAccountName string
-param enablePrivateEndpoints bool = false
-param privateEndpointSubnetId string = ''
-param tags object = {}
+param storageAccountName string
+
+// Private endpoint configuration
+param createPrivateEndpoint bool
+param privateEndpointSubnetId string
+param privateDnsZoneId string
+
+// VNet Integration Parameters
+param enableVNetIntegration bool
+param vnetIntegrationSubnetId string
+
+// Function-specific settings
+param linuxFxVersion string = 'DOTNET-ISOLATED|8.0'
+param alwaysOn bool = true
+
+// Application Insights Configuration
+param applicationInsightsConnectionString string
+
+// Additional app settings from outside (optional)
+param additionalAppSettings object = {}
+
+// Tags
+param tags object
+
+// Reference to existing storage account for function app
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
+  name: storageAccountName
+}
 
 // Product Function App
-resource productFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
-  name: productFunctionAppName
+resource productFunctionApp 'Microsoft.Web/sites@2024-04-01' = {
+  name: functionAppName
   location: location
-  kind: 'functionapp'
+  tags: tags
+  kind: 'functionapp,linux'
   identity: {
     type: 'SystemAssigned'
   }
   properties: {
     serverFarmId: appServicePlanId
     httpsOnly: true
-    publicNetworkAccess: enablePrivateEndpoints ? 'Disabled' : 'Enabled'
+    publicNetworkAccess: createPrivateEndpoint ? 'Disabled' : 'Enabled'
+    reserved: true  // Required for Linux Function Apps
     siteConfig: {
-      netFrameworkVersion: 'v8.0'
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${functionStorageAccountName};AccountKey=listKeys(resourceId(\'Microsoft.Storage/storageAccounts\', functionStorageAccountName), \'2023-01-01\').keys[0].value;EndpointSuffix=core.windows.net'
-        }
-        {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${functionStorageAccountName};AccountKey=listKeys(resourceId(\'Microsoft.Storage/storageAccounts\', functionStorageAccountName), \'2023-01-01\').keys[0].value;EndpointSuffix=core.windows.net'
-        }
-        {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower(productFunctionAppName)
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet-isolated'
-        }
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-      ]
+      minTlsVersion: '1.2'
+      use32BitWorkerProcess: false
+      ftpsState: 'FtpsOnly'
+      alwaysOn: alwaysOn
+      linuxFxVersion: linuxFxVersion
     }
   }
-  tags: tags
+
+  resource configAppSettings 'config' = {
+    name: 'appsettings'
+    properties: union({
+      APPLICATIONINSIGHTS_AUTHENTICATION_STRING: 'Authorization=AAD'
+      APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsightsConnectionString
+      AzureWebJobsStorage__credential: 'managedidentity'
+      AzureWebJobsStorage__blobServiceUri: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
+      AzureWebJobsStorage__queueServiceUri: 'https://${storageAccount.name}.queue.${environment().suffixes.storage}'
+      AzureWebJobsStorage__tableServiceUri: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
+      FUNCTIONS_EXTENSION_VERSION: '~4'
+      FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
+      WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED: '1'
+    }, additionalAppSettings)
+  }
 }
 
-// Private Endpoint for Product Function App (if enabled)
-resource productFunctionPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-04-01' = if (enablePrivateEndpoints && privateEndpointSubnetId != '') {
-  name: '${productFunctionAppName}-pe'
+// Private Endpoint (conditional)
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-09-01' = if (createPrivateEndpoint) {
+  name: '${functionAppName}-pe'
   location: location
+  tags: tags
   properties: {
     subnet: {
       id: privateEndpointSubnetId
     }
     privateLinkServiceConnections: [
       {
-        name: '${productFunctionAppName}-pe-connection'
+        name: '${functionAppName}-pe-connection'
         properties: {
           privateLinkServiceId: productFunctionApp.id
-          groupIds: ['sites']
+          groupIds: [
+            'sites'
+          ]
         }
       }
     ]
   }
-  tags: tags
 }
 
+// DNS Records for Private Endpoint (conditional)
+resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-09-01' = if (createPrivateEndpoint) {
+  name: '${functionAppName}-pe-dns-group'
+  parent: privateEndpoint
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-azurewebsites-net'
+        properties: {
+          privateDnsZoneId: privateDnsZoneId
+        }
+      }
+    ]
+  }
+}
+
+// VNet Integration
+resource networkConfig 'Microsoft.Web/sites/networkConfig@2022-03-01' = if (enableVNetIntegration) {
+  name: 'virtualNetwork'
+  parent: productFunctionApp
+  properties: {
+    subnetResourceId: vnetIntegrationSubnetId
+  }
+}
+
+
 // Outputs
-output productFunctionAppId string = productFunctionApp.id
-output productFunctionAppName string = productFunctionApp.name
-output productFunctionAppUrl string = 'https://${productFunctionApp.properties.defaultHostName}'
-output productFunctionAppPrincipalId string = productFunctionApp.identity.principalId
-output hasPrivateEndpoint bool = enablePrivateEndpoints && privateEndpointSubnetId != ''
-output privateEndpointId string = enablePrivateEndpoints && privateEndpointSubnetId != '' ? productFunctionPrivateEndpoint.id : ''
+output functionAppId string = productFunctionApp.id
+output functionAppName string = productFunctionApp.name
+output principalId string = productFunctionApp.identity.principalId
+output defaultHostName string = productFunctionApp.properties.defaultHostName
+output hasPrivateEndpoint bool = createPrivateEndpoint
+output privateEndpointId string = createPrivateEndpoint ? privateEndpoint.id : ''
+output privateEndpointName string = createPrivateEndpoint ? privateEndpoint.name : ''
+output functionAppUrl string = 'https://${productFunctionApp.properties.defaultHostName}'
