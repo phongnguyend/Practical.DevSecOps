@@ -1,25 +1,29 @@
-// Customer Function App Module - Handles customer operations, orders, and notifications
 param location string
 param functionAppName string
 param appServicePlanId string
 param storageAccountName string
 
 // Private endpoint configuration
-param createPrivateEndpoint bool = false
-param privateEndpointSubnetId string = ''
-param privateDnsZoneId string = ''
+param createPrivateEndpoint bool
+param privateEndpointSubnetId string
+param privateDnsZoneId string
 
-// VNet integration configuration
-param enableVNetIntegration bool = false
-param vnetIntegrationSubnetId string = ''
+// VNet Integration Parameters
+param enableVNetIntegration bool
+param vnetIntegrationSubnetId string
 
 // Function-specific settings
-param functionWorkerRuntime string = 'dotnet-isolated'
-param functionsVersion string = '~4'
-param linuxFxVersion string = 'DOTNET|8.0'
+param linuxFxVersion string = 'DOTNET-ISOLATED|8.0'
+param alwaysOn bool = true
+
+// Application Insights Configuration
+param applicationInsightsConnectionString string
+
+// Additional app settings from outside (optional)
+param additionalAppSettings object = {}
 
 // Tags
-param tags object = {}
+param tags object
 
 // Reference to existing storage account for function app
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
@@ -27,7 +31,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing 
 }
 
 // Customer Function App
-resource customerFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
+resource customerFunctionApp 'Microsoft.Web/sites@2024-04-01' = {
   name: functionAppName
   location: location
   tags: tags
@@ -39,49 +43,29 @@ resource customerFunctionApp 'Microsoft.Web/sites@2023-01-01' = {
     serverFarmId: appServicePlanId
     httpsOnly: true
     publicNetworkAccess: createPrivateEndpoint ? 'Disabled' : 'Enabled'
-    virtualNetworkSubnetId: enableVNetIntegration ? vnetIntegrationSubnetId : null
+    reserved: true  // Required for Linux Function Apps
     siteConfig: {
-      linuxFxVersion: linuxFxVersion
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-        }
-        {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-        }
-        {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower(functionAppName)
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: functionsVersion
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionWorkerRuntime
-        }
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'false'
-        }
-      ]
-      ftpsState: 'Disabled'
       minTlsVersion: '1.2'
-      cors: {
-        allowedOrigins: [
-          'https://portal.azure.com'
-        ]
-      }
       use32BitWorkerProcess: false
-      alwaysOn: false // Functions consumption plan doesn't support always on
+      ftpsState: 'FtpsOnly'
+      alwaysOn: alwaysOn
+      linuxFxVersion: linuxFxVersion
     }
+  }
+
+  resource configAppSettings 'config' = {
+    name: 'appsettings'
+    properties: union({
+      APPLICATIONINSIGHTS_AUTHENTICATION_STRING: 'Authorization=AAD'
+      APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsightsConnectionString
+      AzureWebJobsStorage__credential: 'managedidentity'
+      AzureWebJobsStorage__blobServiceUri: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
+      AzureWebJobsStorage__queueServiceUri: 'https://${storageAccount.name}.queue.${environment().suffixes.storage}'
+      AzureWebJobsStorage__tableServiceUri: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
+      FUNCTIONS_EXTENSION_VERSION: '~4'
+      FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
+      WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED: '1'
+    }, additionalAppSettings)
   }
 }
 
@@ -123,6 +107,16 @@ resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
     ]
   }
 }
+
+// VNet Integration
+resource networkConfig 'Microsoft.Web/sites/networkConfig@2022-03-01' = if (enableVNetIntegration) {
+  name: 'virtualNetwork'
+  parent: customerFunctionApp
+  properties: {
+    subnetResourceId: vnetIntegrationSubnetId
+  }
+}
+
 
 // Outputs
 output functionAppId string = customerFunctionApp.id
