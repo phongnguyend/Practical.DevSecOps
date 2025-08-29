@@ -290,47 +290,47 @@ module appConfigModule 'modules/app-configurations/myAppConfiguration.bicep' = i
       // Web Apps
       [
         {
-          id: customerPublicWebAppModule.outputs.webAppId
           principalId: customerPublicWebAppModule.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: customerSiteWebAppModule.outputs.webAppId
           principalId: customerSiteWebAppModule.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: adminPublicWebAppModule.outputs.webAppId
           principalId: adminPublicWebAppModule.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: adminSiteWebAppModule.outputs.webAppId
           principalId: adminSiteWebAppModule.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: videoApiWebAppModule.outputs.webAppId
           principalId: videoApiWebAppModule.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: musicApiWebAppModule.outputs.webAppId
           principalId: musicApiWebAppModule.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
       ],
       // Function Apps (only when enabled)
       enableFunctionApps ? [
         {
-          id: adminFunctionAppModule!.outputs.functionAppId
           principalId: adminFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: customerFunctionAppModule!.outputs.functionAppId
           principalId: customerFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: musicFunctionAppModule!.outputs.functionAppId
           principalId: musicFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
         {
-          id: videoFunctionAppModule!.outputs.functionAppId
           principalId: videoFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
         }
       ] : []
     ) : []

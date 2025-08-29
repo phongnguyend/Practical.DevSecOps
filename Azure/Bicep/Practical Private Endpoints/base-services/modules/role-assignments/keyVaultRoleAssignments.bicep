@@ -1,14 +1,12 @@
 // Key Vault RBAC Role Assignment Module
-// This module assigns RBAC roles to a managed identity for Key Vault access
+// This module assigns multiple RBAC roles to managed identities for Key Vault access
 // Deployed at the target resource group scope where the Key Vault exists
 // Uses Azure RBAC instead of legacy access policies
 
 targetScope = 'resourceGroup'
 
 param keyVaultName string
-param principalId string
-param principalType string = 'ServicePrincipal'
-param roleDefinitionId string = '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User (read secrets only)
+param roleAssignments array
 
 // Available Key Vault RBAC roles:
 // - Key Vault Reader: '21090545-7ca7-4776-b22c-e363652d74d2' (read metadata only)
@@ -21,20 +19,18 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName
 }
 
-// RBAC Role Assignment - much cleaner than access policies
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(keyVault.id, principalId, roleDefinitionId)
+// RBAC Role Assignments - much cleaner than access policies
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for (assignment, index) in roleAssignments: {
+  name: guid(keyVault.id, assignment.principalId, assignment.roleDefinitionId)
   scope: keyVault
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleDefinitionId)
-    principalId: principalId
-    principalType: principalType
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', assignment.roleDefinitionId)
+    principalId: assignment.principalId
+    principalType: assignment.?principalType ?? 'ServicePrincipal'
   }
-}
+}]
 
 // Outputs
-output roleAssignmentId string = roleAssignment.id
+output roleAssignmentIds array = [for i in range(0, length(roleAssignments)): roleAssignment[i].id]
 output keyVaultId string = keyVault.id
 output keyVaultName string = keyVault.name
-output principalIdConfigured string = principalId
-output roleAssigned string = roleDefinitionId

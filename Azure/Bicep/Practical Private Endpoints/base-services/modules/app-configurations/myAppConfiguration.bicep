@@ -77,12 +77,12 @@ resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
 
 // Role Assignments
 resource appConfigRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for (assignment, index) in roleAssignments: if (!empty(assignment.principalId)) {
-  name: guid(appConfiguration.id, assignment.principalId, '516239f1-63e1-4d78-a4de-a74fb236a071')
+  name: guid(appConfiguration.id, assignment.principalId, assignment.roleDefinitionId)
   scope: appConfiguration
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '516239f1-63e1-4d78-a4de-a74fb236a071') // App Configuration Data Reader
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', assignment.roleDefinitionId)
     principalId: assignment.principalId
-    principalType: 'ServicePrincipal'
+    principalType: assignment.?principalType ?? 'ServicePrincipal'
   }
 }]
 
