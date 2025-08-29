@@ -106,6 +106,40 @@ resource blobContainers 'Microsoft.Storage/storageAccounts/blobServices/containe
   }
 }]
 
+// Lifecycle Management Policy - Delete documents after 30 days
+resource lifecyclePolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2023-01-01' = {
+  parent: storageAccount
+  name: 'default'
+  properties: {
+    policy: {
+      rules: [
+        {
+          enabled: true
+          name: 'DocumentsRetentionPolicy'
+          type: 'Lifecycle'
+          definition: {
+            filters: {
+              blobTypes: [
+                'blockBlob'
+              ]
+              prefixMatch: [
+                'documents/'
+              ]
+            }
+            actions: {
+              baseBlob: {
+                delete: {
+                  daysAfterModificationGreaterThan: 30
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
 // Private Endpoint for Blob Storage (conditional)
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-09-01' = if (createPrivateEndpoint) {
   name: '${storageAccountName}-pe'
