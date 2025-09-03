@@ -1,9 +1,5 @@
 // Consolidated Private DNS Zones Module
 param enablePrivateEndpoints bool = false
-param enableAppConfiguration bool = false
-param enableBlobStorage bool = false
-param enableCosmosDb bool = false
-param enableServiceBus bool = false
 
 // VNet Information
 param vnetId string
@@ -18,7 +14,7 @@ param applicationGatewayPublicIP string = '0.0.0.0'
 param tags object = {}
 
 // App Configuration Private DNS Zone Module (conditional)
-module appConfigPrivateDnsZone 'appConfigurationPrivateDNSZone.bicep' = if (enableAppConfiguration && enablePrivateEndpoints) {
+module appConfigPrivateDnsZone 'appConfigurationPrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
   name: 'appConfigPrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
@@ -27,7 +23,7 @@ module appConfigPrivateDnsZone 'appConfigurationPrivateDNSZone.bicep' = if (enab
 }
 
 // Blob Storage Private DNS Zone Module (conditional)
-module blobStoragePrivateDnsZone 'blobStoragePrivateDNSZone.bicep' = if (enableBlobStorage && enablePrivateEndpoints) {
+module blobStoragePrivateDnsZone 'blobStoragePrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
   name: 'blobStoragePrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
@@ -37,7 +33,7 @@ module blobStoragePrivateDnsZone 'blobStoragePrivateDNSZone.bicep' = if (enableB
 }
 
 // Cosmos DB Private DNS Zone Module (conditional)
-module cosmosPrivateDnsZone 'cosmosPrivateDNSZone.bicep' = if (enableCosmosDb && enablePrivateEndpoints) {
+module cosmosPrivateDnsZone 'cosmosPrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
   name: 'cosmosPrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
@@ -46,8 +42,17 @@ module cosmosPrivateDnsZone 'cosmosPrivateDNSZone.bicep' = if (enableCosmosDb &&
 }
 
 // Service Bus Private DNS Zone Module (conditional)
-module serviceBusPrivateDnsZone 'serviceBusPrivateDNSZone.bicep' = if (enableServiceBus && enablePrivateEndpoints) {
+module serviceBusPrivateDnsZone 'serviceBusPrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
   name: 'serviceBusPrivateDnsZoneDeployment'
+  params: {
+    vnetId: vnetId
+    tags: tags
+  }
+}
+
+// Key Vault Private DNS Zone Module (conditional)
+module keyVaultPrivateDnsZone 'keyVaultPrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
+  name: 'keyVaultPrivateDnsZoneDeployment'
   params: {
     vnetId: vnetId
     tags: tags
@@ -80,10 +85,11 @@ module customPrivateDnsZone 'customPrivateDNSZone.bicep' = if (enablePrivateEndp
 }
 
 // Outputs - DNS Zone IDs for consumption by other modules
-output appConfigPrivateDnsZoneId string = (enableAppConfiguration && enablePrivateEndpoints) ? appConfigPrivateDnsZone!.outputs.privateDnsZoneId : ''
-output blobStoragePrivateDnsZoneId string = (enableBlobStorage && enablePrivateEndpoints) ? blobStoragePrivateDnsZone!.outputs.privateDnsZoneId : ''
-output cosmosPrivateDnsZoneId string = (enableCosmosDb && enablePrivateEndpoints) ? cosmosPrivateDnsZone!.outputs.privateDnsZoneId : ''
-output serviceBusPrivateDnsZoneId string = (enableServiceBus && enablePrivateEndpoints) ? serviceBusPrivateDnsZone!.outputs.privateDnsZoneId : ''
+output appConfigPrivateDnsZoneId string = enablePrivateEndpoints ? appConfigPrivateDnsZone!.outputs.privateDnsZoneId : ''
+output blobStoragePrivateDnsZoneId string = enablePrivateEndpoints ? blobStoragePrivateDnsZone!.outputs.privateDnsZoneId : ''
+output cosmosPrivateDnsZoneId string = enablePrivateEndpoints ? cosmosPrivateDnsZone!.outputs.privateDnsZoneId : ''
+output serviceBusPrivateDnsZoneId string = enablePrivateEndpoints ? serviceBusPrivateDnsZone!.outputs.privateDnsZoneId : ''
+output keyVaultPrivateDnsZoneId string = enablePrivateEndpoints ? keyVaultPrivateDnsZone!.outputs.privateDnsZoneId : ''
 output appServicePrivateDnsZoneId string = enablePrivateEndpoints ? appServicePrivateDnsZone!.outputs.privateDnsZoneId : ''
 output customPrivateDnsZoneId string = enablePrivateEndpoints ? customPrivateDnsZone!.outputs.customPrivateDnsZoneId : ''
 

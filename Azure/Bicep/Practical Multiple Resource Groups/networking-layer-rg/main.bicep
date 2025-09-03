@@ -4,10 +4,6 @@ param location string = 'southeastasia'
 param enablePrivateEndpoints bool = false
 param enableApplicationGateway bool = false
 param enableApiManagement bool = false
-param enableAppConfiguration bool = false
-param enableBlobStorage bool = false
-param enableCosmosDb bool = false
-param enableServiceBus bool = false
 
 param vnetName string = 'PracticalMultipleResourceGroups-vnet'
 param apiManagementName string = 'PracticalMultipleResourceGroups-apim'
@@ -67,10 +63,6 @@ module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' =
   name: 'privateDnsZonesDeployment'
   params: {
     enablePrivateEndpoints: enablePrivateEndpoints
-    enableAppConfiguration: enableAppConfiguration
-    enableBlobStorage: enableBlobStorage
-    enableCosmosDb: enableCosmosDb
-    enableServiceBus: enableServiceBus
     vnetId: vnetModule.outputs.vnetId
     vnetName: vnetName
     customerSiteWebAppName: customerSiteWebAppName
