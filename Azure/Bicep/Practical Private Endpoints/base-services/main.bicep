@@ -261,10 +261,6 @@ module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' =
   name: 'privateDnsZonesDeployment'
   params: {
     enablePrivateEndpoints: enablePrivateEndpoints
-    enableAppConfiguration: enableAppConfiguration
-    enableBlobStorage: enableBlobStorage
-    enableCosmosDb: enableCosmosDb
-    enableServiceBus: enableServiceBus
     vnetId: vnetModule.outputs.vnetId
     vnetName: vnetName
     customerSiteWebAppName: customerSiteWebAppName
