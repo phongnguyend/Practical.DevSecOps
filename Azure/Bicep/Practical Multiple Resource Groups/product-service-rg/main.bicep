@@ -189,21 +189,36 @@ module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
     enablePublicNetworkAccess: !enablePrivateEndpoints
-    // Generic Role Assignments
+    // Generic Role Assignments (Azure RBAC)
     roleAssignments: concat(
       [
         {
           principalId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
-          roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450' // Cosmos DB Built-in Data Contributor
+          roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450' // Cosmos DB Data Contributor (Azure RBAC)
         }
       ],
       enableFunctionApp ? [
         {
           principalId: productFunctionAppModule!.outputs.principalId
-          roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450' // Cosmos DB Built-in Data Contributor
+          roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450' // Cosmos DB Data Contributor (Azure RBAC)
         }
       ] : []
     )
+    // SQL Role Assignments (Cosmos DB Built-in roles)
+    sqlRoleAssignments: enableCosmosDb ? concat(
+      [
+        {
+          principalId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+      ],
+      enableFunctionApp ? [
+        {
+          principalId: productFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+      ] : []
+    ) : []
     tags: commonTags
   }
 }

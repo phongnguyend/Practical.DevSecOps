@@ -27,6 +27,7 @@ param tags object = {}
 
 // Role Assignment Parameters
 param roleAssignments array = []
+param sqlRoleAssignments array = []
 
 // Generate virtual network rules from allowed subnets
 var virtualNetworkRules = [for subnetId in allowedSubnets: {
@@ -127,6 +128,17 @@ resource cosmosRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', assignment.roleDefinitionId)
     principalId: assignment.principalId
     principalType: 'ServicePrincipal'
+  }
+}]
+
+// SQL Role Assignments for Cosmos DB Data Plane Roles
+resource cosmosSqlRoleAssignments 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2023-04-15' = [for (assignment, index) in sqlRoleAssignments: if (!empty(assignment.principalId)) {
+  name: guid(cosmosAccount.id, assignment.principalId, assignment.roleDefinitionId)
+  parent: cosmosAccount
+  properties: {
+    roleDefinitionId: '${cosmosAccount.id}/sqlRoleDefinitions/${assignment.roleDefinitionId}'
+    principalId: assignment.principalId
+    scope: cosmosAccount.id
   }
 }]
 
