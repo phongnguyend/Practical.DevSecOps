@@ -38,6 +38,9 @@ var virtualNetworkRules = [for subnetId in allowedSubnets: {
   action: 'Allow'
 }]
 
+// Security configuration parameters
+param enableDefenderForStorage bool = true
+
 // Storage Account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
@@ -105,6 +108,26 @@ resource blobContainers 'Microsoft.Storage/storageAccounts/blobServices/containe
     metadata: {}
   }
 }]
+
+// Microsoft Defender for Storage
+resource defenderForStorage 'Microsoft.Security/defenderForStorageSettings@2025-02-01-preview' = if (enableDefenderForStorage) {
+  name: 'current'
+  scope: storageAccount
+  properties: {
+    isEnabled: true
+    malwareScanning: {
+      blobScanResultsOptions: 'blobIndexTags'
+      onUpload: {
+        isEnabled: true
+        capGBPerMonth: 10000
+      }
+    }
+    sensitiveDataDiscovery: {
+      isEnabled: true
+    }
+    overrideSubscriptionLevelSettings: true
+  }
+}
 
 // Lifecycle Management Policy - Delete documents after 30 days
 resource lifecyclePolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2023-01-01' = {
