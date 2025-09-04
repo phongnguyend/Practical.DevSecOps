@@ -57,14 +57,14 @@ resource cosmosPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-04-01' =
   tags: tags
 }
 
-// Generic Role Assignments for Cosmos DB
-resource cosmosRoleAssignments 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2023-09-15' = [for (roleAssignment, index) in roleAssignments: {
-  parent: cosmosAccount
-  name: guid(cosmosAccount.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+// Role Assignments
+resource cosmosRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for (assignment, index) in roleAssignments: if (!empty(assignment.principalId)) {
+  name: guid(cosmosAccount.id, assignment.principalId, assignment.roleDefinitionId)
+  scope: cosmosAccount
   properties: {
-    roleDefinitionId: '${cosmosAccount.id}/sqlRoleDefinitions/${roleAssignment.roleDefinitionId}'
-    principalId: roleAssignment.principalId
-    scope: cosmosAccount.id
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', assignment.roleDefinitionId)
+    principalId: assignment.principalId
+    principalType: 'ServicePrincipal'
   }
 }]
 

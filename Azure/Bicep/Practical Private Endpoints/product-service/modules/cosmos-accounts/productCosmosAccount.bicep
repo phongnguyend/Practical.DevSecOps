@@ -7,6 +7,7 @@ param privateEndpointSubnetId string = ''
 param enablePublicNetworkAccess bool = true
 // Array of role assignments with structure: { principalId: string, roleDefinitionId: string }
 param roleAssignments array = []
+param sqlRoleAssignments array = []
 param tags object = {}
 
 // Cosmos DB Account
@@ -56,13 +57,24 @@ resource cosmosPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-04-01' =
   tags: tags
 }
 
-// Generic Role Assignments for Cosmos DB
-resource cosmosRoleAssignments 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2023-09-15' = [for (roleAssignment, index) in roleAssignments: {
-  parent: cosmosAccount
-  name: guid(cosmosAccount.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+// Role Assignments
+resource cosmosRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for (assignment, index) in roleAssignments: if (!empty(assignment.principalId)) {
+  name: guid(cosmosAccount.id, assignment.principalId, assignment.roleDefinitionId)
+  scope: cosmosAccount
   properties: {
-    roleDefinitionId: '${cosmosAccount.id}/sqlRoleDefinitions/${roleAssignment.roleDefinitionId}'
-    principalId: roleAssignment.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', assignment.roleDefinitionId)
+    principalId: assignment.principalId
+    principalType: 'ServicePrincipal'
+  }
+}]
+
+// SQL Role Assignments for Cosmos DB Data Plane Roles
+resource cosmosSqlRoleAssignments 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2023-04-15' = [for (assignment, index) in sqlRoleAssignments: if (!empty(assignment.principalId)) {
+  name: guid(cosmosAccount.id, assignment.principalId, assignment.roleDefinitionId)
+  parent: cosmosAccount
+  properties: {
+    roleDefinitionId: '${cosmosAccount.id}/sqlRoleDefinitions/${assignment.roleDefinitionId}'
+    principalId: assignment.principalId
     scope: cosmosAccount.id
   }
 }]

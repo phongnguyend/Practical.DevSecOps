@@ -414,7 +414,7 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
     enablePublicNetworkAccess: !enablePrivateEndpoints
     tags: commonTags
     // Consolidated Role Assignment Parameters
-    roleAssignments: enableCosmosDb ? concat(
+    roleAssignments: concat(
       // Web App Role Assignments (Cosmos DB Data Contributor)
       [
         {
@@ -461,7 +461,55 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
           roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450'
         }
       ] : []
-    ) : []
+    )
+    sqlRoleAssignments: concat(
+      // Web App Role Assignments (Cosmos DB Built-in Data Contributor)
+      [
+        {
+          principalId: customerPublicWebAppModule.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: customerSiteWebAppModule.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: adminPublicWebAppModule.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: adminSiteWebAppModule.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: videoApiWebAppModule.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: musicApiWebAppModule.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+      ],
+      // Function App Role Assignments (Cosmos DB Built-in Data Contributor) - only when enabled
+      enableFunctionApps ? [
+        {
+          principalId: adminFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: customerFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: musicFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+        {
+          principalId: videoFunctionAppModule!.outputs.principalId
+          roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
+        }
+      ] : []
+    )
   }
 }
 
