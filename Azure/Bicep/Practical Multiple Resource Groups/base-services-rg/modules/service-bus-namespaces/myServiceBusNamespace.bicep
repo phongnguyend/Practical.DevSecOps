@@ -17,10 +17,12 @@ param queueNames array
 //   {
 //     topicName: 'topic1'
 //     subscriptionName: 'subscription1'
+//     requiresSession: true
 //   },
 //   {
 //     topicName: 'topic2'
 //     subscriptionName: 'subscription2'
+//     requiresSession: false
 //   }
 // ]
 param subscriptions array
@@ -124,7 +126,7 @@ resource serviceBusSubscriptions 'Microsoft.ServiceBus/namespaces/topics/subscri
     properties: {
       isClientAffine: false
       lockDuration: 'PT1M'
-      requiresSession: true
+      requiresSession: subscription.requiresSession
       defaultMessageTimeToLive: 'P14D'
       deadLetteringOnMessageExpiration: false
       deadLetteringOnFilterEvaluationExceptions: false
