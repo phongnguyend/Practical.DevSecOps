@@ -12,6 +12,11 @@ param allowedSubnets array = []
 // Role assignments for different services with different permissions
 param roleAssignments array = []
 
+// Private Endpoint Parameters
+param createPrivateEndpoint bool
+param privateEndpointSubnetId string
+param privateDnsZoneId string
+
 // Generate virtual network rules from allowed subnets
 var virtualNetworkRules = [for subnetId in allowedSubnets: {
   id: subnetId
@@ -52,6 +57,45 @@ resource keyVaultRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-0
     principalType: 'ServicePrincipal'
   }
 }]
+
+// Private Endpoint for Key Vault (conditional)
+resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-09-01' = if (createPrivateEndpoint && !empty(privateEndpointSubnetId)) {
+  name: '${keyVaultName}-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: privateEndpointSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${keyVaultName}-pe-connection'
+        properties: {
+          privateLinkServiceId: keyVault.id
+          groupIds: [
+            'vault'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+// Private DNS Zone Group for Private Endpoint (conditional)
+resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-09-01' = if (createPrivateEndpoint && !empty(privateDnsZoneId)) {
+  parent: keyVaultPrivateEndpoint
+  name: '${keyVaultName}-pe-dns-group'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'keyvault-config'
+        properties: {
+          privateDnsZoneId: privateDnsZoneId
+        }
+      }
+    ]
+  }
+}
 
 // Sample secrets for demonstration
 resource sqlConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {

@@ -16,12 +16,16 @@ param serviceBusPrivateDnsZoneName string = 'privatelink.servicebus.windows.net'
 @description('Private DNS Zone Name for App Service')
 param appServicePrivateDnsZoneName string = 'privatelink.azurewebsites.net'
 
+@description('Private DNS Zone Name for Key Vault')
+param keyVaultPrivateDnsZoneName string = 'privatelink.vaultcore.azure.net'
+
 // Construct Private DNS Zone Resource IDs
 var appConfigPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', appConfigPrivateDnsZoneName)
 var blobStoragePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', blobStoragePrivateDnsZoneName)
 var cosmosPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', cosmosPrivateDnsZoneName)
 var serviceBusPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', serviceBusPrivateDnsZoneName)
 var appServicePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', appServicePrivateDnsZoneName)
+var keyVaultPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', keyVaultPrivateDnsZoneName)
 
 // Outputs
 @description('Private DNS Zone ID for App Configuration')
@@ -38,3 +42,6 @@ output serviceBusPrivateDnsZoneId string = serviceBusPrivateDnsZoneId
 
 @description('Private DNS Zone ID for App Service')
 output appServicePrivateDnsZoneId string = appServicePrivateDnsZoneId
+
+@description('Private DNS Zone ID for Key Vault')
+output keyVaultPrivateDnsZoneId string = keyVaultPrivateDnsZoneId

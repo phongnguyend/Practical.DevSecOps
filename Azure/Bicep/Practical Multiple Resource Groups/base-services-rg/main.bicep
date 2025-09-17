@@ -124,6 +124,9 @@ param serviceBusPrivateDnsZoneName string = 'privatelink.servicebus.windows.net'
 @description('Private DNS Zone Name for App Service')
 param appServicePrivateDnsZoneName string = 'privatelink.azurewebsites.net'
 
+@description('Private DNS Zone Name for Key Vault')
+param keyVaultPrivateDnsZoneName string = 'privatelink.vaultcore.azure.net'
+
 // Common tags variable
 var commonTags = {
   Environment: 'Development'
@@ -140,6 +143,7 @@ module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' =
     cosmosPrivateDnsZoneName: cosmosPrivateDnsZoneName
     serviceBusPrivateDnsZoneName: serviceBusPrivateDnsZoneName
     appServicePrivateDnsZoneName: appServicePrivateDnsZoneName
+    keyVaultPrivateDnsZoneName: keyVaultPrivateDnsZoneName
   }
 }
 
@@ -229,6 +233,9 @@ module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (enableKeyVault) 
     location: location
     keyVaultName: keyVaultName
     allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    createPrivateEndpoint: enablePrivateEndpoints
+    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: (enablePrivateEndpoints && enableKeyVault) ? privateDnsZonesModule.outputs.keyVaultPrivateDnsZoneId : ''
     // Consolidated Role Assignment Parameters for Key Vault access
     roleAssignments: enableKeyVault ? concat(
       // Web App Role Assignments (Key Vault Secrets User)
