@@ -109,7 +109,7 @@ resource blobContainers 'Microsoft.Storage/storageAccounts/blobServices/containe
   }
 }]
 
-// Microsoft Defender for Storage
+// Microsoft Defender for Storage (requires Defender for Storage Scanner Operator role at subscription level to enable malware scanning)
 resource defenderForStorage 'Microsoft.Security/defenderForStorageSettings@2025-02-01-preview' = if (enableDefenderForStorage) {
   name: 'current'
   scope: storageAccount
