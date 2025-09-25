@@ -7,6 +7,15 @@ param appConfigPrivateDnsZoneName string = 'privatelink.azconfig.io'
 @description('Private DNS Zone Name for Blob Storage')
 param blobStoragePrivateDnsZoneName string = 'privatelink.blob.${environment().suffixes.storage}'
 
+@description('Private DNS Zone Name for File Storage')
+param fileStoragePrivateDnsZoneName string = 'privatelink.file.${environment().suffixes.storage}'
+
+@description('Private DNS Zone Name for Queue Storage')
+param queueStoragePrivateDnsZoneName string = 'privatelink.queue.${environment().suffixes.storage}'
+
+@description('Private DNS Zone Name for Table Storage')
+param tableStoragePrivateDnsZoneName string = 'privatelink.table.${environment().suffixes.storage}'
+
 @description('Private DNS Zone Name for Cosmos DB')
 param cosmosPrivateDnsZoneName string = 'privatelink.documents.azure.com'
 
@@ -22,6 +31,9 @@ param keyVaultPrivateDnsZoneName string = 'privatelink.vaultcore.azure.net'
 // Construct Private DNS Zone Resource IDs
 var appConfigPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', appConfigPrivateDnsZoneName)
 var blobStoragePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', blobStoragePrivateDnsZoneName)
+var fileStoragePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', fileStoragePrivateDnsZoneName)
+var queueStoragePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', queueStoragePrivateDnsZoneName)
+var tableStoragePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', tableStoragePrivateDnsZoneName)
 var cosmosPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', cosmosPrivateDnsZoneName)
 var serviceBusPrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', serviceBusPrivateDnsZoneName)
 var appServicePrivateDnsZoneId = resourceId(privateDnsZonesResourceGroup, 'Microsoft.Network/privateDnsZones', appServicePrivateDnsZoneName)
@@ -33,6 +45,15 @@ output appConfigPrivateDnsZoneId string = appConfigPrivateDnsZoneId
 
 @description('Private DNS Zone ID for Blob Storage')
 output blobStoragePrivateDnsZoneId string = blobStoragePrivateDnsZoneId
+
+@description('Private DNS Zone ID for File Storage')
+output fileStoragePrivateDnsZoneId string = fileStoragePrivateDnsZoneId
+
+@description('Private DNS Zone ID for Queue Storage')
+output queueStoragePrivateDnsZoneId string = queueStoragePrivateDnsZoneId
+
+@description('Private DNS Zone ID for Table Storage')
+output tableStoragePrivateDnsZoneId string = tableStoragePrivateDnsZoneId
 
 @description('Private DNS Zone ID for Cosmos DB')
 output cosmosPrivateDnsZoneId string = cosmosPrivateDnsZoneId

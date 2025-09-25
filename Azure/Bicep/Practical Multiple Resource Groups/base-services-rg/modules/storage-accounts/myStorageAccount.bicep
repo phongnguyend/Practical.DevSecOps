@@ -17,7 +17,12 @@ param containerPublicAccess string = 'None'
 // Private Endpoint Parameters
 param createPrivateEndpoint bool = false
 param privateEndpointSubnetId string = ''
-param privateDnsZoneId string = ''
+param privateDnsZoneIds object = {
+  blob: ''
+  file: ''
+  queue: ''
+  table: ''
+}
 
 // VNet integration configuration
 param allowedSubnets array = []
@@ -40,6 +45,26 @@ var virtualNetworkRules = [for subnetId in allowedSubnets: {
 
 // Security configuration parameters
 param enableDefenderForStorage bool = true
+
+// Define storage services for private endpoints
+var storageServices = [
+  {
+    name: 'blob'
+    dnsZoneId: privateDnsZoneIds.blob
+  }
+  {
+    name: 'file'
+    dnsZoneId: privateDnsZoneIds.file
+  }
+  {
+    name: 'queue'
+    dnsZoneId: privateDnsZoneIds.queue
+  }
+  {
+    name: 'table'
+    dnsZoneId: privateDnsZoneIds.table
+  }
+]
 
 // Storage Account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
@@ -96,6 +121,43 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01'
       enabled: false
     }
     isVersioningEnabled: false
+  }
+}
+
+// File Service
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = {
+  parent: storageAccount
+  name: 'default'
+  properties: {
+    cors: {
+      corsRules: []
+    }
+    shareDeleteRetentionPolicy: {
+      enabled: true
+      days: 7
+    }
+  }
+}
+
+// Queue Service
+resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2023-01-01' = {
+  parent: storageAccount
+  name: 'default'
+  properties: {
+    cors: {
+      corsRules: []
+    }
+  }
+}
+
+// Table Service
+resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2023-01-01' = {
+  parent: storageAccount
+  name: 'default'
+  properties: {
+    cors: {
+      corsRules: []
+    }
   }
 }
 
@@ -163,9 +225,9 @@ resource lifecyclePolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2
   }
 }
 
-// Private Endpoint for Blob Storage (conditional)
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-09-01' = if (createPrivateEndpoint) {
-  name: '${storageAccountName}-pe'
+// Private Endpoints for Storage Account (one for each service)
+resource privateEndpoints 'Microsoft.Network/privateEndpoints@2023-09-01' = [for (service, index) in storageServices: if (createPrivateEndpoint && !empty(service.dnsZoneId)) {
+  name: '${storageAccountName}-${service.name}-pe'
   location: location
   tags: tags
   properties: {
@@ -174,33 +236,33 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-09-01' = if (c
     }
     privateLinkServiceConnections: [
       {
-        name: '${storageAccountName}-pe-connection'
+        name: '${storageAccountName}-${service.name}-pe-connection'
         properties: {
           privateLinkServiceId: storageAccount.id
           groupIds: [
-            'blob'
+            service.name
           ]
         }
       }
     ]
   }
-}
+}]
 
-// DNS Records for Private Endpoint (conditional)
-resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-09-01' = if (createPrivateEndpoint) {
-  name: '${storageAccountName}-pe-dns-group'
-  parent: privateEndpoint
+// Private DNS Zone Groups (one for each private endpoint)
+resource privateDnsZoneGroups 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-09-01' = [for (service, index) in storageServices: if (createPrivateEndpoint && !empty(service.dnsZoneId)) {
+  parent: privateEndpoints[index]
+  name: 'default'
   properties: {
     privateDnsZoneConfigs: [
       {
-        name: 'privatelink-blob-core-windows-net'
+        name: '${service.name}-config'
         properties: {
-          privateDnsZoneId: privateDnsZoneId
+          privateDnsZoneId: service.dnsZoneId
         }
       }
     ]
   }
-}
+}]
 
 // Role Assignments
 resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for (assignment, index) in roleAssignments: if (!empty(assignment.principalId)) {
@@ -221,8 +283,11 @@ output storageAccountPrimaryBlobEndpoint string = storageAccount.properties.prim
 output principalId string = storageAccount.identity.principalId
 output containerNames array = containerNames
 output hasPrivateEndpoint bool = createPrivateEndpoint
-output privateEndpointId string = createPrivateEndpoint ? privateEndpoint.id : ''
-output privateEndpointName string = createPrivateEndpoint ? privateEndpoint.name : ''
+output privateEndpoints array = [for (service, index) in storageServices: {
+  name: service.name
+  id: createPrivateEndpoint && !empty(service.dnsZoneId) ? privateEndpoints[index].id : ''
+  hasPrivateEndpoint: createPrivateEndpoint && !empty(service.dnsZoneId)
+}]
 
 // Built-in role definitions for easy role assignments
 output storageAccountContributorRoleId string = '17d1049b-9a84-46fb-8f53-869881c3d3ab'

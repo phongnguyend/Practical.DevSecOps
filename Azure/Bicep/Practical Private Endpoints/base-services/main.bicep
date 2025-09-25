@@ -9,7 +9,7 @@ param enableTestVM bool = false
 param enableSqlServer bool = false
 param enableKeyVault bool = false
 param enableAppConfiguration bool = false
-param enableBlobStorage bool = false
+param enableStorageAccount bool = false
 param enableCosmosDb bool = false
 param enableFunctionApps bool = false
 param enableServiceBus bool = false
@@ -357,7 +357,7 @@ module appConfigModule 'modules/app-configurations/myAppConfiguration.bicep' = i
 }
 
 // Blob Storage Module
-module blobStorageModule 'modules/storage-accounts/myStorageAccount.bicep' = if (enableBlobStorage) {
+module myStorageAccountModule 'modules/storage-accounts/myStorageAccount.bicep' = if (enableStorageAccount) {
   name: 'blobStorageDeployment'
   params: {
     location: location
@@ -366,11 +366,16 @@ module blobStorageModule 'modules/storage-accounts/myStorageAccount.bicep' = if 
     containerNames: blobContainerNames
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableBlobStorage) ? privateDnsZonesModule!.outputs.blobStoragePrivateDnsZoneId : ''
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    privateDnsZoneIds: {
+      blob: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule!.outputs.blobStoragePrivateDnsZoneId : ''
+      file: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule!.outputs.fileStoragePrivateDnsZoneId : ''
+      queue: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule!.outputs.queueStoragePrivateDnsZoneId : ''
+      table: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule!.outputs.tableStoragePrivateDnsZoneId : ''
+    }
+    allowedSubnetIds: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
     allowBlobPublicAccess: !enablePrivateEndpoints
     // Consolidated Role Assignment Parameters
-    roleAssignments: enableBlobStorage ? concat(
+    roleAssignments: enableStorageAccount ? concat(
       // Web App Role Assignments (Storage Blob Data Contributor)
       [
         {
@@ -1134,23 +1139,21 @@ output appConfigInfo object = enableAppConfiguration ? {
   privateEndpointName: ''
 }
 
-// Blob Storage Information
-output blobStorageInfo object = enableBlobStorage ? {
-  storageAccountId: blobStorageModule!.outputs.storageAccountId
-  storageAccountName: blobStorageModule!.outputs.storageAccountName
-  blobEndpoint: blobStorageModule!.outputs.storageAccountPrimaryBlobEndpoint
-  containerNames: blobStorageModule!.outputs.containerNames
-  hasPrivateEndpoint: blobStorageModule!.outputs.hasPrivateEndpoint
-  privateEndpointId: blobStorageModule!.outputs.privateEndpointId
-  privateEndpointName: blobStorageModule!.outputs.privateEndpointName
+// Storage Account Information
+output storageAccountInfo object = enableStorageAccount ? {
+  storageAccountId: myStorageAccountModule!.outputs.storageAccountId
+  storageAccountName: myStorageAccountModule!.outputs.storageAccountName
+  blobEndpoint: myStorageAccountModule!.outputs.storageAccountPrimaryBlobEndpoint
+  containerNames: myStorageAccountModule!.outputs.containerNames
+  hasPrivateEndpoints: myStorageAccountModule!.outputs.hasPrivateEndpoints
+  privateEndpoints: myStorageAccountModule!.outputs.privateEndpoints
 } : {
   storageAccountId: ''
   storageAccountName: ''
   blobEndpoint: ''
   containerNames: []
-  hasPrivateEndpoint: false
-  privateEndpointId: ''
-  privateEndpointName: ''
+  hasPrivateEndpoints: false
+  privateEndpoints: []
 }
 
 // Function Apps Storage Account Information
