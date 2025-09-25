@@ -1,34 +1,31 @@
 // Function Apps Storage Account Module - Dedicated storage for Azure Functions
 param location string
 param storageAccountName string
-param storageAccountType string = 'Standard_LRS'
-param accessTier string = 'Hot'
-param allowBlobPublicAccess bool = false
-param minimumTlsVersion string = 'TLS1_2'
+param storageAccountType string
+param accessTier string
+param allowBlobPublicAccess bool
+param minimumTlsVersion string
 
 // Private Endpoint Parameters
-param createPrivateEndpoint bool = false
-param privateEndpointSubnetId string = ''
-param privateDnsZoneId string = ''
-
-// VNet integration configuration
-param allowedSubnets array = []
+param createPrivateEndpoint bool
+param privateEndpointSubnetId string
+param privateDnsZoneIds object = {
+  blob: ''
+  file: ''
+  queue: ''
+  table: ''
+}
 
 // Network access configuration
-param allowedIpRanges array = []
-param bypassAzureServices bool = true
+param allowedIpRanges array
+param bypassAzureServices bool
+param allowedSubnetIds array
 
 // Tags
-param tags object = {}
+param tags object
 
 // Role Assignment Parameters for Function Apps
-param roleAssignments array = []
-
-// Generate virtual network rules from allowed subnets
-var virtualNetworkRules = [for subnetId in allowedSubnets: {
-  id: subnetId
-  action: 'Allow'
-}]
+param roleAssignments array
 
 // Function Apps Storage Account
 resource functionAppsStorageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
@@ -52,12 +49,15 @@ resource functionAppsStorageAccount 'Microsoft.Storage/storageAccounts@2023-01-0
     publicNetworkAccess: createPrivateEndpoint ? 'Disabled' : 'Enabled'
     networkAcls: {
       bypass: bypassAzureServices ? 'AzureServices' : 'None'
-      defaultAction: (length(allowedIpRanges) > 0 || length(allowedSubnets) > 0) ? 'Deny' : 'Allow'
+      defaultAction: (length(allowedIpRanges) > 0 || length(allowedSubnetIds) > 0) ? 'Deny' : 'Allow'
       ipRules: [for ipRange in allowedIpRanges: {
         value: ipRange
         action: 'Allow'
       }]
-      virtualNetworkRules: length(allowedSubnets) > 0 ? virtualNetworkRules : []
+      virtualNetworkRules: [for subnetId in allowedSubnetIds: {
+        id: subnetId
+        action: 'Allow'
+      }]
     }
   }
 }
@@ -131,9 +131,29 @@ resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01'
   }
 }
 
-// Private Endpoint for Function Apps Storage Account (conditional)
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-09-01' = if (createPrivateEndpoint) {
-  name: '${storageAccountName}-pe'
+// Define storage services for private endpoints
+var storageServices = [
+  {
+    name: 'blob'
+    dnsZoneId: privateDnsZoneIds.blob
+  }
+  {
+    name: 'file'
+    dnsZoneId: privateDnsZoneIds.file
+  }
+  {
+    name: 'queue'
+    dnsZoneId: privateDnsZoneIds.queue
+  }
+  {
+    name: 'table'
+    dnsZoneId: privateDnsZoneIds.table
+  }
+]
+
+// Private Endpoints for Function Apps Storage Account (one for each service)
+resource privateEndpoints 'Microsoft.Network/privateEndpoints@2023-09-01' = [for (service, index) in storageServices: if (createPrivateEndpoint && !empty(service.dnsZoneId)) {
+  name: '${storageAccountName}-${service.name}-pe'
   location: location
   tags: tags
   properties: {
@@ -142,33 +162,33 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-09-01' = if (c
     }
     privateLinkServiceConnections: [
       {
-        name: '${storageAccountName}-pe-connection'
+        name: '${storageAccountName}-${service.name}-pe-connection'
         properties: {
           privateLinkServiceId: functionAppsStorageAccount.id
           groupIds: [
-            'blob'
+            service.name
           ]
         }
       }
     ]
   }
-}
+}]
 
-// Private DNS Zone Group (conditional)
-resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-09-01' = if (createPrivateEndpoint) {
-  parent: privateEndpoint
+// Private DNS Zone Groups (one for each private endpoint)
+resource privateDnsZoneGroups 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-09-01' = [for (service, index) in storageServices: if (createPrivateEndpoint && !empty(service.dnsZoneId)) {
+  parent: privateEndpoints[index]
   name: 'default'
   properties: {
     privateDnsZoneConfigs: [
       {
-        name: 'blob-config'
+        name: '${service.name}-config'
         properties: {
-          privateDnsZoneId: privateDnsZoneId
+          privateDnsZoneId: service.dnsZoneId
         }
       }
     ]
   }
-}
+}]
 
 // Role Assignments for Function Apps (Storage Blob Data Contributor)
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for assignment in roleAssignments: {
@@ -184,5 +204,9 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
 output storageAccountId string = functionAppsStorageAccount.id
 output storageAccountName string = functionAppsStorageAccount.name
 output primaryEndpoints object = functionAppsStorageAccount.properties.primaryEndpoints
-output privateEndpointId string = createPrivateEndpoint ? privateEndpoint.id : ''
-output hasPrivateEndpoint bool = createPrivateEndpoint
+output privateEndpoints array = [for (service, index) in storageServices: {
+  name: service.name
+  id: createPrivateEndpoint && !empty(service.dnsZoneId) ? privateEndpoints[index].id : ''
+  hasPrivateEndpoint: createPrivateEndpoint && !empty(service.dnsZoneId)
+}]
+output hasPrivateEndpoints bool = createPrivateEndpoint

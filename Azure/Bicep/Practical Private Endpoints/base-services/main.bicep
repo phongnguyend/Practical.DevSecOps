@@ -852,10 +852,19 @@ module functionAppsStorageModule 'modules/storage-accounts/functionAppsStorageAc
     location: location
     storageAccountName: functionAppsStorageAccountName
     storageAccountType: storageAccountType
+    accessTier: 'Hot'
+    minimumTlsVersion: 'TLS1_2'
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule!.outputs.blobStoragePrivateDnsZoneId : ''
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    privateDnsZoneIds: {
+      blob: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule!.outputs.blobStoragePrivateDnsZoneId : ''
+      file: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule!.outputs.fileStoragePrivateDnsZoneId : ''
+      queue: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule!.outputs.queueStoragePrivateDnsZoneId : ''
+      table: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule!.outputs.tableStoragePrivateDnsZoneId : ''
+    }
+    allowedIpRanges: []
+    bypassAzureServices: true
+    allowedSubnetIds: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
     allowBlobPublicAccess: !enablePrivateEndpoints
     // No role assignments needed - function apps use connection strings for runtime storage
     roleAssignments: []
@@ -1149,14 +1158,14 @@ output functionAppsStorageInfo object = enableFunctionApps ? {
   storageAccountId: functionAppsStorageModule!.outputs.storageAccountId
   storageAccountName: functionAppsStorageModule!.outputs.storageAccountName
   primaryEndpoints: functionAppsStorageModule!.outputs.primaryEndpoints
-  hasPrivateEndpoint: functionAppsStorageModule!.outputs.hasPrivateEndpoint
-  privateEndpointId: functionAppsStorageModule!.outputs.privateEndpointId
+  hasPrivateEndpoints: functionAppsStorageModule!.outputs.hasPrivateEndpoints
+  privateEndpoints: functionAppsStorageModule!.outputs.privateEndpoints
 } : {
   storageAccountId: ''
   storageAccountName: ''
   primaryEndpoints: {}
-  hasPrivateEndpoint: false
-  privateEndpointId: ''
+  hasPrivateEndpoints: false
+  privateEndpoints: []
 }
 
 // Cosmos DB Outputs

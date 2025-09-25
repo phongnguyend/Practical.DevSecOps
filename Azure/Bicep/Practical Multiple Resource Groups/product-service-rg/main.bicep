@@ -17,6 +17,9 @@ param productFunctionAppName string = 'PracticalMultipleResourceGroups-PRODUCT-F
 param productKeyVaultName string = 'practicalmrg-product-kv'
 param productFunctionStorageAccountName string = 'practicalmrgproductfunc'
 
+// Storage Account Parameters
+param storageAccountType string = 'Standard_LRS'
+
 // SQL Server Parameters
 param sqlServerName string = 'PracticalMultipleResourceGroups-Product'
 param adminUsername string = 'productadmin'
@@ -116,9 +119,22 @@ module productFunctionStorageModule 'modules/storage-accounts/productFunctionsSt
   params: {
     location: location
     storageAccountName: productFunctionStorageAccountName
+    storageAccountType: storageAccountType
+    accessTier: 'Hot'
+    allowBlobPublicAccess: !enablePrivateEndpoints
+    minimumTlsVersion: 'TLS1_2'
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
-    allowBlobPublicAccess: !enablePrivateEndpoints
+    privateDnsZoneIds: {
+      blob: enablePrivateEndpoints ? privateDnsZoneId : ''
+      file: ''
+      queue: ''
+      table: ''
+    }
+    allowedIpRanges: []
+    bypassAzureServices: true
+    allowedSubnetIds: enableVNetIntegration ? [existingVnet.properties.subnets[1].id] : [] // VNetIntegrationSubnet
+    roleAssignments: []
     tags: union(commonTags, {
       Purpose: 'FunctionAppRuntimeStorage'
     })

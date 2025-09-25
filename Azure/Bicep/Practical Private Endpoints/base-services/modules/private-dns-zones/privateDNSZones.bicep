@@ -32,6 +32,36 @@ module blobStoragePrivateDnsZone 'blobStoragePrivateDNSZone.bicep' = if (enableP
   }
 }
 
+// File Storage Private DNS Zone Module (conditional)
+module fileStoragePrivateDnsZone 'fileStoragePrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
+  name: 'fileStoragePrivateDnsZoneDeployment'
+  params: {
+    vnetId: vnetId
+    vnetName: vnetName
+    tags: tags
+  }
+}
+
+// Queue Storage Private DNS Zone Module (conditional)
+module queueStoragePrivateDnsZone 'queueStoragePrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
+  name: 'queueStoragePrivateDnsZoneDeployment'
+  params: {
+    vnetId: vnetId
+    vnetName: vnetName
+    tags: tags
+  }
+}
+
+// Table Storage Private DNS Zone Module (conditional)
+module tableStoragePrivateDnsZone 'tableStoragePrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
+  name: 'tableStoragePrivateDnsZoneDeployment'
+  params: {
+    vnetId: vnetId
+    vnetName: vnetName
+    tags: tags
+  }
+}
+
 // Cosmos DB Private DNS Zone Module (conditional)
 module cosmosPrivateDnsZone 'cosmosPrivateDNSZone.bicep' = if (enablePrivateEndpoints) {
   name: 'cosmosPrivateDnsZoneDeployment'
@@ -87,6 +117,9 @@ module customPrivateDnsZone 'customPrivateDNSZone.bicep' = if (enablePrivateEndp
 // Outputs - DNS Zone IDs for consumption by other modules
 output appConfigPrivateDnsZoneId string = enablePrivateEndpoints ? appConfigPrivateDnsZone!.outputs.privateDnsZoneId : ''
 output blobStoragePrivateDnsZoneId string = enablePrivateEndpoints ? blobStoragePrivateDnsZone!.outputs.privateDnsZoneId : ''
+output fileStoragePrivateDnsZoneId string = enablePrivateEndpoints ? fileStoragePrivateDnsZone!.outputs.privateDnsZoneId : ''
+output queueStoragePrivateDnsZoneId string = enablePrivateEndpoints ? queueStoragePrivateDnsZone!.outputs.privateDnsZoneId : ''
+output tableStoragePrivateDnsZoneId string = enablePrivateEndpoints ? tableStoragePrivateDnsZone!.outputs.privateDnsZoneId : ''
 output cosmosPrivateDnsZoneId string = enablePrivateEndpoints ? cosmosPrivateDnsZone!.outputs.privateDnsZoneId : ''
 output serviceBusPrivateDnsZoneId string = enablePrivateEndpoints ? serviceBusPrivateDnsZone!.outputs.privateDnsZoneId : ''
 output keyVaultPrivateDnsZoneId string = enablePrivateEndpoints ? keyVaultPrivateDnsZone!.outputs.privateDnsZoneId : ''

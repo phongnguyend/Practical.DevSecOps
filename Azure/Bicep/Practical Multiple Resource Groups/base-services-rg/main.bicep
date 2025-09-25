@@ -846,11 +846,20 @@ module functionAppsStorageModule 'modules/storage-accounts/functionAppsStorageAc
     location: location
     storageAccountName: functionAppsStorageAccountName
     storageAccountType: storageAccountType
+    accessTier: 'Hot'
+    allowBlobPublicAccess: !enablePrivateEndpoints
+    minimumTlsVersion: 'TLS1_2'
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule.outputs.blobStoragePrivateDnsZoneId : ''
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
-    allowBlobPublicAccess: !enablePrivateEndpoints
+    privateDnsZoneIds: {
+      blob: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule.outputs.blobStoragePrivateDnsZoneId : ''
+      file: ''
+      queue: ''
+      table: ''
+    }
+    allowedIpRanges: []
+    bypassAzureServices: true
+    allowedSubnetIds: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
     // No role assignments needed - function apps use connection strings for runtime storage
     roleAssignments: []
     tags: union(commonTags, {
@@ -1058,14 +1067,14 @@ output functionAppsStorageInfo object = enableFunctionApps ? {
   storageAccountId: functionAppsStorageModule!.outputs.storageAccountId
   storageAccountName: functionAppsStorageModule!.outputs.storageAccountName
   primaryEndpoints: functionAppsStorageModule!.outputs.primaryEndpoints
-  hasPrivateEndpoint: functionAppsStorageModule!.outputs.hasPrivateEndpoint
-  privateEndpointId: functionAppsStorageModule!.outputs.privateEndpointId
+  hasPrivateEndpoint: functionAppsStorageModule!.outputs.hasPrivateEndpoints
+  privateEndpoints: functionAppsStorageModule!.outputs.privateEndpoints
 } : {
   storageAccountId: ''
   storageAccountName: ''
   primaryEndpoints: {}
   hasPrivateEndpoint: false
-  privateEndpointId: ''
+  privateEndpoints: []
 }
 
 // Cosmos DB Outputs

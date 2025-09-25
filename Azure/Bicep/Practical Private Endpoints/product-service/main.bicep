@@ -109,9 +109,22 @@ module productFunctionStorageModule 'modules/storage-accounts/productFunctionsSt
   params: {
     location: location
     storageAccountName: productFunctionStorageAccountName
+    storageAccountType: 'Standard_LRS'
+    accessTier: 'Hot'
+    minimumTlsVersion: 'TLS1_2'
     createPrivateEndpoint: enablePrivateEndpoints
     privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
+    privateDnsZoneIds: {
+      blob: '' // No DNS zone available in product-service
+      file: '' // No DNS zone available in product-service
+      queue: '' // No DNS zone available in product-service
+      table: '' // No DNS zone available in product-service
+    }
+    allowedIpRanges: []
+    bypassAzureServices: true
+    allowedSubnetIds: []
     allowBlobPublicAccess: !enablePrivateEndpoints
+    roleAssignments: []
     tags: union(commonTags, {
       Purpose: 'FunctionAppRuntimeStorage'
     })
