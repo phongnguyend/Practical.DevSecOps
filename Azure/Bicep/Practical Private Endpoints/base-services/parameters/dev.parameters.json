@@ -5,236 +5,170 @@
     "location": {
       "value": "southeastasia"
     },
-    "enablePrivateEndpoints": {
-      "value": false
+    "featureFlags": {
+      "value": {
+        "enablePrivateEndpoints": false,
+        "enableVNetIntegration": true,
+        "enableApplicationGateway": true,
+        "enableApiManagement": false,
+        "enableTestVM": true,
+        "enableSqlServer": true,
+        "enableKeyVault": true,
+        "enableAppConfiguration": true,
+        "enableBlobStorage": true,
+        "enableCosmosDb": true,
+        "enableFunctionApps": true,
+        "enableServiceBus": false,
+        "enableApplicationInsights": true
+      }
     },
-    "enableVNetIntegration": {
-      "value": true
+    "networking": {
+      "value": {
+        "vnetName": "practicalpe-vnet-dev"
+      }
     },
-    "enableApplicationGateway": {
-      "value": true
+    "applicationGateway": {
+      "value": {
+        "enableWAF": false,
+        "wafMode": "Detection",
+        "wafRuleSetVersion": "3.2",
+        "wafRequestBodyCheck": true,
+        "wafMaxRequestBodySizeInKb": 128,
+        "wafFileUploadLimitInMb": 100
+      }
     },
-    "enableApiManagement": {
-      "value": false
-    },
-    "enableTestVM": {
-      "value": true
-    },
-    "enableSqlServer": {
-      "value": true
-    },
-    "enableKeyVault": {
-      "value": true
-    },
-    "enableAppConfiguration": {
-      "value": true
-    },
-    "enableBlobStorage": {
-      "value": true
-    },
-    "enableCosmosDb": {
-      "value": true
-    },
-    "enableFunctionApps": {
-      "value": true
-    },
-    "enableServiceBus": {
-      "value": false
-    },
-    "enableApplicationInsights": {
-      "value": true
-    },
-    "sqlServerName": {
-      "value": "practicalpe-sql-dev"
-    },
-    "adminUsername": {
-      "value": "sqladmin"
-    },
-    "appServicePlanName": {
-      "value": "practicalpe-asp-dev"
-    },
-    "vnetName": {
-      "value": "practicalpe-vnet-dev"
-    },
-    "keyVaultName": {
-      "value": "practicalpe-kv-dev"
-    },
-    "appConfigName": {
-      "value": "practicalpe-config-dev"
-    },
-    "storageAccountName": {
-      "value": "practicalpeblob1dev"
-    },
-    "functionAppsStorageAccountName": {
-      "value": "practicalpefuncdev"
-    },
-    "apiManagementName": {
-      "value": "practicalpe-apim-dev"
-    },
-    "publisherEmail": {
-      "value": "dev@practical.devsecops"
-    },
-    "publisherName": {
-      "value": "Practical DevSecOps Dev Team"
-    },
-    "customerPublicWebAppName": {
-      "value": "practicalpe-customer-public-dev"
-    },
-    "customerSiteWebAppName": {
-      "value": "practicalpe-customer-site-dev"
-    },
-    "adminPublicWebAppName": {
-      "value": "practicalpe-admin-public-dev"
-    },
-    "adminSiteWebAppName": {
-      "value": "practicalpe-admin-site-dev"
-    },
-    "videoApiWebAppName": {
-      "value": "practicalpe-video-api-dev"
-    },
-    "musicApiWebAppName": {
-      "value": "practicalpe-music-api-dev"
-    },
-    "customerDbName": {
-      "value": "PracticalPE-CUSTOMER-DB-DEV"
-    },
-    "adminDbName": {
-      "value": "PracticalPE-ADMIN-DB-DEV"
-    },
-    "videoDbName": {
-      "value": "PracticalPE-VIDEO-DB-DEV"
-    },
-    "musicDbName": {
-      "value": "PracticalPE-MUSIC-DB-DEV"
-    },
-    "vmAdminUsername": {
-      "value": "devadmin"
-    },
-    "apiManagementSku": {
-      "value": "Developer"
-    },
-    "apiManagementCapacity": {
-      "value": 1
-    },
-    "enableWAF": {
-      "value": false
-    },
-    "wafMode": {
-      "value": "Detection"
-    },
-    "wafRuleSetVersion": {
-      "value": "3.2"
-    },
-    "wafRequestBodyCheck": {
-      "value": true
-    },
-    "wafMaxRequestBodySizeInKb": {
-      "value": 128
-    },
-    "wafFileUploadLimitInMb": {
-      "value": 100
-    },
-    "storageAccountType": {
-      "value": "Standard_LRS"
-    },
-    "blobContainerNames": {
-      "value": [
-        "documents",
-        "images",
-        "backups",
-        "logs",
-        "dev-testing"
-      ]
-    },
-    "cosmosAccountName": {
-      "value": "practicalpe-cosmos-dev"
-    },
-    "cosmosConsistencyLevel": {
-      "value": "Session"
-    },
-    "cosmosEnableAutomaticFailover": {
-      "value": false
-    },
-    "cosmosAdminDbName": {
-      "value": "PracticalPE-ADMIN-COSMOS-DB-DEV"
-    },
-    "cosmosCustomerDbName": {
-      "value": "PracticalPE-CUSTOMER-COSMOS-DB-DEV"
-    },
-    "cosmosMusicDbName": {
-      "value": "PracticalPE-MUSIC-COSMOS-DB-DEV"
-    },
-    "cosmosVideoDbName": {
-      "value": "PracticalPE-VIDEO-COSMOS-DB-DEV"
-    },
-    "adminFunctionAppName": {
-      "value": "practicalpe-admin-func-dev"
-    },
-    "customerFunctionAppName": {
-      "value": "practicalpe-customer-func-dev"
-    },
-    "musicFunctionAppName": {
-      "value": "practicalpe-music-func-dev"
-    },
-    "videoFunctionAppName": {
-      "value": "practicalpe-video-func-dev"
-    },
-    "applicationInsightsWorkspaceName": {
-      "value": "practicalpe-law-dev"
-    },
-    "retentionInDays": {
-      "value": 30
-    },
-    "serviceBusNamespaceName": {
-      "value": "practicalpe-sb-dev"
-    },
-    "serviceBusSku": {
-      "value": "Standard"
-    },
-    "serviceBusCapacity": {
-      "value": 1
-    },
-    "serviceBusTopicNames": {
-      "value": [
-        "customer-events",
-        "admin-events",
-        "video-events",
-        "music-events",
-        "dev-testing-events"
-      ]
-    },
-    "serviceBusQueueNames": {
-      "value": [
-        "customer-queue",
-        "admin-queue",
-        "video-queue",
-        "music-queue",
-        "dev-testing-queue"
-      ]
-    },
-    "serviceBusSubscriptions": {
-      "value": [
-        {
-          "topicName": "customer-events",
-          "subscriptionName": "customer-subscription"
-        },
-        {
-          "topicName": "admin-events",
-          "subscriptionName": "admin-subscription"
-        },
-        {
-          "topicName": "video-events",
-          "subscriptionName": "video-subscription"
-        },
-        {
-          "topicName": "music-events",
-          "subscriptionName": "music-subscription"
-        },
-        {
-          "topicName": "dev-testing-events",
-          "subscriptionName": "dev-testing-subscription"
+    "sqlServer": {
+      "value": {
+        "serverName": "practicalpe-sql-dev",
+        "adminUsername": "sqladmin",
+        "databases": {
+          "customerDbName": "PracticalPE-CUSTOMER-DB-DEV",
+          "adminDbName": "PracticalPE-ADMIN-DB-DEV",
+          "videoDbName": "PracticalPE-VIDEO-DB-DEV",
+          "musicDbName": "PracticalPE-MUSIC-DB-DEV"
         }
-      ]
+      }
+    },
+    "cosmosDb": {
+      "value": {
+        "accountName": "practicalpe-cosmos-dev",
+        "consistencyLevel": "Session",
+        "enableAutomaticFailover": false,
+        "databases": {
+          "adminDbName": "PracticalPE-ADMIN-COSMOS-DB-DEV",
+          "customerDbName": "PracticalPE-CUSTOMER-COSMOS-DB-DEV",
+          "musicDbName": "PracticalPE-MUSIC-COSMOS-DB-DEV",
+          "videoDbName": "PracticalPE-VIDEO-COSMOS-DB-DEV"
+        }
+      }
+    },
+    "storage": {
+      "value": {
+        "accountName": "practicalpeblob1dev",
+        "functionAppsAccountName": "practicalpefuncdev",
+        "accountType": "Standard_LRS",
+        "blobContainerNames": [
+          "documents",
+          "images",
+          "backups",
+          "logs",
+          "dev-testing"
+        ]
+      }
+    },
+    "keyVault": {
+      "value": {
+        "name": "practicalpe-kv-dev"
+      }
+    },
+    "appConfiguration": {
+      "value": {
+        "name": "practicalpe-config-dev"
+      }
+    },
+    "appService": {
+      "value": {
+        "planName": "practicalpe-asp-dev",
+        "webApps": {
+          "customerPublicWebAppName": "practicalpe-customer-public-dev",
+          "customerSiteWebAppName": "practicalpe-customer-site-dev",
+          "adminPublicWebAppName": "practicalpe-admin-public-dev",
+          "adminSiteWebAppName": "practicalpe-admin-site-dev",
+          "videoApiWebAppName": "practicalpe-video-api-dev",
+          "musicApiWebAppName": "practicalpe-music-api-dev"
+        }
+      }
+    },
+    "azureFunctions": {
+      "value": {
+        "adminFunctionAppName": "practicalpe-admin-func-dev",
+        "customerFunctionAppName": "practicalpe-customer-func-dev",
+        "musicFunctionAppName": "practicalpe-music-func-dev",
+        "videoFunctionAppName": "practicalpe-video-func-dev"
+      }
+    },
+    "apiManagement": {
+      "value": {
+        "name": "practicalpe-apim-dev",
+        "sku": "Developer",
+        "capacity": 1,
+        "publisherEmail": "dev@practical.devsecops",
+        "publisherName": "Practical DevSecOps Dev Team"
+      }
+    },
+    "monitoring": {
+      "value": {
+        "workspaceName": "practicalpe-law-dev",
+        "retentionInDays": 30
+      }
+    },
+    "serviceBus": {
+      "value": {
+        "namespaceName": "practicalpe-sb-dev",
+        "sku": "Standard",
+        "capacity": 1,
+        "topicNames": [
+          "customer-events",
+          "admin-events",
+          "video-events",
+          "music-events",
+          "dev-testing-events"
+        ],
+        "queueNames": [
+          "customer-queue",
+          "admin-queue",
+          "video-queue",
+          "music-queue",
+          "dev-testing-queue"
+        ],
+        "subscriptions": [
+          {
+            "topicName": "customer-events",
+            "subscriptionName": "customer-subscription"
+          },
+          {
+            "topicName": "admin-events",
+            "subscriptionName": "admin-subscription"
+          },
+          {
+            "topicName": "video-events",
+            "subscriptionName": "video-subscription"
+          },
+          {
+            "topicName": "music-events",
+            "subscriptionName": "music-subscription"
+          },
+          {
+            "topicName": "dev-testing-events",
+            "subscriptionName": "dev-testing-subscription"
+          }
+        ]
+      }
+    },
+    "virtualMachine": {
+      "value": {
+        "adminUsername": "devadmin"
+      }
     }
   }
 }

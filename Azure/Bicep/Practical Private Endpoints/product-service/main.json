@@ -1,0 +1,2345 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.37.4.10188",
+      "templateHash": "17689618611885577730"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "southeastasia"
+    },
+    "featureFlags": {
+      "type": "object",
+      "defaultValue": {
+        "enablePrivateEndpoints": false,
+        "enableVNetIntegration": true,
+        "enableKeyVault": false,
+        "enableCosmosDb": false,
+        "enableSqlServer": false,
+        "enableFunctionApp": false,
+        "enableApiManagement": false
+      }
+    },
+    "productService": {
+      "type": "object",
+      "defaultValue": {
+        "name": "product",
+        "appServicePlanName": "PracticalPrivateEndpoints-Product-ASP",
+        "webApp": {
+          "productApiWebAppName": "PracticalPrivateEndpoints-PRODUCT-API"
+        },
+        "azureFunction": {
+          "productFunctionAppName": "PracticalPrivateEndpoints-PRODUCT-FUNC",
+          "storageAccountName": "practicalpeproductfunc"
+        }
+      }
+    },
+    "sqlServer": {
+      "type": "object",
+      "defaultValue": {
+        "serverName": "PracticalPrivateEndpoints-Product",
+        "adminUsername": "productadmin",
+        "database": {
+          "productDbName": "PracticalPrivateEndpoints-PRODUCT-DB"
+        }
+      }
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "cosmosDb": {
+      "type": "object",
+      "defaultValue": {
+        "accountName": "practicalpe-product-cosmos",
+        "consistencyLevel": "Session",
+        "enableAutomaticFailover": true,
+        "database": {
+          "productCosmosDbName": "PracticalPrivateEndpoints-PRODUCT-COSMOS-DB"
+        }
+      }
+    },
+    "keyVault": {
+      "type": "object",
+      "defaultValue": {
+        "productKeyVaultName": "practicalpe-product-kv"
+      }
+    },
+    "baseServices": {
+      "type": "object",
+      "defaultValue": {
+        "vnetName": "PracticalPrivateEndpoints-vnet",
+        "vnetResourceGroup": "[resourceGroup().name]",
+        "apiManagementName": "PracticalPrivateEndpoints-apim"
+      }
+    }
+  },
+  "variables": {
+    "commonTags": {
+      "Environment": "Development",
+      "Project": "PracticalPrivateEndpoints",
+      "Service": "Product"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productAppServicePlanDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "appServicePlanName": {
+            "value": "[parameters('productService').appServicePlanName]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "18047861777010440583"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "appServicePlanName": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2023-01-01",
+              "name": "[parameters('appServicePlanName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "S1",
+                "tier": "Standard"
+              },
+              "kind": "linux",
+              "properties": {
+                "reserved": true
+              },
+              "tags": "[parameters('tags')]"
+            }
+          ],
+          "outputs": {
+            "appServicePlanId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+            },
+            "appServicePlanName": {
+              "type": "string",
+              "value": "[parameters('appServicePlanName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productApiWebAppDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "appServicePlanId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productAppServicePlanDeployment'), '2022-09-01').outputs.appServicePlanId.value]"
+          },
+          "productApiWebAppName": {
+            "value": "[parameters('productService').webApp.productApiWebAppName]"
+          },
+          "enablePrivateEndpoints": {
+            "value": "[parameters('featureFlags').enablePrivateEndpoints]"
+          },
+          "privateEndpointSubnetId": "[if(parameters('featureFlags').enablePrivateEndpoints, createObject('value', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('baseServices').vnetResourceGroup), 'Microsoft.Network/virtualNetworks', parameters('baseServices').vnetName), '2023-04-01').subnets[2].id), createObject('value', ''))]",
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "7136939553294385462"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "appServicePlanId": {
+              "type": "string"
+            },
+            "productApiWebAppName": {
+              "type": "string"
+            },
+            "enablePrivateEndpoints": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2023-01-01",
+              "name": "[parameters('productApiWebAppName')]",
+              "location": "[parameters('location')]",
+              "kind": "app,linux",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "httpsOnly": true,
+                "publicNetworkAccess": "[if(parameters('enablePrivateEndpoints'), 'Disabled', 'Enabled')]",
+                "siteConfig": {
+                  "linuxFxVersion": "DOTNET|8.0",
+                  "appSettings": [
+                    {
+                      "name": "WEBSITE_RUN_FROM_PACKAGE",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "tags": "[parameters('tags')]"
+            },
+            {
+              "condition": "[and(parameters('enablePrivateEndpoints'), not(equals(parameters('privateEndpointSubnetId'), '')))]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-04-01",
+              "name": "[format('{0}-pe', parameters('productApiWebAppName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}-pe-connection', parameters('productApiWebAppName'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Web/sites', parameters('productApiWebAppName'))]",
+                      "groupIds": [
+                        "sites"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "tags": "[parameters('tags')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('productApiWebAppName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "productApiWebAppId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/sites', parameters('productApiWebAppName'))]"
+            },
+            "productApiWebAppName": {
+              "type": "string",
+              "value": "[parameters('productApiWebAppName')]"
+            },
+            "productApiWebAppUrl": {
+              "type": "string",
+              "value": "[format('https://{0}', reference(resourceId('Microsoft.Web/sites', parameters('productApiWebAppName')), '2023-01-01').defaultHostName)]"
+            },
+            "productApiWebAppPrincipalId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Web/sites', parameters('productApiWebAppName')), '2023-01-01', 'full').identity.principalId]"
+            },
+            "hasPrivateEndpoint": {
+              "type": "bool",
+              "value": "[and(parameters('enablePrivateEndpoints'), not(equals(parameters('privateEndpointSubnetId'), '')))]"
+            },
+            "privateEndpointId": {
+              "type": "string",
+              "value": "[if(and(parameters('enablePrivateEndpoints'), not(equals(parameters('privateEndpointSubnetId'), ''))), resourceId('Microsoft.Network/privateEndpoints', format('{0}-pe', parameters('productApiWebAppName'))), '')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'productAppServicePlanDeployment')]"
+      ]
+    },
+    {
+      "condition": "[parameters('featureFlags').enableFunctionApp]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productFunctionAppDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "functionAppName": {
+            "value": "[parameters('productService').azureFunction.productFunctionAppName]"
+          },
+          "appServicePlanId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productAppServicePlanDeployment'), '2022-09-01').outputs.appServicePlanId.value]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('productService').azureFunction.storageAccountName]"
+          },
+          "createPrivateEndpoint": {
+            "value": "[parameters('featureFlags').enablePrivateEndpoints]"
+          },
+          "privateEndpointSubnetId": "[if(parameters('featureFlags').enablePrivateEndpoints, createObject('value', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('baseServices').vnetResourceGroup), 'Microsoft.Network/virtualNetworks', parameters('baseServices').vnetName), '2023-04-01').subnets[2].id), createObject('value', ''))]",
+          "privateDnsZoneId": {
+            "value": ""
+          },
+          "enableVNetIntegration": {
+            "value": false
+          },
+          "vnetIntegrationSubnetId": {
+            "value": ""
+          },
+          "applicationInsightsConnectionString": {
+            "value": ""
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "11802645371773521418"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "functionAppName": {
+              "type": "string"
+            },
+            "appServicePlanId": {
+              "type": "string"
+            },
+            "storageAccountName": {
+              "type": "string"
+            },
+            "createPrivateEndpoint": {
+              "type": "bool"
+            },
+            "privateEndpointSubnetId": {
+              "type": "string"
+            },
+            "privateDnsZoneId": {
+              "type": "string"
+            },
+            "enableVNetIntegration": {
+              "type": "bool"
+            },
+            "vnetIntegrationSubnetId": {
+              "type": "string"
+            },
+            "linuxFxVersion": {
+              "type": "string",
+              "defaultValue": "DOTNET-ISOLATED|8.0"
+            },
+            "alwaysOn": {
+              "type": "bool",
+              "defaultValue": true
+            },
+            "applicationInsightsConnectionString": {
+              "type": "string"
+            },
+            "additionalAppSettings": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "tags": {
+              "type": "object"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2024-04-01",
+              "name": "[format('{0}/{1}', parameters('functionAppName'), 'appsettings')]",
+              "properties": "[union(createObject('APPLICATIONINSIGHTS_AUTHENTICATION_STRING', 'Authorization=AAD', 'APPLICATIONINSIGHTS_CONNECTION_STRING', parameters('applicationInsightsConnectionString'), 'AzureWebJobsStorage__credential', 'managedidentity', 'AzureWebJobsStorage__blobServiceUri', format('https://{0}.blob.{1}', parameters('storageAccountName'), environment().suffixes.storage), 'AzureWebJobsStorage__queueServiceUri', format('https://{0}.queue.{1}', parameters('storageAccountName'), environment().suffixes.storage), 'AzureWebJobsStorage__tableServiceUri', format('https://{0}.table.{1}', parameters('storageAccountName'), environment().suffixes.storage), 'FUNCTIONS_EXTENSION_VERSION', '~4', 'FUNCTIONS_WORKER_RUNTIME', 'dotnet-isolated', 'WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED', '1'), parameters('additionalAppSettings'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2024-04-01",
+              "name": "[parameters('functionAppName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "functionapp,linux",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "httpsOnly": true,
+                "publicNetworkAccess": "[if(parameters('createPrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "reserved": true,
+                "siteConfig": {
+                  "minTlsVersion": "1.2",
+                  "use32BitWorkerProcess": false,
+                  "ftpsState": "FtpsOnly",
+                  "alwaysOn": "[parameters('alwaysOn')]",
+                  "linuxFxVersion": "[parameters('linuxFxVersion')]"
+                }
+              }
+            },
+            {
+              "condition": "[parameters('createPrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}-pe', parameters('functionAppName'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}-pe-connection', parameters('functionAppName'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
+                      "groupIds": [
+                        "sites"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('createPrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}/{1}', format('{0}-pe', parameters('functionAppName')), format('{0}-pe-dns-group', parameters('functionAppName')))]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-azurewebsites-net",
+                    "properties": {
+                      "privateDnsZoneId": "[parameters('privateDnsZoneId')]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}-pe', parameters('functionAppName')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('enableVNetIntegration')]",
+              "type": "Microsoft.Web/sites/networkConfig",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', parameters('functionAppName'), 'virtualNetwork')]",
+              "properties": {
+                "subnetResourceId": "[parameters('vnetIntegrationSubnetId')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "functionAppId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+            },
+            "functionAppName": {
+              "type": "string",
+              "value": "[parameters('functionAppName')]"
+            },
+            "principalId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2024-04-01', 'full').identity.principalId]"
+            },
+            "defaultHostName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2024-04-01').defaultHostName]"
+            },
+            "hasPrivateEndpoint": {
+              "type": "bool",
+              "value": "[parameters('createPrivateEndpoint')]"
+            },
+            "privateEndpointId": {
+              "type": "string",
+              "value": "[if(parameters('createPrivateEndpoint'), resourceId('Microsoft.Network/privateEndpoints', format('{0}-pe', parameters('functionAppName'))), '')]"
+            },
+            "privateEndpointName": {
+              "type": "string",
+              "value": "[if(parameters('createPrivateEndpoint'), format('{0}-pe', parameters('functionAppName')), '')]"
+            },
+            "functionAppUrl": {
+              "type": "string",
+              "value": "[format('https://{0}', reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2024-04-01').defaultHostName)]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'productAppServicePlanDeployment')]"
+      ]
+    },
+    {
+      "condition": "[parameters('featureFlags').enableApiManagement]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "myExistingApiManagementDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "apiManagementName": {
+            "value": "[parameters('baseServices').apiManagementName]"
+          },
+          "productApiUrl": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppUrl.value]"
+          },
+          "apiPath": {
+            "value": "products"
+          },
+          "protocols": {
+            "value": [
+              "https"
+            ]
+          },
+          "subscriptionRequired": {
+            "value": false
+          },
+          "backendProtocol": {
+            "value": "https"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "17523080292603397524"
+            }
+          },
+          "parameters": {
+            "apiManagementName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the EXISTING API Management service from base-services"
+              }
+            },
+            "productApiUrl": {
+              "type": "string",
+              "metadata": {
+                "description": "The URL of the Product API backend service"
+              }
+            },
+            "apiPath": {
+              "type": "string",
+              "defaultValue": "products",
+              "metadata": {
+                "description": "API path for the Product API"
+              }
+            },
+            "protocols": {
+              "type": "array",
+              "defaultValue": [
+                "https"
+              ],
+              "metadata": {
+                "description": "API protocols"
+              }
+            },
+            "subscriptionRequired": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether subscription is required for the Product API"
+              }
+            },
+            "backendProtocol": {
+              "type": "string",
+              "defaultValue": "http",
+              "metadata": {
+                "description": "Backend protocol"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "productApiIntegration",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "apiManagementName": {
+                    "value": "[parameters('apiManagementName')]"
+                  },
+                  "productApiUrl": {
+                    "value": "[parameters('productApiUrl')]"
+                  },
+                  "apiPath": {
+                    "value": "[parameters('apiPath')]"
+                  },
+                  "protocols": {
+                    "value": "[parameters('protocols')]"
+                  },
+                  "subscriptionRequired": {
+                    "value": "[parameters('subscriptionRequired')]"
+                  },
+                  "backendProtocol": {
+                    "value": "[parameters('backendProtocol')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.37.4.10188",
+                      "templateHash": "15190270740861410006"
+                    }
+                  },
+                  "parameters": {
+                    "apiManagementName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "The name of the API Management service"
+                      }
+                    },
+                    "productApiUrl": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "The URL of the Product API backend service"
+                      }
+                    },
+                    "apiPath": {
+                      "type": "string",
+                      "defaultValue": "products",
+                      "metadata": {
+                        "description": "API path"
+                      }
+                    },
+                    "protocols": {
+                      "type": "array",
+                      "defaultValue": [
+                        "https"
+                      ],
+                      "metadata": {
+                        "description": "API protocols"
+                      }
+                    },
+                    "subscriptionRequired": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Subscription required"
+                      }
+                    },
+                    "backendProtocol": {
+                      "type": "string",
+                      "defaultValue": "http",
+                      "metadata": {
+                        "description": "Backend protocol"
+                      }
+                    },
+                    "additionalBackendProperties": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Additional backend properties"
+                      }
+                    },
+                    "additionalApiProperties": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Additional API properties"
+                      }
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "product-api-backend",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "apiManagementName": {
+                            "value": "[parameters('apiManagementName')]"
+                          },
+                          "productApiUrl": {
+                            "value": "[parameters('productApiUrl')]"
+                          },
+                          "protocol": {
+                            "value": "[parameters('backendProtocol')]"
+                          },
+                          "additionalProperties": {
+                            "value": "[parameters('additionalBackendProperties')]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.37.4.10188",
+                              "templateHash": "5263662611796077095"
+                            }
+                          },
+                          "parameters": {
+                            "apiManagementName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The name of the API Management service"
+                              }
+                            },
+                            "productApiUrl": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The URL of the Product API backend service"
+                              }
+                            },
+                            "protocol": {
+                              "type": "string",
+                              "defaultValue": "http",
+                              "metadata": {
+                                "description": "Backend protocol"
+                              }
+                            },
+                            "additionalProperties": {
+                              "type": "object",
+                              "defaultValue": {},
+                              "metadata": {
+                                "description": "Additional backend properties"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.ApiManagement/service/backends",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}', parameters('apiManagementName'), 'product-api-backend')]",
+                              "properties": "[union(createObject('protocol', parameters('protocol'), 'url', parameters('productApiUrl'), 'description', 'Product API Backend for managing product catalog and inventory', 'title', 'Product API Backend'), parameters('additionalProperties'))]"
+                            }
+                          ],
+                          "outputs": {
+                            "productApiBackendId": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.ApiManagement/service/backends', parameters('apiManagementName'), 'product-api-backend')]"
+                            },
+                            "productApiBackendName": {
+                              "type": "string",
+                              "value": "product-api-backend"
+                            },
+                            "productApiBackendUrl": {
+                              "type": "string",
+                              "value": "[parameters('productApiUrl')]"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "product-api-definition",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "apiManagementName": {
+                            "value": "[parameters('apiManagementName')]"
+                          },
+                          "productApiUrl": {
+                            "value": "[parameters('productApiUrl')]"
+                          },
+                          "apiPath": {
+                            "value": "[parameters('apiPath')]"
+                          },
+                          "protocols": {
+                            "value": "[parameters('protocols')]"
+                          },
+                          "subscriptionRequired": {
+                            "value": "[parameters('subscriptionRequired')]"
+                          },
+                          "additionalProperties": {
+                            "value": "[parameters('additionalApiProperties')]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.37.4.10188",
+                              "templateHash": "12086129982908317907"
+                            }
+                          },
+                          "parameters": {
+                            "apiManagementName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The name of the API Management service"
+                              }
+                            },
+                            "productApiUrl": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The URL of the Product API backend service"
+                              }
+                            },
+                            "apiPath": {
+                              "type": "string",
+                              "defaultValue": "products",
+                              "metadata": {
+                                "description": "API path"
+                              }
+                            },
+                            "protocols": {
+                              "type": "array",
+                              "defaultValue": [
+                                "https"
+                              ],
+                              "metadata": {
+                                "description": "API protocols"
+                              }
+                            },
+                            "subscriptionRequired": {
+                              "type": "bool",
+                              "defaultValue": false,
+                              "metadata": {
+                                "description": "Subscription required"
+                              }
+                            },
+                            "additionalProperties": {
+                              "type": "object",
+                              "defaultValue": {},
+                              "metadata": {
+                                "description": "Additional API properties"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}', parameters('apiManagementName'), 'product-api')]",
+                              "properties": "[union(createObject('displayName', 'Product API', 'description', 'API for managing product catalog, inventory, and categories', 'path', parameters('apiPath'), 'protocols', parameters('protocols'), 'subscriptionRequired', parameters('subscriptionRequired'), 'serviceUrl', parameters('productApiUrl')), parameters('additionalProperties'))]"
+                            }
+                          ],
+                          "outputs": {
+                            "productApiName": {
+                              "type": "string",
+                              "value": "product-api"
+                            },
+                            "productApiId": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.ApiManagement/service/apis', parameters('apiManagementName'), 'product-api')]"
+                            },
+                            "productApiUrl": {
+                              "type": "string",
+                              "value": "[format('https://{0}.azure-api.net/{1}', parameters('apiManagementName'), parameters('apiPath'))]"
+                            },
+                            "productApiDisplayName": {
+                              "type": "string",
+                              "value": "[reference(resourceId('Microsoft.ApiManagement/service/apis', parameters('apiManagementName'), 'product-api'), '2023-05-01-preview').displayName]"
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Resources/deployments', 'product-api-backend')]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "product-api-operations",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "apiManagementName": {
+                            "value": "[parameters('apiManagementName')]"
+                          },
+                          "productApiName": {
+                            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-definition'), '2022-09-01').outputs.productApiName.value]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.37.4.10188",
+                              "templateHash": "7487005421031933764"
+                            }
+                          },
+                          "parameters": {
+                            "apiManagementName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The name of the API Management service"
+                              }
+                            },
+                            "productApiName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The name of the Product API"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'get-products')]",
+                              "properties": {
+                                "displayName": "Get Products",
+                                "method": "GET",
+                                "urlTemplate": "/",
+                                "description": "Get all products with optional filtering"
+                              }
+                            },
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'post-product')]",
+                              "properties": {
+                                "displayName": "Create Product",
+                                "method": "POST",
+                                "urlTemplate": "/",
+                                "description": "Create a new product"
+                              }
+                            },
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'get-product-by-id')]",
+                              "properties": {
+                                "displayName": "Get Product by ID",
+                                "method": "GET",
+                                "urlTemplate": "/{id}",
+                                "description": "Get a specific product by ID",
+                                "templateParameters": [
+                                  {
+                                    "name": "id",
+                                    "description": "Product ID",
+                                    "type": "string",
+                                    "required": true
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'put-product')]",
+                              "properties": {
+                                "displayName": "Update Product",
+                                "method": "PUT",
+                                "urlTemplate": "/{id}",
+                                "description": "Update an existing product",
+                                "templateParameters": [
+                                  {
+                                    "name": "id",
+                                    "description": "Product ID",
+                                    "type": "string",
+                                    "required": true
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'delete-product')]",
+                              "properties": {
+                                "displayName": "Delete Product",
+                                "method": "DELETE",
+                                "urlTemplate": "/{id}",
+                                "description": "Delete a product",
+                                "templateParameters": [
+                                  {
+                                    "name": "id",
+                                    "description": "Product ID",
+                                    "type": "string",
+                                    "required": true
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'get-categories')]",
+                              "properties": {
+                                "displayName": "Get Categories",
+                                "method": "GET",
+                                "urlTemplate": "/categories",
+                                "description": "Get all product categories"
+                              }
+                            },
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'get-category-by-id')]",
+                              "properties": {
+                                "displayName": "Get Category by ID",
+                                "method": "GET",
+                                "urlTemplate": "/categories/{categoryId}",
+                                "description": "Get a specific category by ID",
+                                "templateParameters": [
+                                  {
+                                    "name": "categoryId",
+                                    "description": "Category ID",
+                                    "type": "string",
+                                    "required": true
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/operations",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'get-products-by-category')]",
+                              "properties": {
+                                "displayName": "Get Products by Category",
+                                "method": "GET",
+                                "urlTemplate": "/categories/{categoryId}/products",
+                                "description": "Get all products in a specific category",
+                                "templateParameters": [
+                                  {
+                                    "name": "categoryId",
+                                    "description": "Category ID",
+                                    "type": "string",
+                                    "required": true
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "productApiGetOperationName": {
+                              "type": "string",
+                              "value": "get-products"
+                            },
+                            "productApiPostOperationName": {
+                              "type": "string",
+                              "value": "post-product"
+                            },
+                            "productApiGetByIdOperationName": {
+                              "type": "string",
+                              "value": "get-product-by-id"
+                            },
+                            "productApiPutOperationName": {
+                              "type": "string",
+                              "value": "put-product"
+                            },
+                            "productApiDeleteOperationName": {
+                              "type": "string",
+                              "value": "delete-product"
+                            },
+                            "categoryApiGetOperationName": {
+                              "type": "string",
+                              "value": "get-categories"
+                            },
+                            "categoryApiGetByIdOperationName": {
+                              "type": "string",
+                              "value": "get-category-by-id"
+                            },
+                            "productsByCategoryOperationName": {
+                              "type": "string",
+                              "value": "get-products-by-category"
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Resources/deployments', 'product-api-definition')]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "product-api-policies",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "apiManagementName": {
+                            "value": "[parameters('apiManagementName')]"
+                          },
+                          "productApiName": {
+                            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-definition'), '2022-09-01').outputs.productApiName.value]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.37.4.10188",
+                              "templateHash": "152172585614847996"
+                            }
+                          },
+                          "parameters": {
+                            "apiManagementName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The name of the API Management service"
+                              }
+                            },
+                            "productApiName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The name of the Product API"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.ApiManagement/service/apis/policies",
+                              "apiVersion": "2023-05-01-preview",
+                              "name": "[format('{0}/{1}/{2}', parameters('apiManagementName'), parameters('productApiName'), 'policy')]",
+                              "properties": {
+                                "value": "    <policies>\r\n      <inbound>\r\n        <base />\r\n        <set-backend-service backend-id=\"product-api-backend\" />\r\n        <rate-limit calls=\"100\" renewal-period=\"60\" />\r\n        <cors allow-credentials=\"true\">\r\n          <allowed-origins>\r\n            <origin>*</origin>\r\n          </allowed-origins>\r\n          <allowed-methods>\r\n            <method>GET</method>\r\n            <method>POST</method>\r\n            <method>PUT</method>\r\n            <method>DELETE</method>\r\n            <method>OPTIONS</method>\r\n          </allowed-methods>\r\n          <allowed-headers>\r\n            <header>*</header>\r\n          </allowed-headers>\r\n        </cors>\r\n        <set-header name=\"X-API-Service\" exists-action=\"override\">\r\n          <value>product-service</value>\r\n        </set-header>\r\n      </inbound>\r\n      <backend>\r\n        <base />\r\n      </backend>\r\n      <outbound>\r\n        <base />\r\n        <set-header name=\"X-Powered-By\" exists-action=\"override\">\r\n          <value>Azure API Management - Product Service</value>\r\n        </set-header>\r\n        <set-header name=\"X-API-Version\" exists-action=\"override\">\r\n          <value>v1.0</value>\r\n        </set-header>\r\n      </outbound>\r\n      <on-error>\r\n        <base />\r\n        <set-header name=\"ErrorSource\" exists-action=\"override\">\r\n          <value>product-api-gateway</value>\r\n        </set-header>\r\n        <set-header name=\"X-Error-Service\" exists-action=\"override\">\r\n          <value>product-service</value>\r\n        </set-header>\r\n      </on-error>\r\n    </policies>\r\n    ",
+                                "format": "xml"
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "productApiPolicyName": {
+                              "type": "string",
+                              "value": "policy"
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Resources/deployments', 'product-api-definition')]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "productApiName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-definition'), '2022-09-01').outputs.productApiName.value]"
+                    },
+                    "productApiId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-definition'), '2022-09-01').outputs.productApiId.value]"
+                    },
+                    "productApiUrl": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-definition'), '2022-09-01').outputs.productApiUrl.value]"
+                    },
+                    "productApiDisplayName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-definition'), '2022-09-01').outputs.productApiDisplayName.value]"
+                    },
+                    "productApiBackendId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-backend'), '2022-09-01').outputs.productApiBackendId.value]"
+                    },
+                    "productApiBackendName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'product-api-backend'), '2022-09-01').outputs.productApiBackendName.value]"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "productApiName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiIntegration'), '2022-09-01').outputs.productApiName.value]"
+            },
+            "productApiId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiIntegration'), '2022-09-01').outputs.productApiId.value]"
+            },
+            "productApiUrl": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiIntegration'), '2022-09-01').outputs.productApiUrl.value]"
+            },
+            "productApiDisplayName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiIntegration'), '2022-09-01').outputs.productApiDisplayName.value]"
+            },
+            "productApiBackendId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiIntegration'), '2022-09-01').outputs.productApiBackendId.value]"
+            },
+            "productApiBackendName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiIntegration'), '2022-09-01').outputs.productApiBackendName.value]"
+            },
+            "productApiGatewayUrl": {
+              "type": "string",
+              "value": "[format('https://{0}.azure-api.net/{1}', parameters('apiManagementName'), parameters('apiPath'))]"
+            },
+            "existingApiManagementId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName'))]"
+            },
+            "existingApiManagementName": {
+              "type": "string",
+              "value": "[parameters('apiManagementName')]"
+            },
+            "existingApiManagementGatewayUrl": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName')), '2023-05-01-preview').gatewayUrl]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment')]"
+      ]
+    },
+    {
+      "condition": "[parameters('featureFlags').enableFunctionApp]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productFunctionStorageDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('productService').azureFunction.storageAccountName]"
+          },
+          "storageAccountType": {
+            "value": "Standard_LRS"
+          },
+          "accessTier": {
+            "value": "Hot"
+          },
+          "minimumTlsVersion": {
+            "value": "TLS1_2"
+          },
+          "createPrivateEndpoint": {
+            "value": "[parameters('featureFlags').enablePrivateEndpoints]"
+          },
+          "privateEndpointSubnetId": "[if(parameters('featureFlags').enablePrivateEndpoints, createObject('value', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('baseServices').vnetResourceGroup), 'Microsoft.Network/virtualNetworks', parameters('baseServices').vnetName), '2023-04-01').subnets[2].id), createObject('value', ''))]",
+          "privateDnsZoneIds": {
+            "value": {
+              "blob": "",
+              "file": "",
+              "queue": "",
+              "table": ""
+            }
+          },
+          "allowedIpRanges": {
+            "value": []
+          },
+          "bypassAzureServices": {
+            "value": true
+          },
+          "allowedSubnetIds": {
+            "value": []
+          },
+          "allowBlobPublicAccess": {
+            "value": "[not(parameters('featureFlags').enablePrivateEndpoints)]"
+          },
+          "roleAssignments": {
+            "value": []
+          },
+          "tags": {
+            "value": "[union(variables('commonTags'), createObject('Purpose', 'FunctionAppRuntimeStorage'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "10314731652381209871"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "storageAccountName": {
+              "type": "string"
+            },
+            "storageAccountType": {
+              "type": "string"
+            },
+            "accessTier": {
+              "type": "string"
+            },
+            "allowBlobPublicAccess": {
+              "type": "bool"
+            },
+            "minimumTlsVersion": {
+              "type": "string"
+            },
+            "createPrivateEndpoint": {
+              "type": "bool"
+            },
+            "privateEndpointSubnetId": {
+              "type": "string"
+            },
+            "privateDnsZoneIds": {
+              "type": "object",
+              "defaultValue": {
+                "blob": "",
+                "file": "",
+                "queue": "",
+                "table": ""
+              }
+            },
+            "allowedIpRanges": {
+              "type": "array"
+            },
+            "bypassAzureServices": {
+              "type": "bool"
+            },
+            "allowedSubnetIds": {
+              "type": "array"
+            },
+            "tags": {
+              "type": "object"
+            },
+            "roleAssignments": {
+              "type": "array"
+            }
+          },
+          "variables": {
+            "functionContainers": [
+              "azure-webjobs-hosts",
+              "azure-webjobs-secrets",
+              "scm-releases",
+              "deployments"
+            ],
+            "storageServices": [
+              {
+                "name": "blob",
+                "dnsZoneId": "[parameters('privateDnsZoneIds').blob]"
+              },
+              {
+                "name": "file",
+                "dnsZoneId": "[parameters('privateDnsZoneIds').file]"
+              },
+              {
+                "name": "queue",
+                "dnsZoneId": "[parameters('privateDnsZoneIds').queue]"
+              },
+              {
+                "name": "table",
+                "dnsZoneId": "[parameters('privateDnsZoneIds').table]"
+              }
+            ]
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2023-01-01",
+              "name": "[parameters('storageAccountName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('storageAccountType')]"
+              },
+              "kind": "StorageV2",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "accessTier": "[parameters('accessTier')]",
+                "allowBlobPublicAccess": "[parameters('allowBlobPublicAccess')]",
+                "allowSharedKeyAccess": true,
+                "defaultToOAuthAuthentication": false,
+                "minimumTlsVersion": "[parameters('minimumTlsVersion')]",
+                "supportsHttpsTrafficOnly": true,
+                "publicNetworkAccess": "[if(parameters('createPrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "networkAcls": {
+                  "copy": [
+                    {
+                      "name": "ipRules",
+                      "count": "[length(parameters('allowedIpRanges'))]",
+                      "input": {
+                        "value": "[parameters('allowedIpRanges')[copyIndex('ipRules')]]",
+                        "action": "Allow"
+                      }
+                    },
+                    {
+                      "name": "virtualNetworkRules",
+                      "count": "[length(parameters('allowedSubnetIds'))]",
+                      "input": {
+                        "id": "[parameters('allowedSubnetIds')[copyIndex('virtualNetworkRules')]]",
+                        "action": "Allow"
+                      }
+                    }
+                  ],
+                  "bypass": "[if(parameters('bypassAzureServices'), 'AzureServices', 'None')]",
+                  "defaultAction": "[if(or(greater(length(parameters('allowedIpRanges')), 0), greater(length(parameters('allowedSubnetIds')), 0)), 'Deny', 'Allow')]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}/{1}', parameters('storageAccountName'), 'default')]",
+              "properties": {
+                "cors": {
+                  "corsRules": [
+                    {
+                      "allowedOrigins": [
+                        "*"
+                      ],
+                      "allowedMethods": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "HEAD",
+                        "OPTIONS"
+                      ],
+                      "maxAgeInSeconds": 3600,
+                      "exposedHeaders": [
+                        "*"
+                      ],
+                      "allowedHeaders": [
+                        "*"
+                      ]
+                    }
+                  ]
+                },
+                "deleteRetentionPolicy": {
+                  "enabled": true,
+                  "days": 7
+                },
+                "containerDeleteRetentionPolicy": {
+                  "enabled": true,
+                  "days": 7
+                },
+                "changeFeed": {
+                  "enabled": false
+                },
+                "restorePolicy": {
+                  "enabled": false
+                },
+                "isVersioningEnabled": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "functionContainers_resource",
+                "count": "[length(variables('functionContainers'))]"
+              },
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}/{1}/{2}', parameters('storageAccountName'), 'default', variables('functionContainers')[copyIndex()])]",
+              "properties": {
+                "publicAccess": "None",
+                "metadata": {
+                  "purpose": "function-apps"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/fileServices",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}/{1}', parameters('storageAccountName'), 'default')]",
+              "properties": {
+                "cors": {
+                  "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                  "enabled": true,
+                  "days": 7
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "privateEndpoints",
+                "count": "[length(variables('storageServices'))]"
+              },
+              "condition": "[and(parameters('createPrivateEndpoint'), not(empty(variables('storageServices')[copyIndex()].dnsZoneId)))]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}-{1}-pe', parameters('storageAccountName'), variables('storageServices')[copyIndex()].name)]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}-{1}-pe-connection', parameters('storageAccountName'), variables('storageServices')[copyIndex()].name)]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                      "groupIds": [
+                        "[variables('storageServices')[copyIndex()].name]"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "privateDnsZoneGroups",
+                "count": "[length(variables('storageServices'))]"
+              },
+              "condition": "[and(parameters('createPrivateEndpoint'), not(empty(variables('storageServices')[copyIndex()].dnsZoneId)))]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}/{1}', format('{0}-{1}-pe', parameters('storageAccountName'), variables('storageServices')[copyIndex()].name), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "[format('{0}-config', variables('storageServices')[copyIndex()].name)]",
+                    "properties": {
+                      "privateDnsZoneId": "[variables('storageServices')[copyIndex()].dnsZoneId]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}-{1}-pe', parameters('storageAccountName'), variables('storageServices')[copyIndex()].name))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "roleAssignment",
+                "count": "[length(parameters('roleAssignments'))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
+              "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), parameters('roleAssignments')[copyIndex()].principalId, 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
+              "properties": {
+                "principalId": "[parameters('roleAssignments')[copyIndex()].principalId]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "storageAccountId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            },
+            "storageAccountName": {
+              "type": "string",
+              "value": "[parameters('storageAccountName')]"
+            },
+            "primaryEndpoints": {
+              "type": "object",
+              "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').primaryEndpoints]"
+            },
+            "privateEndpoints": {
+              "type": "array",
+              "copy": {
+                "count": "[length(variables('storageServices'))]",
+                "input": {
+                  "name": "[variables('storageServices')[copyIndex()].name]",
+                  "id": "[if(and(parameters('createPrivateEndpoint'), not(empty(variables('storageServices')[copyIndex()].dnsZoneId))), resourceId('Microsoft.Network/privateEndpoints', format('{0}-{1}-pe', parameters('storageAccountName'), variables('storageServices')[copyIndex()].name)), '')]",
+                  "hasPrivateEndpoint": "[and(parameters('createPrivateEndpoint'), not(empty(variables('storageServices')[copyIndex()].dnsZoneId)))]"
+                }
+              }
+            },
+            "hasPrivateEndpoints": {
+              "type": "bool",
+              "value": "[parameters('createPrivateEndpoint')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('featureFlags').enableSqlServer]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productSqlServerDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sqlServerName": {
+            "value": "[parameters('sqlServer').serverName]"
+          },
+          "adminUsername": {
+            "value": "[parameters('sqlServer').adminUsername]"
+          },
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "7493617534642807706"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "sqlServerName": {
+              "type": "string"
+            },
+            "adminUsername": {
+              "type": "string"
+            },
+            "adminPassword": {
+              "type": "securestring"
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers",
+              "apiVersion": "2023-05-01-preview",
+              "name": "[parameters('sqlServerName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "administratorLogin": "[parameters('adminUsername')]",
+                "administratorLoginPassword": "[parameters('adminPassword')]",
+                "version": "12.0",
+                "publicNetworkAccess": "Enabled"
+              },
+              "tags": "[parameters('tags')]"
+            },
+            {
+              "type": "Microsoft.Sql/servers/firewallRules",
+              "apiVersion": "2023-05-01-preview",
+              "name": "[format('{0}/{1}', parameters('sqlServerName'), 'AllowAzureServices')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "sqlServerId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+            },
+            "sqlServerName": {
+              "type": "string",
+              "value": "[parameters('sqlServerName')]"
+            },
+            "sqlServerFqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Sql/servers', parameters('sqlServerName')), '2023-05-01-preview').fullyQualifiedDomainName]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('featureFlags').enableSqlServer]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productSqlDatabaseDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sqlServerName": {
+            "value": "[parameters('sqlServer').serverName]"
+          },
+          "productDbName": {
+            "value": "[parameters('sqlServer').database.productDbName]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "7109113605573551224"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "sqlServerName": {
+              "type": "string"
+            },
+            "productDbName": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers/databases",
+              "apiVersion": "2023-05-01-preview",
+              "name": "[format('{0}/{1}', parameters('sqlServerName'), parameters('productDbName'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Basic",
+                "tier": "Basic",
+                "capacity": 5
+              },
+              "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 2147483648
+              },
+              "tags": "[parameters('tags')]"
+            }
+          ],
+          "outputs": {
+            "productDatabaseId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Sql/servers/databases', parameters('sqlServerName'), parameters('productDbName'))]"
+            },
+            "productDatabaseName": {
+              "type": "string",
+              "value": "[parameters('productDbName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'productSqlServerDeployment')]"
+      ]
+    },
+    {
+      "condition": "[parameters('featureFlags').enableKeyVault]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productKeyVaultDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "keyVaultName": {
+            "value": "[parameters('keyVault').productKeyVaultName]"
+          },
+          "roleAssignments": {
+            "value": "[concat(createArray(createObject('principalId', reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppPrincipalId.value, 'roleDefinitionId', '4633458b-17de-408a-b874-0445c86b69e6')), if(parameters('featureFlags').enableFunctionApp, createArray(createObject('principalId', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment'), '2022-09-01').outputs.principalId.value, 'roleDefinitionId', '4633458b-17de-408a-b874-0445c86b69e6')), createArray()))]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "9469598442231035218"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "keyVaultName": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "roleAssignments": {
+              "type": "array",
+              "defaultValue": []
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults",
+              "apiVersion": "2023-07-01",
+              "name": "[parameters('keyVaultName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "family": "A",
+                  "name": "standard"
+                },
+                "tenantId": "[tenant().tenantId]",
+                "enabledForDeployment": false,
+                "enabledForDiskEncryption": false,
+                "enabledForTemplateDeployment": true,
+                "enableSoftDelete": true,
+                "softDeleteRetentionInDays": 7,
+                "enablePurgeProtection": false,
+                "enableRbacAuthorization": true
+              },
+              "tags": "[parameters('tags')]"
+            },
+            {
+              "copy": {
+                "name": "keyVaultRoleAssignments",
+                "count": "[length(parameters('roleAssignments'))]"
+              },
+              "condition": "[not(empty(parameters('roleAssignments')[copyIndex()].principalId))]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.KeyVault/vaults/{0}', parameters('keyVaultName'))]",
+              "name": "[guid(resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName')), parameters('roleAssignments')[copyIndex()].principalId, parameters('roleAssignments')[copyIndex()].roleDefinitionId)]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', parameters('roleAssignments')[copyIndex()].roleDefinitionId)]",
+                "principalId": "[parameters('roleAssignments')[copyIndex()].principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "keyVaultId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+            },
+            "keyVaultName": {
+              "type": "string",
+              "value": "[parameters('keyVaultName')]"
+            },
+            "keyVaultUri": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName')), '2023-07-01').vaultUri]"
+            },
+            "keyVaultAdministratorRoleId": {
+              "type": "string",
+              "value": "00482a5a-887f-4fb3-b363-3b7fe8e74483"
+            },
+            "keyVaultSecretsUserRoleId": {
+              "type": "string",
+              "value": "4633458b-17de-408a-b874-0445c86b69e6"
+            },
+            "keyVaultSecretsOfficerRoleId": {
+              "type": "string",
+              "value": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7"
+            },
+            "keyVaultCertificatesOfficerRoleId": {
+              "type": "string",
+              "value": "a4417e6f-fecd-4de8-b567-7b0420556985"
+            },
+            "keyVaultCryptoOfficerRoleId": {
+              "type": "string",
+              "value": "14b46e9e-c2b7-41b4-b07b-48a6ebf60603"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment')]",
+        "[resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment')]"
+      ]
+    },
+    {
+      "condition": "[parameters('featureFlags').enableCosmosDb]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productCosmosDbDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "cosmosAccountName": {
+            "value": "[parameters('cosmosDb').accountName]"
+          },
+          "consistencyLevel": {
+            "value": "[parameters('cosmosDb').consistencyLevel]"
+          },
+          "enableAutomaticFailover": {
+            "value": "[parameters('cosmosDb').enableAutomaticFailover]"
+          },
+          "createPrivateEndpoint": {
+            "value": "[parameters('featureFlags').enablePrivateEndpoints]"
+          },
+          "privateEndpointSubnetId": "[if(parameters('featureFlags').enablePrivateEndpoints, createObject('value', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('baseServices').vnetResourceGroup), 'Microsoft.Network/virtualNetworks', parameters('baseServices').vnetName), '2023-04-01').subnets[2].id), createObject('value', ''))]",
+          "enablePublicNetworkAccess": {
+            "value": "[not(parameters('featureFlags').enablePrivateEndpoints)]"
+          },
+          "roleAssignments": {
+            "value": "[concat(createArray(createObject('principalId', reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppPrincipalId.value, 'roleDefinitionId', '5bd9cd88-fe45-4216-938b-f97437e15450')), if(parameters('featureFlags').enableFunctionApp, createArray(createObject('principalId', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment'), '2022-09-01').outputs.principalId.value, 'roleDefinitionId', '5bd9cd88-fe45-4216-938b-f97437e15450')), createArray()))]"
+          },
+          "sqlRoleAssignments": {
+            "value": "[concat(createArray(createObject('principalId', reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppPrincipalId.value, 'roleDefinitionId', '00000000-0000-0000-0000-000000000002')), if(parameters('featureFlags').enableFunctionApp, createArray(createObject('principalId', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment'), '2022-09-01').outputs.principalId.value, 'roleDefinitionId', '00000000-0000-0000-0000-000000000002')), createArray()))]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "15131929137709815107"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "cosmosAccountName": {
+              "type": "string"
+            },
+            "consistencyLevel": {
+              "type": "string",
+              "defaultValue": "Session"
+            },
+            "enableAutomaticFailover": {
+              "type": "bool",
+              "defaultValue": true
+            },
+            "createPrivateEndpoint": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "enablePublicNetworkAccess": {
+              "type": "bool",
+              "defaultValue": true
+            },
+            "roleAssignments": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "sqlRoleAssignments": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.DocumentDB/databaseAccounts",
+              "apiVersion": "2023-09-15",
+              "name": "[parameters('cosmosAccountName')]",
+              "location": "[parameters('location')]",
+              "kind": "GlobalDocumentDB",
+              "properties": {
+                "databaseAccountOfferType": "Standard",
+                "consistencyPolicy": {
+                  "defaultConsistencyLevel": "[parameters('consistencyLevel')]"
+                },
+                "locations": [
+                  {
+                    "locationName": "[parameters('location')]",
+                    "failoverPriority": 0,
+                    "isZoneRedundant": false
+                  }
+                ],
+                "enableAutomaticFailover": "[parameters('enableAutomaticFailover')]",
+                "enableMultipleWriteLocations": false,
+                "publicNetworkAccess": "[if(parameters('enablePublicNetworkAccess'), 'Enabled', 'Disabled')]",
+                "networkAclBypass": "AzureServices",
+                "networkAclBypassResourceIds": []
+              },
+              "tags": "[parameters('tags')]"
+            },
+            {
+              "condition": "[and(parameters('createPrivateEndpoint'), not(equals(parameters('privateEndpointSubnetId'), '')))]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-04-01",
+              "name": "[format('{0}-pe', parameters('cosmosAccountName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}-pe-connection', parameters('cosmosAccountName'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName'))]",
+                      "groupIds": [
+                        "Sql"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "tags": "[parameters('tags')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "cosmosRoleAssignments",
+                "count": "[length(parameters('roleAssignments'))]"
+              },
+              "condition": "[not(empty(parameters('roleAssignments')[copyIndex()].principalId))]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.DocumentDB/databaseAccounts/{0}', parameters('cosmosAccountName'))]",
+              "name": "[guid(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName')), parameters('roleAssignments')[copyIndex()].principalId, parameters('roleAssignments')[copyIndex()].roleDefinitionId)]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', parameters('roleAssignments')[copyIndex()].roleDefinitionId)]",
+                "principalId": "[parameters('roleAssignments')[copyIndex()].principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "cosmosSqlRoleAssignments",
+                "count": "[length(parameters('sqlRoleAssignments'))]"
+              },
+              "condition": "[not(empty(parameters('sqlRoleAssignments')[copyIndex()].principalId))]",
+              "type": "Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments",
+              "apiVersion": "2023-04-15",
+              "name": "[format('{0}/{1}', parameters('cosmosAccountName'), guid(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName')), parameters('sqlRoleAssignments')[copyIndex()].principalId, parameters('sqlRoleAssignments')[copyIndex()].roleDefinitionId))]",
+              "properties": {
+                "roleDefinitionId": "[format('{0}/sqlRoleDefinitions/{1}', resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName')), parameters('sqlRoleAssignments')[copyIndex()].roleDefinitionId)]",
+                "principalId": "[parameters('sqlRoleAssignments')[copyIndex()].principalId]",
+                "scope": "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName'))]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "cosmosAccountId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName'))]"
+            },
+            "cosmosAccountName": {
+              "type": "string",
+              "value": "[parameters('cosmosAccountName')]"
+            },
+            "cosmosAccountEndpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName')), '2023-09-15').documentEndpoint]"
+            },
+            "hasPrivateEndpoint": {
+              "type": "bool",
+              "value": "[and(parameters('createPrivateEndpoint'), not(equals(parameters('privateEndpointSubnetId'), '')))]"
+            },
+            "privateEndpointId": {
+              "type": "string",
+              "value": "[if(and(parameters('createPrivateEndpoint'), not(equals(parameters('privateEndpointSubnetId'), ''))), resourceId('Microsoft.Network/privateEndpoints', format('{0}-pe', parameters('cosmosAccountName'))), '')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment')]",
+        "[resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment')]"
+      ]
+    },
+    {
+      "condition": "[parameters('featureFlags').enableCosmosDb]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "productCosmosDatabaseDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "cosmosAccountName": {
+            "value": "[parameters('cosmosDb').accountName]"
+          },
+          "productCosmosDbName": {
+            "value": "[parameters('cosmosDb').database.productCosmosDbName]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "12472183431935994901"
+            }
+          },
+          "parameters": {
+            "cosmosAccountName": {
+              "type": "string"
+            },
+            "productCosmosDbName": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+              "apiVersion": "2023-09-15",
+              "name": "[format('{0}/{1}', parameters('cosmosAccountName'), parameters('productCosmosDbName'))]",
+              "properties": {
+                "resource": {
+                  "id": "[parameters('productCosmosDbName')]"
+                },
+                "options": {
+                  "throughput": 400
+                }
+              }
+            },
+            {
+              "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+              "apiVersion": "2023-09-15",
+              "name": "[format('{0}/{1}/{2}', parameters('cosmosAccountName'), parameters('productCosmosDbName'), 'products')]",
+              "properties": {
+                "resource": {
+                  "id": "products",
+                  "partitionKey": {
+                    "paths": [
+                      "/productId"
+                    ],
+                    "kind": "Hash"
+                  },
+                  "indexingPolicy": {
+                    "indexingMode": "consistent",
+                    "includedPaths": [
+                      {
+                        "path": "/*"
+                      }
+                    ],
+                    "excludedPaths": [
+                      {
+                        "path": "/\"_etag\"/?"
+                      }
+                    ]
+                  }
+                },
+                "options": {
+                  "throughput": 400
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosAccountName'), parameters('productCosmosDbName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+              "apiVersion": "2023-09-15",
+              "name": "[format('{0}/{1}/{2}', parameters('cosmosAccountName'), parameters('productCosmosDbName'), 'categories')]",
+              "properties": {
+                "resource": {
+                  "id": "categories",
+                  "partitionKey": {
+                    "paths": [
+                      "/categoryId"
+                    ],
+                    "kind": "Hash"
+                  }
+                },
+                "options": {
+                  "throughput": 400
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosAccountName'), parameters('productCosmosDbName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "productDatabaseId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosAccountName'), parameters('productCosmosDbName'))]"
+            },
+            "productDatabaseName": {
+              "type": "string",
+              "value": "[parameters('productCosmosDbName')]"
+            },
+            "containerNames": {
+              "type": "array",
+              "value": [
+                "products",
+                "categories"
+              ]
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'productCosmosDbDeployment')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "productServiceInfo": {
+      "type": "object",
+      "value": {
+        "serviceName": "[parameters('productService').name]",
+        "appServicePlan": {
+          "id": "[reference(resourceId('Microsoft.Resources/deployments', 'productAppServicePlanDeployment'), '2022-09-01').outputs.appServicePlanId.value]",
+          "name": "[reference(resourceId('Microsoft.Resources/deployments', 'productAppServicePlanDeployment'), '2022-09-01').outputs.appServicePlanName.value]"
+        },
+        "productApi": {
+          "id": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppId.value]",
+          "name": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppName.value]",
+          "url": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppUrl.value]",
+          "principalId": "[reference(resourceId('Microsoft.Resources/deployments', 'productApiWebAppDeployment'), '2022-09-01').outputs.productApiWebAppPrincipalId.value]"
+        },
+        "productFunction": "[if(parameters('featureFlags').enableFunctionApp, createObject('id', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment'), '2022-09-01').outputs.functionAppId.value, 'name', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment'), '2022-09-01').outputs.functionAppName.value, 'url', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment'), '2022-09-01').outputs.functionAppUrl.value, 'principalId', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionAppDeployment'), '2022-09-01').outputs.principalId.value), createObject())]",
+        "sqlServer": "[if(parameters('featureFlags').enableSqlServer, createObject('id', reference(resourceId('Microsoft.Resources/deployments', 'productSqlServerDeployment'), '2022-09-01').outputs.sqlServerId.value, 'name', reference(resourceId('Microsoft.Resources/deployments', 'productSqlServerDeployment'), '2022-09-01').outputs.sqlServerName.value, 'fqdn', reference(resourceId('Microsoft.Resources/deployments', 'productSqlServerDeployment'), '2022-09-01').outputs.sqlServerFqdn.value, 'databaseName', reference(resourceId('Microsoft.Resources/deployments', 'productSqlDatabaseDeployment'), '2022-09-01').outputs.productDatabaseName.value), createObject())]",
+        "cosmosDb": "[if(parameters('featureFlags').enableCosmosDb, createObject('id', reference(resourceId('Microsoft.Resources/deployments', 'productCosmosDbDeployment'), '2022-09-01').outputs.cosmosAccountId.value, 'name', reference(resourceId('Microsoft.Resources/deployments', 'productCosmosDbDeployment'), '2022-09-01').outputs.cosmosAccountName.value, 'endpoint', reference(resourceId('Microsoft.Resources/deployments', 'productCosmosDbDeployment'), '2022-09-01').outputs.cosmosAccountEndpoint.value, 'databaseName', reference(resourceId('Microsoft.Resources/deployments', 'productCosmosDatabaseDeployment'), '2022-09-01').outputs.productDatabaseName.value), createObject())]",
+        "keyVault": "[if(parameters('featureFlags').enableKeyVault, createObject('id', reference(resourceId('Microsoft.Resources/deployments', 'productKeyVaultDeployment'), '2022-09-01').outputs.keyVaultId.value, 'name', reference(resourceId('Microsoft.Resources/deployments', 'productKeyVaultDeployment'), '2022-09-01').outputs.keyVaultName.value, 'uri', reference(resourceId('Microsoft.Resources/deployments', 'productKeyVaultDeployment'), '2022-09-01').outputs.keyVaultUri.value), createObject())]",
+        "functionStorage": "[if(parameters('featureFlags').enableFunctionApp, createObject('id', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionStorageDeployment'), '2022-09-01').outputs.storageAccountId.value, 'name', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionStorageDeployment'), '2022-09-01').outputs.storageAccountName.value, 'primaryEndpoints', reference(resourceId('Microsoft.Resources/deployments', 'productFunctionStorageDeployment'), '2022-09-01').outputs.primaryEndpoints.value), createObject())]"
+      }
+    }
+  }
+}

@@ -2,212 +2,165 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "value": "southeastasia"
+    "general": {
+      "value": {
+        "location": "southeastasia",
+        "environment": "test"
+      }
     },
-    "enablePrivateEndpoints": {
-      "value": true
+    "featureFlags": {
+      "value": {
+        "enablePrivateEndpoints": true,
+        "enableVNetIntegration": true,
+        "enableTestVM": true,
+        "enableSqlServer": true,
+        "enableKeyVault": true,
+        "enableAppConfiguration": true,
+        "enableStorageAccount": true,
+        "enableCosmosDb": true,
+        "enableFunctionApps": true,
+        "enableServiceBus": true,
+        "enableApplicationInsights": true
+      }
     },
-    "enableVNetIntegration": {
-      "value": true
-    },
-    "enableTestVM": {
-      "value": true
-    },
-    "enableSqlServer": {
-      "value": true
-    },
-    "enableKeyVault": {
-      "value": true
-    },
-    "enableAppConfiguration": {
-      "value": true
-    },
-    "enableBlobStorage": {
-      "value": true
-    },
-    "enableCosmosDb": {
-      "value": true
-    },
-    "enableFunctionApps": {
-      "value": true
-    },
-    "enableServiceBus": {
-      "value": true
-    },
-    "enableApplicationInsights": {
-      "value": true
-    },
-    "sqlServerName": {
-      "value": "practicalmrg-sql-test"
-    },
-    "adminUsername": {
-      "value": "sqladmin"
-    },
-    "appServicePlanName": {
-      "value": "practicalmrg-asp-test"
-    },
-    "vnetName": {
-      "value": "practicalmrg-vnet-test"
-    },
-    "keyVaultName": {
-      "value": "practicalmrg-kv-test"
-    },
-    "appConfigName": {
-      "value": "practicalmrg-config-test"
-    },
-    "storageAccountName": {
-      "value": "practicalmrgtstblob"
-    },
-    "functionAppsStorageAccountName": {
-      "value": "practicalmrgtstfunc"
-    },
-    "customerPublicWebAppName": {
-      "value": "practicalmrg-customer-public-test"
-    },
-    "customerSiteWebAppName": {
-      "value": "practicalmrg-customer-site-test"
-    },
-    "adminPublicWebAppName": {
-      "value": "practicalmrg-admin-public-test"
-    },
-    "adminSiteWebAppName": {
-      "value": "practicalmrg-admin-site-test"
-    },
-    "videoApiWebAppName": {
-      "value": "practicalmrg-video-api-test"
-    },
-    "musicApiWebAppName": {
-      "value": "practicalmrg-music-api-test"
-    },
-    "customerDbName": {
-      "value": "PracticalMRG-CUSTOMER-DB-TEST"
-    },
-    "adminDbName": {
-      "value": "PracticalMRG-ADMIN-DB-TEST"
-    },
-    "videoDbName": {
-      "value": "PracticalMRG-VIDEO-DB-TEST"
-    },
-    "musicDbName": {
-      "value": "PracticalMRG-MUSIC-DB-TEST"
-    },
-    "vmAdminUsername": {
-      "value": "testadmin"
-    },
-    "storageAccountType": {
-      "value": "Standard_GRS"
-    },
-    "blobContainerNames": {
-      "value": [
-        "documents",
-        "images",
-        "backups",
-        "logs",
-        "test-data"
-      ]
-    },
-    "cosmosAccountName": {
-      "value": "practicalmrg-cosmos-test"
-    },
-    "cosmosConsistencyLevel": {
-      "value": "Session"
-    },
-    "cosmosEnableAutomaticFailover": {
-      "value": true
-    },
-    "cosmosAdminDbName": {
-      "value": "PracticalMRG-ADMIN-COSMOS-DB-TEST"
-    },
-    "cosmosCustomerDbName": {
-      "value": "PracticalMRG-CUSTOMER-COSMOS-DB-TEST"
-    },
-    "cosmosMusicDbName": {
-      "value": "PracticalMRG-MUSIC-COSMOS-DB-TEST"
-    },
-    "cosmosVideoDbName": {
-      "value": "PracticalMRG-VIDEO-COSMOS-DB-TEST"
-    },
-    "adminFunctionAppName": {
-      "value": "practicalmrg-admin-func-test"
-    },
-    "customerFunctionAppName": {
-      "value": "practicalmrg-customer-func-test"
-    },
-    "musicFunctionAppName": {
-      "value": "practicalmrg-music-func-test"
-    },
-    "videoFunctionAppName": {
-      "value": "practicalmrg-video-func-test"
-    },
-    "applicationInsightsWorkspaceName": {
-      "value": "practicalmrg-law-test"
-    },
-    "retentionInDays": {
-      "value": 60
-    },
-    "serviceBusNamespaceName": {
-      "value": "practicalmrg-sb-test"
-    },
-    "serviceBusSku": {
-      "value": "Standard"
-    },
-    "serviceBusCapacity": {
-      "value": 1
-    },
-    "serviceBusTopicNames": {
-      "value": [
-        "customer-events",
-        "admin-events",
-        "video-events",
-        "music-events"
-      ]
-    },
-    "serviceBusQueueNames": {
-      "value": [
-        "customer-queue",
-        "admin-queue",
-        "video-queue",
-        "music-queue"
-      ]
-    },
-    "serviceBusSubscriptions": {
-      "value": [
-        {
-          "topicName": "customer-events",
-          "subscriptionName": "customer-subscription"
-        },
-        {
-          "topicName": "admin-events",
-          "subscriptionName": "admin-subscription"
-        },
-        {
-          "topicName": "video-events",
-          "subscriptionName": "video-subscription"
-        },
-        {
-          "topicName": "music-events",
-          "subscriptionName": "music-subscription"
+    "networking": {
+      "value": {
+        "vnetName": "practicalmrg-vnet-test",
+        "resourceGroup": "practical-pe-networking-rg-test",
+        "privateDnsZones": {
+          "appConfig": "privatelink.azconfig.io",
+          "blobStorage": "privatelink.blob.core.windows.net",
+          "cosmos": "privatelink.documents.azure.com",
+          "serviceBus": "privatelink.servicebus.windows.net",
+          "appService": "privatelink.azurewebsites.net",
+          "keyVault": "privatelink.vaultcore.azure.net"
         }
-      ]
+      }
     },
-    "networkingLayerResourceGroup": {
-      "value": "practical-pe-networking-rg-test"
+    "sql": {
+      "value": {
+        "serverName": "practicalmrg-sql-test",
+        "adminUsername": "sqladmin",
+        "databases": {
+          "customerDb": "PracticalMRG-CUSTOMER-DB-TEST",
+          "adminDb": "PracticalMRG-ADMIN-DB-TEST",
+          "videoDb": "PracticalMRG-VIDEO-DB-TEST",
+          "musicDb": "PracticalMRG-MUSIC-DB-TEST"
+        }
+      }
     },
-    "appConfigPrivateDnsZoneName": {
-      "value": "privatelink.azconfig.io"
+    "webApps": {
+      "value": {
+        "appServicePlanName": "practicalmrg-asp-test",
+        "apps": {
+          "customerPublic": "practicalmrg-customer-public-test",
+          "customerSite": "practicalmrg-customer-site-test",
+          "adminPublic": "practicalmrg-admin-public-test",
+          "adminSite": "practicalmrg-admin-site-test",
+          "videoApi": "practicalmrg-video-api-test",
+          "musicApi": "practicalmrg-music-api-test"
+        }
+      }
     },
-    "blobStoragePrivateDnsZoneName": {
-      "value": "privatelink.blob.core.windows.net"
+    "storage": {
+      "value": {
+        "mainAccount": {
+          "name": "practicalmrgtstblob",
+          "type": "Standard_GRS",
+          "containers": [
+            "documents",
+            "images", 
+            "backups",
+            "logs",
+            "test-data"
+          ]
+        },
+        "functionApps": {
+          "name": "practicalmrgtstfunc",
+          "type": "Standard_LRS"
+        }
+      }
     },
-    "cosmosPrivateDnsZoneName": {
-      "value": "privatelink.documents.azure.com"
+    "cosmos": {
+      "value": {
+        "accountName": "practicalmrg-cosmos-test",
+        "consistencyLevel": "Session",
+        "enableAutomaticFailover": true,
+        "databases": {
+          "adminDb": "PracticalMRG-ADMIN-COSMOS-DB-TEST",
+          "customerDb": "PracticalMRG-CUSTOMER-COSMOS-DB-TEST",
+          "musicDb": "PracticalMRG-MUSIC-COSMOS-DB-TEST",
+          "videoDb": "PracticalMRG-VIDEO-COSMOS-DB-TEST"
+        }
+      }
     },
-    "serviceBusPrivateDnsZoneName": {
-      "value": "privatelink.servicebus.windows.net"
+    "functions": {
+      "value": {
+        "apps": {
+          "admin": "practicalmrg-admin-func-test",
+          "customer": "practicalmrg-customer-func-test",
+          "music": "practicalmrg-music-func-test",
+          "video": "practicalmrg-video-func-test"
+        }
+      }
     },
-    "appServicePrivateDnsZoneName": {
-      "value": "privatelink.azurewebsites.net"
+    "serviceBus": {
+      "value": {
+        "namespaceName": "practicalmrg-sb-test",
+        "sku": "Standard",
+        "capacity": 1,
+        "topicNames": [
+          "customer-events",
+          "admin-events",
+          "video-events",
+          "music-events"
+        ],
+        "queueNames": [
+          "customer-queue",
+          "admin-queue", 
+          "video-queue",
+          "music-queue"
+        ],
+        "subscriptions": [
+          {
+            "topicName": "customer-events",
+            "subscriptionName": "customer-subscription"
+          },
+          {
+            "topicName": "admin-events", 
+            "subscriptionName": "admin-subscription"
+          },
+          {
+            "topicName": "video-events",
+            "subscriptionName": "video-subscription"
+          },
+          {
+            "topicName": "music-events",
+            "subscriptionName": "music-subscription"
+          }
+        ]
+      }
+    },
+    "applicationInsights": {
+      "value": {
+        "workspaceName": "practicalmrg-law-test",
+        "retentionInDays": 60
+      }
+    },
+    "testVm": {
+      "value": {
+        "adminUsername": "testadmin"
+      }
+    },
+    "keyVault": {
+      "value": {
+        "name": "practicalmrg-kv-test"
+      }
+    },
+    "appConfiguration": {
+      "value": {
+        "name": "practicalmrg-config-test"
+      }
     }
   }
 }

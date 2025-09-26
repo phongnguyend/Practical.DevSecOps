@@ -2,83 +2,59 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "value": "southeastasia"
+    "general": {
+      "value": {
+        "location": "southeastasia"
+      }
     },
-    "enablePrivateEndpoints": {
-      "value": false
+    "featureFlags": {
+      "value": {
+        "enablePrivateEndpoints": false,
+        "enableApplicationGateway": true,
+        "enableApiManagement": true,
+        "enableAppConfiguration": true,
+        "enableBlobStorage": true,
+        "enableCosmosDb": true,
+        "enableServiceBus": true,
+        "enableWAF": true
+      }
     },
-    "enableApplicationGateway": {
-      "value": true
+    "networking": {
+      "value": {
+        "vnetName": "practicalmrg-vnet-uat"
+      }
     },
-    "enableApiManagement": {
-      "value": true
+    "apiManagement": {
+      "value": {
+        "name": "practicalmrg-apim-uat",
+        "publisherEmail": "uat@practical.devsecops",
+        "publisherName": "Practical DevSecOps UAT Team",
+        "sku": "Standard",
+        "capacity": 1
+      }
     },
-    "enableAppConfiguration": {
-      "value": true
+    "webApps": {
+      "value": {
+        "apps": {
+          "customerPublic": "practicalmrg-customer-public-uat",
+          "customerSite": "practicalmrg-customer-site-uat",
+          "adminPublic": "practicalmrg-admin-public-uat",
+          "adminSite": "practicalmrg-admin-site-uat",
+          "videoApi": "practicalmrg-video-api-uat",
+          "musicApi": "practicalmrg-music-api-uat"
+        }
+      }
     },
-    "enableBlobStorage": {
-      "value": true
-    },
-    "enableCosmosDb": {
-      "value": true
-    },
-    "enableServiceBus": {
-      "value": true
-    },
-    "vnetName": {
-      "value": "practicalmrg-vnet-uat"
-    },
-    "apiManagementName": {
-      "value": "practicalmrg-apim-uat"
-    },
-    "publisherEmail": {
-      "value": "uat@practical.devsecops"
-    },
-    "publisherName": {
-      "value": "Practical DevSecOps UAT Team"
-    },
-    "customerPublicWebAppName": {
-      "value": "practicalmrg-customer-public-uat"
-    },
-    "customerSiteWebAppName": {
-      "value": "practicalmrg-customer-site-uat"
-    },
-    "adminPublicWebAppName": {
-      "value": "practicalmrg-admin-public-uat"
-    },
-    "adminSiteWebAppName": {
-      "value": "practicalmrg-admin-site-uat"
-    },
-    "videoApiWebAppName": {
-      "value": "practicalmrg-video-api-uat"
-    },
-    "musicApiWebAppName": {
-      "value": "practicalmrg-music-api-uat"
-    },
-    "apiManagementSku": {
-      "value": "Standard"
-    },
-    "apiManagementCapacity": {
-      "value": 1
-    },
-    "enableWAF": {
-      "value": true
-    },
-    "wafMode": {
-      "value": "Detection"
-    },
-    "wafRuleSetVersion": {
-      "value": "3.2"
-    },
-    "wafRequestBodyCheck": {
-      "value": true
-    },
-    "wafMaxRequestBodySizeInKb": {
-      "value": 128
-    },
-    "wafFileUploadLimitInMb": {
-      "value": 100
+    "applicationGateway": {
+      "value": {
+        "waf": {
+          "mode": "Detection",
+          "ruleSetVersion": "3.2",
+          "requestBodyCheck": true,
+          "maxRequestBodySizeInKb": 128,
+          "fileUploadLimitInMb": 100
+        }
+      }
     }
   }
 }

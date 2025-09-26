@@ -5,74 +5,60 @@
     "location": {
       "value": "southeastasia"
     },
-    "enablePrivateEndpoints": {
-      "value": true
+    "featureFlags": {
+      "value": {
+        "enablePrivateEndpoints": true,
+        "enableVNetIntegration": true,
+        "enableKeyVault": true,
+        "enableCosmosDb": true,
+        "enableSqlServer": true,
+        "enableFunctionApp": true,
+        "enableApiManagement": true
+      }
     },
-    "enableVNetIntegration": {
-      "value": true
+    "productService": {
+      "value": {
+        "name": "product-uat",
+        "appServicePlanName": "practicalpe-product-asp-uat",
+        "webApp": {
+          "productApiWebAppName": "practicalpe-product-api-uat"
+        },
+        "azureFunction": {
+          "productFunctionAppName": "practicalpe-product-func-uat",
+          "storageAccountName": "practicalpeproductfuncuat"
+        }
+      }
     },
-    "enableKeyVault": {
-      "value": true
+    "sqlServer": {
+      "value": {
+        "serverName": "practicalpe-product-sql-uat",
+        "adminUsername": "productadmin",
+        "database": {
+          "productDbName": "PracticalPE-PRODUCT-DB-UAT"
+        }
+      }
     },
-    "enableCosmosDb": {
-      "value": true
+    "cosmosDb": {
+      "value": {
+        "accountName": "practicalpe-product-cosmos-uat",
+        "consistencyLevel": "Session",
+        "enableAutomaticFailover": true,
+        "database": {
+          "productCosmosDbName": "PracticalPE-PRODUCT-COSMOS-DB-UAT"
+        }
+      }
     },
-    "enableSqlServer": {
-      "value": true
+    "keyVault": {
+      "value": {
+        "productKeyVaultName": "practicalpe-product-kv-uat"
+      }
     },
-    "enableFunctionApp": {
-      "value": true
-    },
-    "productServiceName": {
-      "value": "product-uat"
-    },
-    "appServicePlanName": {
-      "value": "practicalpe-product-asp-uat"
-    },
-    "productApiWebAppName": {
-      "value": "practicalpe-product-api-uat"
-    },
-    "productFunctionAppName": {
-      "value": "practicalpe-product-func-uat"
-    },
-    "productKeyVaultName": {
-      "value": "practicalpe-product-kv-uat"
-    },
-    "productFunctionStorageAccountName": {
-      "value": "practicalpeproductfuncuat"
-    },
-    "sqlServerName": {
-      "value": "practicalpe-product-sql-uat"
-    },
-    "adminUsername": {
-      "value": "productadmin"
-    },
-    "productDbName": {
-      "value": "PracticalPE-PRODUCT-DB-UAT"
-    },
-    "cosmosAccountName": {
-      "value": "practicalpe-product-cosmos-uat"
-    },
-    "cosmosConsistencyLevel": {
-      "value": "Session"
-    },
-    "cosmosEnableAutomaticFailover": {
-      "value": true
-    },
-    "productCosmosDbName": {
-      "value": "PracticalPE-PRODUCT-COSMOS-DB-UAT"
-    },
-    "baseVnetName": {
-      "value": "practicalpe-vnet-uat"
-    },
-    "baseVnetResourceGroup": {
-      "value": "rg-practicalpe-uat"
-    },
-    "enableApiManagement": {
-      "value": true
-    },
-    "apiManagementName": {
-      "value": "practicalpe-apim-uat"
+    "baseServices": {
+      "value": {
+        "vnetName": "practicalpe-vnet-uat",
+        "vnetResourceGroup": "rg-practicalpe-uat",
+        "apiManagementName": "practicalpe-apim-uat"
+      }
     }
   }
 }

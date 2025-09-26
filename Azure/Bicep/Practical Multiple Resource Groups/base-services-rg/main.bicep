@@ -1,135 +1,159 @@
-param location string = 'southeastasia'
+// Nested parameter objects for better organization
+param general object = {
+  location: 'southeastasia'
+  environment: 'dev'
+}
 
-// Feature Flags
-param enablePrivateEndpoints bool = false
-param enableVNetIntegration bool = false
-param enableTestVM bool = false
-param enableSqlServer bool = false
-param enableKeyVault bool = false
-param enableAppConfiguration bool = false
-param enableStorageAccount bool = false
-param enableCosmosDb bool = false
-param enableFunctionApps bool = false
-param enableServiceBus bool = false
-param enableApplicationInsights bool = false
+param featureFlags object = {
+  enablePrivateEndpoints: false
+  enableVNetIntegration: false
+  enableTestVM: false
+  enableSqlServer: false
+  enableKeyVault: false
+  enableAppConfiguration: false
+  enableStorageAccount: false
+  enableCosmosDb: false
+  enableFunctionApps: false
+  enableServiceBus: false
+  enableApplicationInsights: false
+}
 
-param sqlServerName string = 'PracticalMultipleResourceGroups'
-param adminUsername string = 'PracticalMultipleResourceGroups'
+param networking object = {
+  vnetName: 'PracticalMultipleResourceGroups-vnet'
+  resourceGroup: 'practical-pe-networking-rg'
+  privateDnsZones: {
+    appConfig: 'privatelink.azconfig.io'
+    blobStorage: 'privatelink.blob.core.windows.net'
+    cosmos: 'privatelink.documents.azure.com'
+    serviceBus: 'privatelink.servicebus.windows.net'
+    appService: 'privatelink.azurewebsites.net'
+    keyVault: 'privatelink.vaultcore.azure.net'
+  }
+}
+
+param sql object = {
+  serverName: 'PracticalMultipleResourceGroups'
+  adminUsername: 'PracticalMultipleResourceGroups'
+  databases: {
+    customerDb: 'PracticalMultipleResourceGroups-CUSTOMER-DB'
+    adminDb: 'PracticalMultipleResourceGroups-ADMIN-DB'
+    videoDb: 'PracticalMultipleResourceGroups-VIDEO-DB'
+    musicDb: 'PracticalMultipleResourceGroups-MUSIC-DB'
+  }
+}
+
+param webApps object = {
+  appServicePlanName: 'PracticalMultipleResourceGroups'
+  apps: {
+    customerPublic: 'PracticalMultipleResourceGroups-CUSTOMER-PUBLIC'
+    customerSite: 'PracticalMultipleResourceGroups-CUSTOMER-SITE'
+    adminPublic: 'PracticalMultipleResourceGroups-ADMIN-PUBLIC'
+    adminSite: 'PracticalMultipleResourceGroups-ADMIN-SITE'
+    videoApi: 'PracticalMultipleResourceGroups-VIDEO-API'
+    musicApi: 'PracticalMultipleResourceGroups-MUSIC-API'
+  }
+}
+
+param storage object = {
+  mainAccount: {
+    name: 'practicalmrgblob'
+    type: 'Standard_LRS'
+    containers: [
+      'documents'
+      'images'
+      'backups'
+      'logs'
+    ]
+  }
+  functionApps: {
+    name: 'practicalmrgfuncappsst'
+    type: 'Standard_LRS'
+  }
+}
+
+param cosmos object = {
+  accountName: 'practicalmrg-cosmos-${uniqueString(resourceGroup().id)}'
+  consistencyLevel: 'Session'
+  enableAutomaticFailover: true
+  databases: {
+    adminDb: 'PracticalMultipleResourceGroups-ADMIN-COSMOS-DB'
+    customerDb: 'PracticalMultipleResourceGroups-CUSTOMER-COSMOS-DB'
+    musicDb: 'PracticalMultipleResourceGroups-MUSIC-COSMOS-DB'
+    videoDb: 'PracticalMultipleResourceGroups-VIDEO-COSMOS-DB'
+  }
+}
+
+param functions object = {
+  apps: {
+    admin: 'PracticalMultipleResourceGroups-ADMIN-FUNC'
+    customer: 'PracticalMultipleResourceGroups-CUSTOMER-FUNC'
+    music: 'PracticalMultipleResourceGroups-MUSIC-FUNC'
+    video: 'PracticalMultipleResourceGroups-VIDEO-FUNC'
+  }
+}
+
+param serviceBus object = {
+  namespaceName: 'PracticalMultipleResourceGroups-sb-${uniqueString(resourceGroup().id)}'
+  sku: 'Premium'
+  capacity: 1
+  topicNames: [
+    'customer-events'
+    'admin-events'
+    'video-events'
+    'music-events'
+  ]
+  queueNames: [
+    'customer-queue'
+    'admin-queue'
+    'video-queue'
+    'music-queue'
+  ]
+  subscriptions: [
+    {
+      topicName: 'customer-events'
+      subscriptionName: 'customer-subscription'
+    }
+    {
+      topicName: 'admin-events'
+      subscriptionName: 'admin-subscription'
+    }
+    {
+      topicName: 'video-events'
+      subscriptionName: 'video-subscription'
+    }
+    {
+      topicName: 'music-events'
+      subscriptionName: 'music-subscription'
+    }
+  ]
+}
+
+param applicationInsights object = {
+  workspaceName: 'PracticalMultipleResourceGroups-law'
+  retentionInDays: 30
+}
+
+param testVm object = {
+  adminUsername: 'testadmin'
+}
+
+param keyVault object = {
+  name: 'practicalmrgkv'
+}
+
+param appConfiguration object = {
+  name: 'PracticalMultipleResourceGroups-config'
+}
+
+// Secure parameters
 @secure()
 param adminPassword string = ''
-param appServicePlanName string = 'PracticalMultipleResourceGroups'
-param vnetName string = 'PracticalMultipleResourceGroups-vnet'
-param keyVaultName string = 'practicalmrgkv'
-param appConfigName string = 'PracticalMultipleResourceGroups-config'
-param storageAccountName string = 'practicalmrgblob'
-param functionAppsStorageAccountName string = 'practicalmrgfuncappsst'
-
-// Individual Web App Name Parameters
-param customerPublicWebAppName string = 'PracticalMultipleResourceGroups-CUSTOMER-PUBLIC'
-param customerSiteWebAppName string = 'PracticalMultipleResourceGroups-CUSTOMER-SITE'
-param adminPublicWebAppName string = 'PracticalMultipleResourceGroups-ADMIN-PUBLIC'
-param adminSiteWebAppName string = 'PracticalMultipleResourceGroups-ADMIN-SITE'
-param videoApiWebAppName string = 'PracticalMultipleResourceGroups-VIDEO-API'
-param musicApiWebAppName string = 'PracticalMultipleResourceGroups-MUSIC-API'
-
-// Individual Database Name Parameters
-param customerDbName string = 'PracticalMultipleResourceGroups-CUSTOMER-DB'
-param adminDbName string = 'PracticalMultipleResourceGroups-ADMIN-DB'
-param videoDbName string = 'PracticalMultipleResourceGroups-VIDEO-DB'
-param musicDbName string = 'PracticalMultipleResourceGroups-MUSIC-DB'
-
-// Test VM parameters
-param vmAdminUsername string = 'testadmin'
 @secure()
 param vmAdminPassword string = ''
 
-// Blob Storage parameters
-param storageAccountType string = 'Standard_LRS'
-param blobContainerNames array = [
-  'documents'
-  'images'
-  'backups'
-  'logs'
-]
-
-// Cosmos DB parameters
-param cosmosAccountName string = 'practicalmrg-cosmos-${uniqueString(resourceGroup().id)}'
-param cosmosConsistencyLevel string = 'Session'
-param cosmosEnableAutomaticFailover bool = true
-
-// Individual Cosmos Database Names
-param cosmosAdminDbName string = 'PracticalMultipleResourceGroups-ADMIN-COSMOS-DB'
-param cosmosCustomerDbName string = 'PracticalMultipleResourceGroups-CUSTOMER-COSMOS-DB'
-param cosmosMusicDbName string = 'PracticalMultipleResourceGroups-MUSIC-COSMOS-DB'
-param cosmosVideoDbName string = 'PracticalMultipleResourceGroups-VIDEO-COSMOS-DB'
-
-// Function App parameters
-param adminFunctionAppName string = 'PracticalMultipleResourceGroups-ADMIN-FUNC'
-param customerFunctionAppName string = 'PracticalMultipleResourceGroups-CUSTOMER-FUNC'
-param musicFunctionAppName string = 'PracticalMultipleResourceGroups-MUSIC-FUNC'
-param videoFunctionAppName string = 'PracticalMultipleResourceGroups-VIDEO-FUNC'
-
-// Application Insights parameters
-param applicationInsightsWorkspaceName string = 'PracticalMultipleResourceGroups-law'
-param retentionInDays int = 30
-
-// Service Bus parameters
-param serviceBusNamespaceName string = 'PracticalMultipleResourceGroups-sb-${uniqueString(resourceGroup().id)}'
-param serviceBusSku string = 'Premium'
-param serviceBusCapacity int = 1
-param serviceBusTopicNames array = [
-  'customer-events'
-  'admin-events'
-  'video-events'
-  'music-events'
-]
-param serviceBusQueueNames array = [
-  'customer-queue'
-  'admin-queue'
-  'video-queue'
-  'music-queue'
-]
-param serviceBusSubscriptions array = [
-  {
-    topicName: 'customer-events'
-    subscriptionName: 'customer-subscription'
-  }
-  {
-    topicName: 'admin-events'
-    subscriptionName: 'admin-subscription'
-  }
-  {
-    topicName: 'video-events'
-    subscriptionName: 'video-subscription'
-  }
-  {
-    topicName: 'music-events'
-    subscriptionName: 'music-subscription'
-  }
-]
-
-// Private DNS Zone Names from networking layer
-@description('Private DNS Zone Name for App Configuration')
-param appConfigPrivateDnsZoneName string = 'privatelink.azconfig.io'
-
-@description('Private DNS Zone Name for Blob Storage')
-param blobStoragePrivateDnsZoneName string = 'privatelink.blob.${environment().suffixes.storage}'
-
-@description('Private DNS Zone Name for Cosmos DB')
-param cosmosPrivateDnsZoneName string = 'privatelink.documents.azure.com'
-
-@description('Private DNS Zone Name for Service Bus')
-param serviceBusPrivateDnsZoneName string = 'privatelink.servicebus.windows.net'
-
-@description('Private DNS Zone Name for App Service')
-param appServicePrivateDnsZoneName string = 'privatelink.azurewebsites.net'
-
-@description('Private DNS Zone Name for Key Vault')
-param keyVaultPrivateDnsZoneName string = 'privatelink.vaultcore.azure.net'
-
-// Common tags variable
+// Common tags variable based on environment
 var commonTags = {
-  Environment: 'Development'
+  Environment: general.environment
   Project: 'PracticalMultipleResourceGroups'
 }
 
@@ -137,107 +161,107 @@ var commonTags = {
 module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' = {
   name: 'privateDnsZonesDeployment'
   params: {
-    privateDnsZonesResourceGroup: networkingLayerResourceGroup
-    appConfigPrivateDnsZoneName: appConfigPrivateDnsZoneName
-    blobStoragePrivateDnsZoneName: blobStoragePrivateDnsZoneName
-    cosmosPrivateDnsZoneName: cosmosPrivateDnsZoneName
-    serviceBusPrivateDnsZoneName: serviceBusPrivateDnsZoneName
-    appServicePrivateDnsZoneName: appServicePrivateDnsZoneName
-    keyVaultPrivateDnsZoneName: keyVaultPrivateDnsZoneName
+    privateDnsZonesResourceGroup: networking.resourceGroup
+    appConfigPrivateDnsZoneName: networking.privateDnsZones.appConfig
+    blobStoragePrivateDnsZoneName: networking.privateDnsZones.blobStorage
+    cosmosPrivateDnsZoneName: networking.privateDnsZones.cosmos
+    serviceBusPrivateDnsZoneName: networking.privateDnsZones.serviceBus
+    appServicePrivateDnsZoneName: networking.privateDnsZones.appService
+    keyVaultPrivateDnsZoneName: networking.privateDnsZones.keyVault
   }
 }
 
 // Reference existing resources from networking-layer
 @description('Resource group of the networking-layer deployment')
-param networkingLayerResourceGroup string
+param networkingLayerResourceGroup string = networking.resourceGroup
 
 // Virtual Network Module (reference existing from networking-layer)
 module vnetModule 'modules/virtual-networks/virtualNetwork.bicep' = {
   name: 'virtualNetworkDeployment'
   params: {
     vnetResourceGroup: networkingLayerResourceGroup
-    vnetName: vnetName
+    vnetName: networking.vnetName
   }
 }
 
 // SQL Server Module
-module sqlServerModule 'modules/sql-servers/mySqlServer.bicep' = if (enableSqlServer) {
+module sqlServerModule 'modules/sql-servers/mySqlServer.bicep' = if (featureFlags.enableSqlServer) {
   name: 'sqlServerDeployment'
   params: {
-    location: location
-    sqlServerName: sqlServerName
-    adminUsername: adminUsername
+    location: general.location
+    sqlServerName: sql.serverName
+    adminUsername: sql.adminUsername
     adminPassword: adminPassword
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    allowedSubnets: featureFlags.enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
     tags: commonTags
   }
 }
 
 // Individual Database Modules (depend on SQL Server)
-module customerDatabaseModule 'modules/sql-server-databases/customerDb.bicep' = if (enableSqlServer) {
+module customerDatabaseModule 'modules/sql-server-databases/customerDb.bicep' = if (featureFlags.enableSqlServer) {
   name: 'customerDatabaseDeployment'
   dependsOn: [
     sqlServerModule
   ]
   params: {
-    location: location
-    sqlServerName: sqlServerName
-    databaseName: customerDbName
+    location: general.location
+    sqlServerName: sql.serverName
+    databaseName: sql.databases.customerDb
     tags: commonTags
   }
 }
 
-module adminDatabaseModule 'modules/sql-server-databases/adminDb.bicep' = if (enableSqlServer) {
+module adminDatabaseModule 'modules/sql-server-databases/adminDb.bicep' = if (featureFlags.enableSqlServer) {
   name: 'adminDatabaseDeployment'
   dependsOn: [
     sqlServerModule
   ]
   params: {
-    location: location
-    sqlServerName: sqlServerName
-    databaseName: adminDbName
+    location: general.location
+    sqlServerName: sql.serverName
+    databaseName: sql.databases.adminDb
     tags: commonTags
   }
 }
 
-module videoDatabaseModule 'modules/sql-server-databases/videoDb.bicep' = if (enableSqlServer) {
+module videoDatabaseModule 'modules/sql-server-databases/videoDb.bicep' = if (featureFlags.enableSqlServer) {
   name: 'videoDatabaseDeployment'
   dependsOn: [
     sqlServerModule
   ]
   params: {
-    location: location
-    sqlServerName: sqlServerName
-    databaseName: videoDbName
+    location: general.location
+    sqlServerName: sql.serverName
+    databaseName: sql.databases.videoDb
     tags: commonTags
   }
 }
 
-module musicDatabaseModule 'modules/sql-server-databases/musicDb.bicep' = if (enableSqlServer) {
+module musicDatabaseModule 'modules/sql-server-databases/musicDb.bicep' = if (featureFlags.enableSqlServer) {
   name: 'musicDatabaseDeployment'
   dependsOn: [
     sqlServerModule
   ]
   params: {
-    location: location
-    sqlServerName: sqlServerName
-    databaseName: musicDbName
+    location: general.location
+    sqlServerName: sql.serverName
+    databaseName: sql.databases.musicDb
     tags: commonTags
   }
 }
 
 // Key Vault Module
-module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (enableKeyVault) {
+module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (featureFlags.enableKeyVault) {
   name: 'keyVaultDeployment'
   params: {
-    location: location
-    keyVaultName: keyVaultName
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableKeyVault) ? privateDnsZonesModule.outputs.keyVaultPrivateDnsZoneId : ''
+    location: general.location
+    keyVaultName: keyVault.name
+    allowedSubnets: featureFlags.enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: (featureFlags.enablePrivateEndpoints && featureFlags.enableKeyVault) ? privateDnsZonesModule.outputs.keyVaultPrivateDnsZoneId : ''
     // Consolidated Role Assignment Parameters for Key Vault access
-    roleAssignments: enableKeyVault ? concat(
+    roleAssignments: featureFlags.enableKeyVault ? concat(
       // Web App Role Assignments (Key Vault Secrets User)
       [
         {
@@ -266,7 +290,7 @@ module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (enableKeyVault) 
         }
       ],
       // Function App Role Assignments (Key Vault Secrets User) - only when enabled
-      enableFunctionApps ? [
+      featureFlags.enableFunctionApps ? [
         {
           principalId: adminFunctionAppModule!.outputs.principalId
           roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
@@ -290,16 +314,16 @@ module keyVaultModule 'modules/key-vaults/keyVault.bicep' = if (enableKeyVault) 
 }
 
 // App Configuration Module
-module appConfigModule 'modules/app-configurations/myAppConfiguration.bicep' = if (enableAppConfiguration) {
+module appConfigModule 'modules/app-configurations/myAppConfiguration.bicep' = if (featureFlags.enableAppConfiguration) {
   name: 'appConfigurationDeployment'
   params: {
-    location: location
-    appConfigName: appConfigName
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableAppConfiguration) ? privateDnsZonesModule.outputs.appConfigPrivateDnsZoneId : ''
+    location: general.location
+    appConfigName: appConfiguration.name
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: (featureFlags.enablePrivateEndpoints && featureFlags.enableAppConfiguration) ? privateDnsZonesModule.outputs.appConfigPrivateDnsZoneId : ''
     // Consolidated Role Assignment Parameters
-    roleAssignments: enableAppConfiguration ? concat(
+    roleAssignments: featureFlags.enableAppConfiguration ? concat(
       // Web Apps - App Configuration Data Reader role
       [
         {
@@ -328,7 +352,7 @@ module appConfigModule 'modules/app-configurations/myAppConfiguration.bicep' = i
         }
       ],
       // Function Apps - App Configuration Data Reader role (only when enabled)
-      enableFunctionApps ? [
+      featureFlags.enableFunctionApps ? [
         {
           principalId: adminFunctionAppModule!.outputs.principalId
           roleDefinitionId: '516239f1-63e1-4d78-a4de-a74fb236a071' // App Configuration Data Reader
@@ -351,25 +375,25 @@ module appConfigModule 'modules/app-configurations/myAppConfiguration.bicep' = i
 }
 
 // My Storage Account Module
-module myStorageAccountModule 'modules/storage-accounts/myStorageAccount.bicep' = if (enableStorageAccount) {
+module myStorageAccountModule 'modules/storage-accounts/myStorageAccount.bicep' = if (featureFlags.enableStorageAccount) {
   name: 'blobStorageDeployment'
   params: {
-    location: location
-    storageAccountName: storageAccountName
-    storageAccountType: storageAccountType
-    containerNames: blobContainerNames
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    location: general.location
+    storageAccountName: storage.mainAccount.name
+    storageAccountType: storage.mainAccount.type
+    containerNames: storage.mainAccount.containers
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
     privateDnsZoneIds: {
-      blob: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule.outputs.blobStoragePrivateDnsZoneId : ''
-      file: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule.outputs.fileStoragePrivateDnsZoneId : ''
-      queue: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule.outputs.queueStoragePrivateDnsZoneId : ''
-      table: (enablePrivateEndpoints && enableStorageAccount) ? privateDnsZonesModule.outputs.tableStoragePrivateDnsZoneId : ''
+      blob: (featureFlags.enablePrivateEndpoints && featureFlags.enableStorageAccount) ? privateDnsZonesModule.outputs.blobStoragePrivateDnsZoneId : ''
+      file: (featureFlags.enablePrivateEndpoints && featureFlags.enableStorageAccount) ? privateDnsZonesModule.outputs.fileStoragePrivateDnsZoneId : ''
+      queue: (featureFlags.enablePrivateEndpoints && featureFlags.enableStorageAccount) ? privateDnsZonesModule.outputs.queueStoragePrivateDnsZoneId : ''
+      table: (featureFlags.enablePrivateEndpoints && featureFlags.enableStorageAccount) ? privateDnsZonesModule.outputs.tableStoragePrivateDnsZoneId : ''
     }
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
-    allowBlobPublicAccess: !enablePrivateEndpoints
+    allowedSubnets: featureFlags.enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    allowBlobPublicAccess: !featureFlags.enablePrivateEndpoints
     // Consolidated Role Assignment Parameters
-    roleAssignments: enableStorageAccount ? concat(
+    roleAssignments: featureFlags.enableStorageAccount ? concat(
       // Web App Role Assignments (Storage Blob Data Contributor)
       [
         {
@@ -398,7 +422,7 @@ module myStorageAccountModule 'modules/storage-accounts/myStorageAccount.bicep' 
         }
       ],
       // Function App Role Assignments (Storage Blob Data Contributor) - for application data access
-      enableFunctionApps ? [
+      featureFlags.enableFunctionApps ? [
         {
           principalId: adminFunctionAppModule!.outputs.principalId
           roleDefinitionId: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
@@ -422,21 +446,21 @@ module myStorageAccountModule 'modules/storage-accounts/myStorageAccount.bicep' 
 }
 
 // Cosmos DB Module
-module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = if (enableCosmosDb) {
+module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = if (featureFlags.enableCosmosDb) {
   name: 'cosmosDbAccountDeployment'
   params: {
-    location: location
-    cosmosAccountName: cosmosAccountName
-    consistencyLevel: cosmosConsistencyLevel
-    enableAutomaticFailover: cosmosEnableAutomaticFailover
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableCosmosDb) ? privateDnsZonesModule.outputs.cosmosPrivateDnsZoneId : ''
-    allowedSubnets: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
-    enablePublicNetworkAccess: !enablePrivateEndpoints
+    location: general.location
+    cosmosAccountName: cosmos.accountName
+    consistencyLevel: cosmos.consistencyLevel
+    enableAutomaticFailover: cosmos.enableAutomaticFailover
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: (featureFlags.enablePrivateEndpoints && featureFlags.enableCosmosDb) ? privateDnsZonesModule.outputs.cosmosPrivateDnsZoneId : ''
+    allowedSubnets: featureFlags.enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    enablePublicNetworkAccess: !featureFlags.enablePrivateEndpoints
     tags: commonTags
     // Consolidated Role Assignment Parameters
-    roleAssignments: enableCosmosDb ? concat(
+    roleAssignments: featureFlags.enableCosmosDb ? concat(
       // Web App Role Assignments (Cosmos DB Data Contributor)
       [
         {
@@ -465,7 +489,7 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
         }
       ],
       // Function App Role Assignments (Cosmos DB Data Contributor) - only when enabled
-      enableFunctionApps ? [
+      featureFlags.enableFunctionApps ? [
         {
           principalId: adminFunctionAppModule!.outputs.principalId
           roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450'
@@ -484,7 +508,7 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
         }
       ] : []
     ) : []
-    sqlRoleAssignments: enableCosmosDb ? concat(
+    sqlRoleAssignments: featureFlags.enableCosmosDb ? concat(
       // Web App Role Assignments (Cosmos DB Built-in Data Contributor)
       [
         {
@@ -513,7 +537,7 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
         }
       ],
       // Function App Role Assignments (Cosmos DB Built-in Data Contributor) - only when enabled
-      enableFunctionApps ? [
+      featureFlags.enableFunctionApps ? [
         {
           principalId: adminFunctionAppModule!.outputs.principalId
           roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
@@ -536,11 +560,11 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
 }
 
 // Individual Cosmos Database Modules
-module cosmosAdminDatabaseModule 'modules/cosmos-databases/adminDb.bicep' = if (enableCosmosDb) {
+module cosmosAdminDatabaseModule 'modules/cosmos-databases/adminDb.bicep' = if (featureFlags.enableCosmosDb) {
   name: 'cosmosAdminDatabaseDeployment'
   params: {
-    cosmosAccountName: cosmosAccountName
-    cosmosAdminDbName: cosmosAdminDbName
+    cosmosAccountName: cosmos.accountName
+    cosmosAdminDbName: cosmos.databases.adminDb
     tags: commonTags
   }
   dependsOn: [
@@ -548,11 +572,11 @@ module cosmosAdminDatabaseModule 'modules/cosmos-databases/adminDb.bicep' = if (
   ]
 }
 
-module cosmosCustomerDatabaseModule 'modules/cosmos-databases/customerDb.bicep' = if (enableCosmosDb) {
+module cosmosCustomerDatabaseModule 'modules/cosmos-databases/customerDb.bicep' = if (featureFlags.enableCosmosDb) {
   name: 'cosmosCustomerDatabaseDeployment'
   params: {
-    cosmosAccountName: cosmosAccountName
-    cosmosCustomerDbName: cosmosCustomerDbName
+    cosmosAccountName: cosmos.accountName
+    cosmosCustomerDbName: cosmos.databases.customerDb
     tags: commonTags
   }
   dependsOn: [
@@ -560,11 +584,11 @@ module cosmosCustomerDatabaseModule 'modules/cosmos-databases/customerDb.bicep' 
   ]
 }
 
-module cosmosMusicDatabaseModule 'modules/cosmos-databases/musicDb.bicep' = if (enableCosmosDb) {
+module cosmosMusicDatabaseModule 'modules/cosmos-databases/musicDb.bicep' = if (featureFlags.enableCosmosDb) {
   name: 'cosmosMusicDatabaseDeployment'
   params: {
-    cosmosAccountName: cosmosAccountName
-    cosmosMusicDbName: cosmosMusicDbName
+    cosmosAccountName: cosmos.accountName
+    cosmosMusicDbName: cosmos.databases.musicDb
     tags: commonTags
   }
   dependsOn: [
@@ -572,11 +596,11 @@ module cosmosMusicDatabaseModule 'modules/cosmos-databases/musicDb.bicep' = if (
   ]
 }
 
-module cosmosVideoDatabaseModule 'modules/cosmos-databases/videoDb.bicep' = if (enableCosmosDb) {
+module cosmosVideoDatabaseModule 'modules/cosmos-databases/videoDb.bicep' = if (featureFlags.enableCosmosDb) {
   name: 'cosmosVideoDatabaseDeployment'
   params: {
-    cosmosAccountName: cosmosAccountName
-    cosmosVideoDbName: cosmosVideoDbName
+    cosmosAccountName: cosmos.accountName
+    cosmosVideoDbName: cosmos.databases.videoDb
     tags: commonTags
   }
   dependsOn: [
@@ -585,22 +609,22 @@ module cosmosVideoDatabaseModule 'modules/cosmos-databases/videoDb.bicep' = if (
 }
 
 // Service Bus Namespace Module
-module serviceBusNamespaceModule 'modules/service-bus-namespaces/myServiceBusNamespace.bicep' = if (enableServiceBus) {
+module serviceBusNamespaceModule 'modules/service-bus-namespaces/myServiceBusNamespace.bicep' = if (featureFlags.enableServiceBus) {
   name: 'serviceBusNamespaceDeployment'
   params: {
-    location: location
-    namespaceName: serviceBusNamespaceName
-    sku: serviceBusSku
-    capacity: serviceBusCapacity
-    zoneRedundant: serviceBusSku == 'Premium' ? true : false
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: (enablePrivateEndpoints && enableServiceBus) ? privateDnsZonesModule!.outputs.serviceBusPrivateDnsZoneId : ''
-    allowedSubnetIds: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    location: general.location
+    namespaceName: serviceBus.namespaceName
+    sku: serviceBus.sku
+    capacity: serviceBus.capacity
+    zoneRedundant: serviceBus.sku == 'Premium' ? true : false
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: (featureFlags.enablePrivateEndpoints && featureFlags.enableServiceBus) ? privateDnsZonesModule!.outputs.serviceBusPrivateDnsZoneId : ''
+    allowedSubnetIds: featureFlags.enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
     allowedIpRanges: []
-    topicNames: serviceBusTopicNames
-    queueNames: serviceBusQueueNames
-    subscriptions: serviceBusSubscriptions
+    topicNames: serviceBus.topicNames
+    queueNames: serviceBus.queueNames
+    subscriptions: serviceBus.subscriptions
     roleAssignments: concat(
       // App Services - Service Bus Data Contributor (can send and receive messages)
       [
@@ -630,7 +654,7 @@ module serviceBusNamespaceModule 'modules/service-bus-namespaces/myServiceBusNam
         }
       ],
       // Function Apps - Service Bus Data Contributor (only when enabled)
-      enableFunctionApps ? [
+      featureFlags.enableFunctionApps ? [
         {
           principalId: adminFunctionAppModule!.outputs.principalId
           roleDefinitionId: '8d3b2e04-d1a1-4c5b-90ae-ff1c3a4de2f6' // Azure Service Bus Data Contributor
@@ -655,27 +679,27 @@ module serviceBusNamespaceModule 'modules/service-bus-namespaces/myServiceBusNam
 
 // Log Analytics Workspace Module (for Application Insights)
 // NOTE: Application Insights resources are now embedded in individual web app and function app modules
-module logAnalyticsWorkspaceModule 'modules/log-analytics-workspaces/logAnalyticsWorkspace.bicep' = if (enableApplicationInsights) {
+module logAnalyticsWorkspaceModule 'modules/log-analytics-workspaces/logAnalyticsWorkspace.bicep' = if (featureFlags.enableApplicationInsights) {
   name: 'logAnalyticsWorkspaceDeployment'
   params: {
-    location: location
-    workspaceName: applicationInsightsWorkspaceName
-    retentionInDays: retentionInDays
+    location: general.location
+    workspaceName: applicationInsights.workspaceName
+    retentionInDays: applicationInsights.retentionInDays
     tags: commonTags
   }
 }
 
 // Centralized Application Insights Module - All Apps
-module applicationInsightsModule 'modules/application-insights/applicationInsights.bicep' = if (enableApplicationInsights) {
+module applicationInsightsModule 'modules/application-insights/applicationInsights.bicep' = if (featureFlags.enableApplicationInsights) {
   name: 'applicationInsightsDeployment'
   params: {
-    location: location
+    location: general.location
     logAnalyticsWorkspaceId: logAnalyticsWorkspaceModule!.outputs.workspaceId
     // App Insights Names
-    customerAppInsightsName: '${customerSiteWebAppName}-ai'
-    adminAppInsightsName: '${adminSiteWebAppName}-ai'
-    videoAppInsightsName: '${videoApiWebAppName}-ai'
-    musicAppInsightsName: '${musicApiWebAppName}-ai'
+    customerAppInsightsName: '${webApps.apps.customerSite}-ai'
+    adminAppInsightsName: '${webApps.apps.adminSite}-ai'
+    videoAppInsightsName: '${webApps.apps.videoApi}-ai'
+    musicAppInsightsName: '${webApps.apps.musicApi}-ai'
     tags: commonTags
   }
 }
@@ -684,8 +708,8 @@ module applicationInsightsModule 'modules/application-insights/applicationInsigh
 module appServicePlanModule 'modules/app-service-plans/myAppServicePlan.bicep' = {
   name: 'appServicePlanDeployment'
   params: {
-    location: location
-    appServicePlanName: appServicePlanName
+    location: general.location
+    appServicePlanName: webApps.appServicePlanName
     tags: commonTags
   }
 }
@@ -694,11 +718,11 @@ module appServicePlanModule 'modules/app-service-plans/myAppServicePlan.bicep' =
 module customerPublicWebAppModule 'modules/app-services/customerPublicWebApp.bicep' = {
   name: 'customerPublicWebAppDeployment'
   params: {
-    location: location
-    webAppName: customerPublicWebAppName
+    location: general.location
+    webAppName: webApps.apps.customerPublic
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
     tags: commonTags
   }
 }
@@ -706,14 +730,14 @@ module customerPublicWebAppModule 'modules/app-services/customerPublicWebApp.bic
 module customerSiteWebAppModule 'modules/app-services/customerSiteWebApp.bicep' = {
   name: 'customerSiteWebAppDeployment'
   params: {
-    location: location
-    webAppName: customerSiteWebAppName
+    location: general.location
+    webAppName: webApps.apps.customerSite
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
     tags: commonTags
   }
 }
@@ -721,11 +745,11 @@ module customerSiteWebAppModule 'modules/app-services/customerSiteWebApp.bicep' 
 module adminPublicWebAppModule 'modules/app-services/adminPublicWebApp.bicep' = {
   name: 'adminPublicWebAppDeployment'
   params: {
-    location: location
-    webAppName: adminPublicWebAppName
+    location: general.location
+    webAppName: webApps.apps.adminPublic
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
     tags: commonTags
   }
 }
@@ -733,14 +757,14 @@ module adminPublicWebAppModule 'modules/app-services/adminPublicWebApp.bicep' = 
 module adminSiteWebAppModule 'modules/app-services/adminSiteWebApp.bicep' = {
   name: 'adminSiteWebAppDeployment'
   params: {
-    location: location
-    webAppName: adminSiteWebAppName
+    location: general.location
+    webAppName: webApps.apps.adminSite
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
     tags: commonTags
   }
 }
@@ -748,14 +772,14 @@ module adminSiteWebAppModule 'modules/app-services/adminSiteWebApp.bicep' = {
 module videoApiWebAppModule 'modules/app-services/videoApiWebApp.bicep' = {
   name: 'videoApiWebAppDeployment'
   params: {
-    location: location
-    webAppName: videoApiWebAppName
+    location: general.location
+    webAppName: webApps.apps.videoApi
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
     tags: commonTags
   }
 }
@@ -763,108 +787,108 @@ module videoApiWebAppModule 'modules/app-services/videoApiWebApp.bicep' = {
 module musicApiWebAppModule 'modules/app-services/musicApiWebApp.bicep' = {
   name: 'musicApiWebAppDeployment'
   params: {
-    location: location
-    webAppName: musicApiWebAppName
+    location: general.location
+    webAppName: webApps.apps.musicApi
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
     tags: commonTags
   }
 }
 
 // Individual Function App Modules
-module adminFunctionAppModule 'modules/azure-functions/adminFunctionApp.bicep' = if (enableFunctionApps) {
+module adminFunctionAppModule 'modules/azure-functions/adminFunctionApp.bicep' = if (featureFlags.enableFunctionApps) {
   name: 'adminFunctionAppDeployment'
   params: {
-    location: location
-    functionAppName: adminFunctionAppName
+    location: general.location
+    functionAppName: functions.apps.admin
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    storageAccountName: functionAppsStorageAccountName
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.adminAppInsights.connectionString : ''
+    storageAccountName: storage.functionApps.name
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: featureFlags.enableApplicationInsights ? applicationInsightsModule!.outputs.adminAppInsights.connectionString : ''
     tags: commonTags
   }
 }
 
-module customerFunctionAppModule 'modules/azure-functions/customerFunctionApp.bicep' = if (enableFunctionApps) {
+module customerFunctionAppModule 'modules/azure-functions/customerFunctionApp.bicep' = if (featureFlags.enableFunctionApps) {
   name: 'customerFunctionAppDeployment'
   params: {
-    location: location
-    functionAppName: customerFunctionAppName
+    location: general.location
+    functionAppName: functions.apps.customer
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    storageAccountName: functionAppsStorageAccountName
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.customerAppInsights.connectionString : ''
+    storageAccountName: storage.functionApps.name
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: featureFlags.enableApplicationInsights ? applicationInsightsModule!.outputs.customerAppInsights.connectionString : ''
     tags: commonTags
   }
 }
 
-module musicFunctionAppModule 'modules/azure-functions/musicFunctionApp.bicep' = if (enableFunctionApps) {
+module musicFunctionAppModule 'modules/azure-functions/musicFunctionApp.bicep' = if (featureFlags.enableFunctionApps) {
   name: 'musicFunctionAppDeployment'
   params: {
-    location: location
-    functionAppName: musicFunctionAppName
+    location: general.location
+    functionAppName: functions.apps.music
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    storageAccountName: functionAppsStorageAccountName
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.musicAppInsights.connectionString : ''
+    storageAccountName: storage.functionApps.name
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: featureFlags.enableApplicationInsights ? applicationInsightsModule!.outputs.musicAppInsights.connectionString : ''
     tags: commonTags
   }
 }
 
-module videoFunctionAppModule 'modules/azure-functions/videoFunctionApp.bicep' = if (enableFunctionApps) {
+module videoFunctionAppModule 'modules/azure-functions/videoFunctionApp.bicep' = if (featureFlags.enableFunctionApps) {
   name: 'videoFunctionAppDeployment'
   params: {
-    location: location
-    functionAppName: videoFunctionAppName
+    location: general.location
+    functionAppName: functions.apps.video
     appServicePlanId: appServicePlanModule.outputs.appServicePlanId
-    storageAccountName: functionAppsStorageAccountName
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
-    privateDnsZoneId: enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
-    enableVNetIntegration: enableVNetIntegration
-    vnetIntegrationSubnetId: enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
-    applicationInsightsConnectionString: enableApplicationInsights ? applicationInsightsModule!.outputs.videoAppInsights.connectionString : ''
+    storageAccountName: storage.functionApps.name
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    privateDnsZoneId: featureFlags.enablePrivateEndpoints ? privateDnsZonesModule.outputs.appServicePrivateDnsZoneId : ''
+    enableVNetIntegration: featureFlags.enableVNetIntegration
+    vnetIntegrationSubnetId: featureFlags.enableVNetIntegration ? vnetModule.outputs.vnetIntegrationSubnetId : ''
+    applicationInsightsConnectionString: featureFlags.enableApplicationInsights ? applicationInsightsModule!.outputs.videoAppInsights.connectionString : ''
     tags: commonTags
   }
 }
 
 // Function Apps Storage Account Module (deployed after App Service Plan - for function runtime storage only)
-module functionAppsStorageModule 'modules/storage-accounts/functionAppsStorageAccount.bicep' = if (enableFunctionApps) {
+module functionAppsStorageModule 'modules/storage-accounts/functionAppsStorageAccount.bicep' = if (featureFlags.enableFunctionApps) {
   name: 'functionAppsStorageDeployment'
   params: {
-    location: location
-    storageAccountName: functionAppsStorageAccountName
-    storageAccountType: storageAccountType
+    location: general.location
+    storageAccountName: storage.functionApps.name
+    storageAccountType: storage.functionApps.type
     accessTier: 'Hot'
-    allowBlobPublicAccess: !enablePrivateEndpoints
+    allowBlobPublicAccess: !featureFlags.enablePrivateEndpoints
     minimumTlsVersion: 'TLS1_2'
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
     privateDnsZoneIds: {
-      blob: (enablePrivateEndpoints && enableFunctionApps) ? privateDnsZonesModule.outputs.blobStoragePrivateDnsZoneId : ''
+      blob: (featureFlags.enablePrivateEndpoints && featureFlags.enableFunctionApps) ? privateDnsZonesModule.outputs.blobStoragePrivateDnsZoneId : ''
       file: ''
       queue: ''
       table: ''
     }
     allowedIpRanges: []
     bypassAzureServices: true
-    allowedSubnetIds: enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
+    allowedSubnetIds: featureFlags.enableVNetIntegration ? [vnetModule.outputs.vnetIntegrationSubnetId] : []
     // No role assignments needed - function apps use connection strings for runtime storage
     roleAssignments: []
     tags: union(commonTags, {
@@ -874,13 +898,13 @@ module functionAppsStorageModule 'modules/storage-accounts/functionAppsStorageAc
 }
 
 // Test VM Module
-module testVMModule 'modules/virtual-machines/testVM.bicep' = if (enableTestVM) {
+module testVMModule 'modules/virtual-machines/testVM.bicep' = if (featureFlags.enableTestVM) {
   name: 'testVMDeployment'
   params: {
-    location: location
+    location: general.location
     vmName: 'test-vm'
     vmSize: 'Standard_B1s'
-    adminUsername: vmAdminUsername
+    adminUsername: testVm.adminUsername
     adminPassword: vmAdminPassword
     subnetId: vnetModule.outputs.testVMSubnetId
     includePublicIP: true
@@ -889,7 +913,7 @@ module testVMModule 'modules/virtual-machines/testVM.bicep' = if (enableTestVM) 
 }
 
 // Output SQL Server information for connection string creation
-output sqlServerInfo object = enableSqlServer ? {
+output sqlServerInfo object = featureFlags.enableSqlServer ? {
   serverName: sqlServerModule!.outputs.sqlServerName
   serverFqdn: sqlServerModule!.outputs.sqlServerFqdn
   databaseNames: [
@@ -907,33 +931,33 @@ output sqlServerInfo object = enableSqlServer ? {
 // Output Web App URLs accessible through Application Gateway
 output webAppUrls array = [
   {
-    name: customerPublicWebAppName
-    url: 'http://${customerPublicWebAppName}.azurewebsites.net'
+    name: webApps.apps.customerPublic
+    url: 'http://${webApps.apps.customerPublic}.azurewebsites.net'
   }
   {
-    name: customerSiteWebAppName
-    url: 'http://${customerSiteWebAppName}.azurewebsites.net'
+    name: webApps.apps.customerSite
+    url: 'http://${webApps.apps.customerSite}.azurewebsites.net'
   }
   {
-    name: adminPublicWebAppName
-    url: 'http://${adminPublicWebAppName}.azurewebsites.net'
+    name: webApps.apps.adminPublic
+    url: 'http://${webApps.apps.adminPublic}.azurewebsites.net'
   }
   {
-    name: adminSiteWebAppName
-    url: 'http://${adminSiteWebAppName}.azurewebsites.net'
+    name: webApps.apps.adminSite
+    url: 'http://${webApps.apps.adminSite}.azurewebsites.net'
   }
   {
-    name: videoApiWebAppName
-    url: 'http://${videoApiWebAppName}.azurewebsites.net'
+    name: webApps.apps.videoApi
+    url: 'http://${webApps.apps.videoApi}.azurewebsites.net'
   }
   {
-    name: musicApiWebAppName
-    url: 'http://${musicApiWebAppName}.azurewebsites.net'
+    name: webApps.apps.musicApi
+    url: 'http://${webApps.apps.musicApi}.azurewebsites.net'
   }
 ]
 
 // Output Test VM information for access
-output testVMInfo object = enableTestVM ? {
+output testVMInfo object = featureFlags.enableTestVM ? {
   vmName: testVMModule!.outputs.vmName
   vmPrivateIP: testVMModule!.outputs.vmPrivateIP
   hasPublicIP: testVMModule!.outputs.hasPublicIP
@@ -1019,7 +1043,7 @@ output webAppsInfo array = [
 output internalDnsNames array = []
 
 // Key Vault Information
-output keyVaultInfo object = enableKeyVault ? {
+output keyVaultInfo object = featureFlags.enableKeyVault ? {
   keyVaultId: keyVaultModule!.outputs.keyVaultId
   keyVaultName: keyVaultModule!.outputs.keyVaultName
   keyVaultUri: keyVaultModule!.outputs.keyVaultUri
@@ -1032,7 +1056,7 @@ output keyVaultInfo object = enableKeyVault ? {
 }
 
 // App Configuration Information
-output appConfigInfo object = enableAppConfiguration ? {
+output appConfigInfo object = featureFlags.enableAppConfiguration ? {
   appConfigId: appConfigModule!.outputs.appConfigId
   appConfigName: appConfigModule!.outputs.appConfigName
   endpoint: appConfigModule!.outputs.endpoint
@@ -1049,7 +1073,7 @@ output appConfigInfo object = enableAppConfiguration ? {
 }
 
 // Storage Account Information
-output storageAccountInfo object = enableStorageAccount ? {
+output storageAccountInfo object = featureFlags.enableStorageAccount ? {
   storageAccountId: myStorageAccountModule!.outputs.storageAccountId
   storageAccountName: myStorageAccountModule!.outputs.storageAccountName
   blobEndpoint: myStorageAccountModule!.outputs.storageAccountPrimaryBlobEndpoint
@@ -1066,7 +1090,7 @@ output storageAccountInfo object = enableStorageAccount ? {
 }
 
 // Function Apps Storage Account Information
-output functionAppsStorageInfo object = enableFunctionApps ? {
+output functionAppsStorageInfo object = featureFlags.enableFunctionApps ? {
   storageAccountId: functionAppsStorageModule!.outputs.storageAccountId
   storageAccountName: functionAppsStorageModule!.outputs.storageAccountName
   primaryEndpoints: functionAppsStorageModule!.outputs.primaryEndpoints
@@ -1081,11 +1105,11 @@ output functionAppsStorageInfo object = enableFunctionApps ? {
 }
 
 // Cosmos DB Outputs
-output cosmosDbInfo object = enableCosmosDb ? {
+output cosmosDbInfo object = featureFlags.enableCosmosDb ? {
   cosmosAccountId: cosmosDbAccountModule!.outputs.cosmosAccountId
   cosmosAccountName: cosmosDbAccountModule!.outputs.cosmosAccountName
   cosmosAccountEndpoint: cosmosDbAccountModule!.outputs.cosmosAccountEndpoint
-  databaseNames: [cosmosAdminDbName, cosmosCustomerDbName, cosmosMusicDbName, cosmosVideoDbName]
+  databaseNames: [cosmos.databases.admin.name, cosmos.databases.customer.name, cosmos.databases.music.name, cosmos.databases.video.name]
   adminDatabase: {
     databaseId: cosmosAdminDatabaseModule!.outputs.databaseId
     databaseName: cosmosAdminDatabaseModule!.outputs.databaseName
@@ -1124,7 +1148,7 @@ output cosmosDbInfo object = enableCosmosDb ? {
 }
 
 // Function Apps Outputs
-output functionAppsInfo object = enableFunctionApps ? {
+output functionAppsInfo object = featureFlags.enableFunctionApps ? {
   adminFunctionApp: {
     functionAppId: adminFunctionAppModule!.outputs.functionAppId
     functionAppName: adminFunctionAppModule!.outputs.functionAppName
@@ -1157,16 +1181,16 @@ output functionAppsInfo object = enableFunctionApps ? {
 }
 
 // Service Bus Outputs
-output serviceBusInfo object = enableServiceBus ? {
+output serviceBusInfo object = featureFlags.enableServiceBus ? {
   namespaceName: serviceBusNamespaceModule!.outputs.serviceBusNamespaceName
   namespaceId: serviceBusNamespaceModule!.outputs.serviceBusNamespaceId
   hostName: serviceBusNamespaceModule!.outputs.serviceBusNamespaceHostName
   hasPrivateEndpoint: serviceBusNamespaceModule!.outputs.hasPrivateEndpoint
   privateEndpointId: serviceBusNamespaceModule!.outputs.privateEndpointId
   privateEndpointName: serviceBusNamespaceModule!.outputs.privateEndpointName
-  topicNames: serviceBusTopicNames
-  queueNames: serviceBusQueueNames
-  subscriptionNames: serviceBusSubscriptions
+  topicNames: serviceBus.topics
+  queueNames: serviceBus.queues
+  subscriptionNames: serviceBus.subscriptions
 } : {
   namespaceName: ''
   namespaceId: ''
@@ -1180,7 +1204,7 @@ output serviceBusInfo object = enableServiceBus ? {
 }
 
 // Application Insights Outputs
-output applicationInsightsInfo object = enableApplicationInsights ? {
+output applicationInsightsInfo object = featureFlags.enableApplicationInsights ? {
   logAnalyticsWorkspaceId: logAnalyticsWorkspaceModule!.outputs.workspaceId
   logAnalyticsWorkspaceName: logAnalyticsWorkspaceModule!.outputs.workspaceName
   webApps: {

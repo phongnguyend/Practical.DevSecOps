@@ -2,83 +2,59 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "value": "southeastasia"
+    "general": {
+      "value": {
+        "location": "southeastasia"
+      }
     },
-    "enablePrivateEndpoints": {
-      "value": false
+    "featureFlags": {
+      "value": {
+        "enablePrivateEndpoints": false,
+        "enableApplicationGateway": true,
+        "enableApiManagement": false,
+        "enableAppConfiguration": true,
+        "enableBlobStorage": true,
+        "enableCosmosDb": true,
+        "enableServiceBus": false,
+        "enableWAF": false
+      }
     },
-    "enableApplicationGateway": {
-      "value": true
+    "networking": {
+      "value": {
+        "vnetName": "practicalmrg-vnet-test"
+      }
     },
-    "enableApiManagement": {
-      "value": false
+    "apiManagement": {
+      "value": {
+        "name": "practicalmrg-apim-test",
+        "publisherEmail": "test@practical.devsecops",
+        "publisherName": "Practical DevSecOps Test Team",
+        "sku": "Developer",
+        "capacity": 1
+      }
     },
-    "enableAppConfiguration": {
-      "value": true
+    "webApps": {
+      "value": {
+        "apps": {
+          "customerPublic": "practicalmrg-customer-public-test",
+          "customerSite": "practicalmrg-customer-site-test",
+          "adminPublic": "practicalmrg-admin-public-test",
+          "adminSite": "practicalmrg-admin-site-test",
+          "videoApi": "practicalmrg-video-api-test",
+          "musicApi": "practicalmrg-music-api-test"
+        }
+      }
     },
-    "enableBlobStorage": {
-      "value": true
-    },
-    "enableCosmosDb": {
-      "value": true
-    },
-    "enableServiceBus": {
-      "value": false
-    },
-    "vnetName": {
-      "value": "practicalmrg-vnet-test"
-    },
-    "apiManagementName": {
-      "value": "practicalmrg-apim-test"
-    },
-    "publisherEmail": {
-      "value": "test@practical.devsecops"
-    },
-    "publisherName": {
-      "value": "Practical DevSecOps Test Team"
-    },
-    "customerPublicWebAppName": {
-      "value": "practicalmrg-customer-public-test"
-    },
-    "customerSiteWebAppName": {
-      "value": "practicalmrg-customer-site-test"
-    },
-    "adminPublicWebAppName": {
-      "value": "practicalmrg-admin-public-test"
-    },
-    "adminSiteWebAppName": {
-      "value": "practicalmrg-admin-site-test"
-    },
-    "videoApiWebAppName": {
-      "value": "practicalmrg-video-api-test"
-    },
-    "musicApiWebAppName": {
-      "value": "practicalmrg-music-api-test"
-    },
-    "apiManagementSku": {
-      "value": "Developer"
-    },
-    "apiManagementCapacity": {
-      "value": 1
-    },
-    "enableWAF": {
-      "value": false
-    },
-    "wafMode": {
-      "value": "Detection"
-    },
-    "wafRuleSetVersion": {
-      "value": "3.2"
-    },
-    "wafRequestBodyCheck": {
-      "value": true
-    },
-    "wafMaxRequestBodySizeInKb": {
-      "value": 128
-    },
-    "wafFileUploadLimitInMb": {
-      "value": 100
+    "applicationGateway": {
+      "value": {
+        "waf": {
+          "mode": "Detection",
+          "ruleSetVersion": "3.2",
+          "requestBodyCheck": true,
+          "maxRequestBodySizeInKb": 128,
+          "fileUploadLimitInMb": 100
+        }
+      }
     }
   }
 }

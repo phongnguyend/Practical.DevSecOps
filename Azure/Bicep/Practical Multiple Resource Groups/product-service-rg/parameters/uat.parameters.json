@@ -2,77 +2,81 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "value": "southeastasia"
+    "general": {
+      "value": {
+        "location": "southeastasia"
+      }
     },
-    "enablePrivateEndpoints": {
-      "value": true
+    "featureFlags": {
+      "value": {
+        "enablePrivateEndpoints": true,
+        "enableVNetIntegration": true,
+        "enableKeyVault": true,
+        "enableCosmosDb": true,
+        "enableSqlServer": true,
+        "enableFunctionApp": true,
+        "enableApiManagement": true
+      }
     },
-    "enableVNetIntegration": {
-      "value": true
+    "productService": {
+      "value": {
+        "name": "product-uat"
+      }
     },
-    "enableKeyVault": {
-      "value": true
+    "appServicePlan": {
+      "value": {
+        "name": "practicalmrg-product-asp-uat"
+      }
     },
-    "enableCosmosDb": {
-      "value": true
+    "webApp": {
+      "value": {
+        "productApiName": "practicalmrg-product-api-uat"
+      }
     },
-    "enableSqlServer": {
-      "value": true
+    "functionApp": {
+      "value": {
+        "name": "practicalmrg-product-func-uat",
+        "storageAccountName": "practicalmrgprodfuncuat"
+      }
     },
-    "enableFunctionApp": {
-      "value": true
+    "keyVault": {
+      "value": {
+        "name": "practicalmrg-prod-kv-uat"
+      }
     },
-    "productServiceName": {
-      "value": "product-uat"
+    "sql": {
+      "value": {
+        "serverName": "practicalmrg-product-sql-uat",
+        "adminUsername": "productadmin",
+        "databases": {
+          "product": {
+            "name": "PracticalMRG-PRODUCT-DB-UAT"
+          }
+        }
+      }
     },
-    "appServicePlanName": {
-      "value": "practicalmrg-product-asp-uat"
+    "cosmos": {
+      "value": {
+        "accountName": "practicalmrg-product-cosmos-uat",
+        "consistencyLevel": "Session",
+        "enableAutomaticFailover": true,
+        "databases": {
+          "product": {
+            "name": "PracticalMRG-PRODUCT-COSMOS-DB-UAT"
+          }
+        }
+      }
     },
-    "productApiWebAppName": {
-      "value": "practicalmrg-product-api-uat"
+    "networking": {
+      "value": {
+        "baseVnetName": "practicalmrg-vnet-uat",
+        "baseVnetResourceGroup": "rg-practicalmrg-uat"
+      }
     },
-    "productFunctionAppName": {
-      "value": "practicalmrg-product-func-uat"
-    },
-    "productKeyVaultName": {
-      "value": "practicalmrg-prod-kv-uat"
-    },
-    "productFunctionStorageAccountName": {
-      "value": "practicalmrgprodfuncuat"
-    },
-    "sqlServerName": {
-      "value": "practicalmrg-product-sql-uat"
-    },
-    "adminUsername": {
-      "value": "productadmin"
-    },
-    "productDbName": {
-      "value": "PracticalMRG-PRODUCT-DB-UAT"
-    },
-    "cosmosAccountName": {
-      "value": "practicalmrg-product-cosmos-uat"
-    },
-    "cosmosConsistencyLevel": {
-      "value": "Session"
-    },
-    "cosmosEnableAutomaticFailover": {
-      "value": true
-    },
-    "productCosmosDbName": {
-      "value": "PracticalMRG-PRODUCT-COSMOS-DB-UAT"
-    },
-    "baseVnetName": {
-      "value": "practicalmrg-vnet-uat"
-    },
-    "baseVnetResourceGroup": {
-      "value": "rg-practicalmrg-uat"
-    },
-    "enableApiManagement": {
-      "value": true
-    },
-    "apiManagementName": {
-      "value": "practicalmrg-apim-uat"
+    "apiManagement": {
+      "value": {
+        "name": "practicalmrg-apim-uat"
+      }
     }
   }
 }

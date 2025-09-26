@@ -1,45 +1,67 @@
 param location string = 'southeastasia'
 
-// Feature Flags
-param enablePrivateEndpoints bool = false
-param enableKeyVault bool = false
-param enableCosmosDb bool = false
-param enableSqlServer bool = false
-param enableFunctionApp bool = false
-param enableApiManagement bool = false
+// Feature Flags Object
+param featureFlags object = {
+  enablePrivateEndpoints: false
+  enableVNetIntegration: true
+  enableKeyVault: false
+  enableCosmosDb: false
+  enableSqlServer: false
+  enableFunctionApp: false
+  enableApiManagement: false
+}
 
-// Product Service Parameters
-param productServiceName string = 'product'
-param appServicePlanName string = 'PracticalPrivateEndpoints-Product-ASP'
-param productApiWebAppName string = 'PracticalPrivateEndpoints-PRODUCT-API'
-param productFunctionAppName string = 'PracticalPrivateEndpoints-PRODUCT-FUNC'
-param productKeyVaultName string = 'practicalpe-product-kv'
-param productFunctionStorageAccountName string = 'practicalpeproductfunc'
+// Product Service Configuration
+param productService object = {
+  name: 'product'
+  appServicePlanName: 'PracticalPrivateEndpoints-Product-ASP'
+  webApp: {
+    productApiWebAppName: 'PracticalPrivateEndpoints-PRODUCT-API'
+  }
+  azureFunction: {
+    productFunctionAppName: 'PracticalPrivateEndpoints-PRODUCT-FUNC'
+    storageAccountName: 'practicalpeproductfunc'
+  }
+}
 
-// SQL Server Parameters
-param sqlServerName string = 'PracticalPrivateEndpoints-Product'
-param adminUsername string = 'productadmin'
+// SQL Server Configuration
+param sqlServer object = {
+  serverName: 'PracticalPrivateEndpoints-Product'
+  adminUsername: 'productadmin'
+  database: {
+    productDbName: 'PracticalPrivateEndpoints-PRODUCT-DB'
+  }
+}
+
 @secure()
 param adminPassword string
-param productDbName string = 'PracticalPrivateEndpoints-PRODUCT-DB'
 
-// Cosmos DB Parameters
-param cosmosAccountName string = 'practicalpe-product-cosmos-${uniqueString(resourceGroup().id)}'
-param cosmosConsistencyLevel string = 'Session'
-param cosmosEnableAutomaticFailover bool = true
-param productCosmosDbName string = 'PracticalPrivateEndpoints-PRODUCT-COSMOS-DB'
+// Cosmos DB Configuration
+param cosmosDb object = {
+  accountName: 'practicalpe-product-cosmos'
+  consistencyLevel: 'Session'
+  enableAutomaticFailover: true
+  database: {
+    productCosmosDbName: 'PracticalPrivateEndpoints-PRODUCT-COSMOS-DB'
+  }
+}
 
-// Base Services Virtual Network Reference (from base-services deployment)
-param baseVnetName string = 'PracticalPrivateEndpoints-vnet'
-param baseVnetResourceGroup string = resourceGroup().name
+// Key Vault Configuration
+param keyVault object = {
+  productKeyVaultName: 'practicalpe-product-kv'
+}
 
-// API Management Parameters (from base-services)
-param apiManagementName string = 'PracticalPrivateEndpoints-apim'
+// Base Services Configuration (references to base-services deployment)
+param baseServices object = {
+  vnetName: 'PracticalPrivateEndpoints-vnet'
+  vnetResourceGroup: resourceGroup().name
+  apiManagementName: 'PracticalPrivateEndpoints-apim'
+}
 
 // Reference to existing Virtual Network from base-services
 resource existingVnet 'Microsoft.Network/virtualNetworks@2023-04-01' existing = {
-  name: baseVnetName
-  scope: resourceGroup(baseVnetResourceGroup)
+  name: baseServices.vnetName
+  scope: resourceGroup(baseServices.vnetResourceGroup)
 }
 
 // Common tags variable
@@ -54,7 +76,7 @@ module productAppServicePlanModule 'modules/app-service-plans/productAppServiceP
   name: 'productAppServicePlanDeployment'
   params: {
     location: location
-    appServicePlanName: appServicePlanName
+    appServicePlanName: productService.appServicePlanName
     tags: commonTags
   }
 }
@@ -65,23 +87,23 @@ module productApiWebAppModule 'modules/app-services/productApiWebApp.bicep' = {
   params: {
     location: location
     appServicePlanId: productAppServicePlanModule.outputs.appServicePlanId
-    productApiWebAppName: productApiWebAppName
-    enablePrivateEndpoints: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
+    productApiWebAppName: productService.webApp.productApiWebAppName
+    enablePrivateEndpoints: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
     tags: commonTags
   }
 }
 
 // Product Function App Module (if enabled)
-module productFunctionAppModule 'modules/azure-functions/productFunctionApp.bicep' = if (enableFunctionApp) {
+module productFunctionAppModule 'modules/azure-functions/productFunctionApp.bicep' = if (featureFlags.enableFunctionApp) {
   name: 'productFunctionAppDeployment'
   params: {
     location: location
-    functionAppName: productFunctionAppName
+    functionAppName: productService.azureFunction.productFunctionAppName
     appServicePlanId: productAppServicePlanModule.outputs.appServicePlanId
-    storageAccountName: productFunctionStorageAccountName
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
+    storageAccountName: productService.azureFunction.storageAccountName
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
     privateDnsZoneId: '' // Would need to be provided from base-services if using private endpoints
     enableVNetIntegration: false // Set based on your requirements
     vnetIntegrationSubnetId: '' // Would need VNet integration subnet if enabled
@@ -91,10 +113,10 @@ module productFunctionAppModule 'modules/azure-functions/productFunctionApp.bice
 }
 
 // Product API Management Integration Module (integrates with existing APIM from base-services)
-module myExistingApiManagementModule 'modules/api-managements/my-existing-api-management/myExistingApiManagement.bicep' = if (enableApiManagement) {
+module myExistingApiManagementModule 'modules/api-managements/my-existing-api-management/myExistingApiManagement.bicep' = if (featureFlags.enableApiManagement) {
   name: 'myExistingApiManagementDeployment'
   params: {
-    apiManagementName: apiManagementName
+    apiManagementName: baseServices.apiManagementName
     productApiUrl: productApiWebAppModule.outputs.productApiWebAppUrl
     apiPath: 'products'
     protocols: ['https']
@@ -104,16 +126,16 @@ module myExistingApiManagementModule 'modules/api-managements/my-existing-api-ma
 }
 
 // Product Function Apps Storage Account Module (deployed after App Service Plan - for function runtime storage only)
-module productFunctionStorageModule 'modules/storage-accounts/productFunctionsStorageAccount.bicep' = if (enableFunctionApp) {
+module productFunctionStorageModule 'modules/storage-accounts/productFunctionsStorageAccount.bicep' = if (featureFlags.enableFunctionApp) {
   name: 'productFunctionStorageDeployment'
   params: {
     location: location
-    storageAccountName: productFunctionStorageAccountName
+    storageAccountName: productService.azureFunction.storageAccountName
     storageAccountType: 'Standard_LRS'
     accessTier: 'Hot'
     minimumTlsVersion: 'TLS1_2'
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
     privateDnsZoneIds: {
       blob: '' // No DNS zone available in product-service
       file: '' // No DNS zone available in product-service
@@ -123,7 +145,7 @@ module productFunctionStorageModule 'modules/storage-accounts/productFunctionsSt
     allowedIpRanges: []
     bypassAzureServices: true
     allowedSubnetIds: []
-    allowBlobPublicAccess: !enablePrivateEndpoints
+    allowBlobPublicAccess: !featureFlags.enablePrivateEndpoints
     roleAssignments: []
     tags: union(commonTags, {
       Purpose: 'FunctionAppRuntimeStorage'
@@ -132,37 +154,37 @@ module productFunctionStorageModule 'modules/storage-accounts/productFunctionsSt
 }
 
 // SQL Server Module
-module productSqlServerModule 'modules/sql-servers/productSqlServer.bicep' = if (enableSqlServer) {
+module productSqlServerModule 'modules/sql-servers/productSqlServer.bicep' = if (featureFlags.enableSqlServer) {
   name: 'productSqlServerDeployment'
   params: {
     location: location
-    sqlServerName: sqlServerName
-    adminUsername: adminUsername
+    sqlServerName: sqlServer.serverName
+    adminUsername: sqlServer.adminUsername
     adminPassword: adminPassword
     tags: commonTags
   }
 }
 
 // Product SQL Database Module (depends on SQL Server)
-module productSqlDatabase 'modules/sql-server-databases/productDb.bicep' = if (enableSqlServer) {
+module productSqlDatabase 'modules/sql-server-databases/productDb.bicep' = if (featureFlags.enableSqlServer) {
   name: 'productSqlDatabaseDeployment'
   dependsOn: [
     productSqlServerModule
   ]
   params: {
     location: location
-    sqlServerName: sqlServerName
-    productDbName: productDbName
+    sqlServerName: sqlServer.serverName
+    productDbName: sqlServer.database.productDbName
     tags: commonTags
   }
 }
 
 // Key Vault Module
-module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (enableKeyVault) {
+module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (featureFlags.enableKeyVault) {
   name: 'productKeyVaultDeployment'
   params: {
     location: location
-    keyVaultName: productKeyVaultName
+    keyVaultName: keyVault.productKeyVaultName
     roleAssignments: concat(
       [
         // Product API Role Assignment
@@ -172,7 +194,7 @@ module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (en
         }
       ],
       // Product Function App Role Assignment (if enabled)
-      enableFunctionApp ? [
+      featureFlags.enableFunctionApp ? [
         {
           principalId: productFunctionAppModule!.outputs.principalId
           roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
@@ -184,16 +206,16 @@ module productKeyVaultModule 'modules/key-vaults/productKeyVault.bicep' = if (en
 }
 
 // Cosmos DB Module
-module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep' = if (enableCosmosDb) {
+module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep' = if (featureFlags.enableCosmosDb) {
   name: 'productCosmosDbDeployment'
   params: {
     location: location
-    cosmosAccountName: cosmosAccountName
-    consistencyLevel: cosmosConsistencyLevel
-    enableAutomaticFailover: cosmosEnableAutomaticFailover
-    createPrivateEndpoint: enablePrivateEndpoints
-    privateEndpointSubnetId: enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
-    enablePublicNetworkAccess: !enablePrivateEndpoints
+    cosmosAccountName: cosmosDb.accountName
+    consistencyLevel: cosmosDb.consistencyLevel
+    enableAutomaticFailover: cosmosDb.enableAutomaticFailover
+    createPrivateEndpoint: featureFlags.enablePrivateEndpoints
+    privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
+    enablePublicNetworkAccess: !featureFlags.enablePrivateEndpoints
     // Generic Role Assignments (Azure RBAC)
     roleAssignments: concat(
       [
@@ -202,7 +224,7 @@ module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep
           roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450' // Cosmos DB Data Contributor (Azure RBAC)
         }
       ],
-      enableFunctionApp ? [
+      featureFlags.enableFunctionApp ? [
         {
           principalId: productFunctionAppModule!.outputs.principalId
           roleDefinitionId: '5bd9cd88-fe45-4216-938b-f97437e15450' // Cosmos DB Data Contributor (Azure RBAC)
@@ -217,7 +239,7 @@ module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep
           roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
         }
       ],
-      enableFunctionApp ? [
+      featureFlags.enableFunctionApp ? [
         {
           principalId: productFunctionAppModule!.outputs.principalId
           roleDefinitionId: '00000000-0000-0000-0000-000000000002' // Cosmos DB Built-in Data Contributor
@@ -229,21 +251,21 @@ module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep
 }
 
 // Product Cosmos Database Module (depends on Cosmos Account)
-module productCosmosDbDatabase 'modules/cosmos-databases/productDb.bicep' = if (enableCosmosDb) {
+module productCosmosDbDatabase 'modules/cosmos-databases/productDb.bicep' = if (featureFlags.enableCosmosDb) {
   name: 'productCosmosDatabaseDeployment'
   dependsOn: [
     productCosmosDbModule
   ]
   params: {
-    cosmosAccountName: cosmosAccountName
-    productCosmosDbName: productCosmosDbName
+    cosmosAccountName: cosmosDb.accountName
+    productCosmosDbName: cosmosDb.database.productCosmosDbName
     tags: commonTags
   }
 }
 
 // Outputs
 output productServiceInfo object = {
-  serviceName: productServiceName
+  serviceName: productService.name
   appServicePlan: {
     id: productAppServicePlanModule.outputs.appServicePlanId
     name: productAppServicePlanModule.outputs.appServicePlanName
@@ -254,30 +276,30 @@ output productServiceInfo object = {
     url: productApiWebAppModule.outputs.productApiWebAppUrl
     principalId: productApiWebAppModule.outputs.productApiWebAppPrincipalId
   }
-  productFunction: enableFunctionApp ? {
+  productFunction: featureFlags.enableFunctionApp ? {
     id: productFunctionAppModule!.outputs.functionAppId
     name: productFunctionAppModule!.outputs.functionAppName
     url: productFunctionAppModule!.outputs.functionAppUrl
     principalId: productFunctionAppModule!.outputs.principalId
   } : {}
-  sqlServer: enableSqlServer ? {
+  sqlServer: featureFlags.enableSqlServer ? {
     id: productSqlServerModule!.outputs.sqlServerId
     name: productSqlServerModule!.outputs.sqlServerName
     fqdn: productSqlServerModule!.outputs.sqlServerFqdn
     databaseName: productSqlDatabase!.outputs.productDatabaseName
   } : {}
-  cosmosDb: enableCosmosDb ? {
+  cosmosDb: featureFlags.enableCosmosDb ? {
     id: productCosmosDbModule!.outputs.cosmosAccountId
     name: productCosmosDbModule!.outputs.cosmosAccountName
     endpoint: productCosmosDbModule!.outputs.cosmosAccountEndpoint
     databaseName: productCosmosDbDatabase!.outputs.productDatabaseName
   } : {}
-  keyVault: enableKeyVault ? {
+  keyVault: featureFlags.enableKeyVault ? {
     id: productKeyVaultModule!.outputs.keyVaultId
     name: productKeyVaultModule!.outputs.keyVaultName
     uri: productKeyVaultModule!.outputs.keyVaultUri
   } : {}
-  functionStorage: enableFunctionApp ? {
+  functionStorage: featureFlags.enableFunctionApp ? {
     id: productFunctionStorageModule!.outputs.storageAccountId
     name: productFunctionStorageModule!.outputs.storageAccountName
     primaryEndpoints: productFunctionStorageModule!.outputs.primaryEndpoints

@@ -1,34 +1,51 @@
-param location string = 'southeastasia'
+// Nested parameter objects for better organization
+param general object = {
+  location: 'southeastasia'
+}
 
-// Feature Flags
-param enablePrivateEndpoints bool = false
-param enableApplicationGateway bool = false
-param enableApiManagement bool = false
+param featureFlags object = {
+  enablePrivateEndpoints: false
+  enableApplicationGateway: false
+  enableApiManagement: false
+  enableAppConfiguration: false
+  enableBlobStorage: false
+  enableCosmosDb: false
+  enableServiceBus: false
+  enableWAF: false
+}
 
-param vnetName string = 'PracticalMultipleResourceGroups-vnet'
-param apiManagementName string = 'PracticalMultipleResourceGroups-apim'
-param publisherEmail string = 'admin@practical.devsecops'
-param publisherName string = 'Practical DevSecOps'
+param networking object = {
+  vnetName: 'PracticalMultipleResourceGroups-vnet'
+}
 
-// Individual Web App Name Parameters
-param customerPublicWebAppName string = 'PracticalMultipleResourceGroups-CUSTOMER-PUBLIC'
-param customerSiteWebAppName string = 'PracticalMultipleResourceGroups-CUSTOMER-SITE'
-param adminPublicWebAppName string = 'PracticalMultipleResourceGroups-ADMIN-PUBLIC'
-param adminSiteWebAppName string = 'PracticalMultipleResourceGroups-ADMIN-SITE'
-param videoApiWebAppName string = 'PracticalMultipleResourceGroups-VIDEO-API'
-param musicApiWebAppName string = 'PracticalMultipleResourceGroups-MUSIC-API'
+param apiManagement object = {
+  name: 'PracticalMultipleResourceGroups-apim'
+  publisherEmail: 'admin@practical.devsecops'
+  publisherName: 'Practical DevSecOps'
+  sku: 'Premium'
+  capacity: 1
+}
 
-// API Management parameters
-param apiManagementSku string = 'Premium'
-param apiManagementCapacity int = 1
+param webApps object = {
+  apps: {
+    customerPublic: 'PracticalMultipleResourceGroups-CUSTOMER-PUBLIC'
+    customerSite: 'PracticalMultipleResourceGroups-CUSTOMER-SITE'
+    adminPublic: 'PracticalMultipleResourceGroups-ADMIN-PUBLIC'
+    adminSite: 'PracticalMultipleResourceGroups-ADMIN-SITE'
+    videoApi: 'PracticalMultipleResourceGroups-VIDEO-API'
+    musicApi: 'PracticalMultipleResourceGroups-MUSIC-API'
+  }
+}
 
-// Application Gateway WAF parameters
-param enableWAF bool = true
-param wafMode string = 'Prevention'
-param wafRuleSetVersion string = '3.2'
-param wafRequestBodyCheck bool = true
-param wafMaxRequestBodySizeInKb int = 128
-param wafFileUploadLimitInMb int = 100
+param applicationGateway object = {
+  waf: {
+    mode: 'Prevention'
+    ruleSetVersion: '3.2'
+    requestBodyCheck: true
+    maxRequestBodySizeInKb: 128
+    fileUploadLimitInMb: 100
+  }
+}
 
 // Common tags variable
 var commonTags = {
@@ -40,8 +57,8 @@ var commonTags = {
 module apiManagementNSGModule 'modules/network-security-groups/apiManagementNSG.bicep' = {
   name: 'apiManagementNSGDeployment'
   params: {
-    location: location
-    name: '${vnetName}-apim-nsg'
+    location: general.location
+    name: '${networking.vnetName}-apim-nsg'
     tags: commonTags
   }
 }
@@ -50,8 +67,8 @@ module apiManagementNSGModule 'modules/network-security-groups/apiManagementNSG.
 module vnetModule 'modules/virtual-networks/virtualNetwork.bicep' = {
   name: 'virtualNetworkDeployment'
   params: {
-    location: location
-    vnetName: vnetName
+    location: general.location
+    vnetName: networking.vnetName
     vnetAddressPrefix: '10.0.0.0/16'
     apiManagementNSGId: apiManagementNSGModule.outputs.apiManagementNSGId
     tags: commonTags
@@ -59,75 +76,75 @@ module vnetModule 'modules/virtual-networks/virtualNetwork.bicep' = {
 }
 
 // Consolidated Private DNS Zones Module
-module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' = if (enablePrivateEndpoints) {
+module privateDnsZonesModule 'modules/private-dns-zones/privateDNSZones.bicep' = if (featureFlags.enablePrivateEndpoints) {
   name: 'privateDnsZonesDeployment'
   params: {
-    enablePrivateEndpoints: enablePrivateEndpoints
+    enablePrivateEndpoints: featureFlags.enablePrivateEndpoints
     vnetId: vnetModule.outputs.vnetId
-    vnetName: vnetName
-    customerSiteWebAppName: customerSiteWebAppName
-    adminSiteWebAppName: adminSiteWebAppName
-    videoApiWebAppName: videoApiWebAppName
-    musicApiWebAppName: musicApiWebAppName
-    applicationGatewayPublicIP: enableApplicationGateway ? applicationGatewayModule!.outputs.publicIPAddress : '0.0.0.0'
+    vnetName: networking.vnetName
+    customerSiteWebAppName: webApps.apps.customerSite
+    adminSiteWebAppName: webApps.apps.adminSite
+    videoApiWebAppName: webApps.apps.videoApi
+    musicApiWebAppName: webApps.apps.musicApi
+    applicationGatewayPublicIP: featureFlags.enableApplicationGateway ? applicationGatewayModule!.outputs.publicIPAddress : '0.0.0.0'
     tags: commonTags
   }
 }
 
 // Application Gateway Module
-module applicationGatewayModule 'modules/application-gateways/my-gateway/applicationGateway.bicep' = if (enableApplicationGateway) {
+module applicationGatewayModule 'modules/application-gateways/my-gateway/applicationGateway.bicep' = if (featureFlags.enableApplicationGateway) {
   name: 'applicationGatewayDeployment'
   params: {
-    location: location
-    vnetName: vnetName
+    location: general.location
+    vnetName: networking.vnetName
     appGatewaySubnetId: vnetModule.outputs.appGatewaySubnetId
-    customerPublicWebAppName: customerPublicWebAppName
-    customerSiteWebAppName: customerSiteWebAppName
-    adminPublicWebAppName: adminPublicWebAppName
-    adminSiteWebAppName: adminSiteWebAppName
+    customerPublicWebAppName: webApps.apps.customerPublic
+    customerSiteWebAppName: webApps.apps.customerSite
+    adminPublicWebAppName: webApps.apps.adminPublic
+    adminSiteWebAppName: webApps.apps.adminSite
     // WAF Configuration
     wafConfig: {
-      enabled: enableWAF
-      firewallMode: wafMode
+      enabled: featureFlags.enableWAF
+      firewallMode: applicationGateway.waf.mode
       ruleSetType: 'OWASP'
-      ruleSetVersion: wafRuleSetVersion
+      ruleSetVersion: applicationGateway.waf.ruleSetVersion
       disabledRuleGroups: []
-      requestBodyCheck: wafRequestBodyCheck
-      maxRequestBodySizeInKb: wafMaxRequestBodySizeInKb
-      fileUploadLimitInMb: wafFileUploadLimitInMb
+      requestBodyCheck: applicationGateway.waf.requestBodyCheck
+      maxRequestBodySizeInKb: applicationGateway.waf.maxRequestBodySizeInKb
+      fileUploadLimitInMb: applicationGateway.waf.fileUploadLimitInMb
     }
     tags: commonTags
   }
 }
 
 // API Management Module
-module apiManagementModule 'modules/api-managements/my-api-management/myApiManagement.bicep' = if (enableApiManagement) {
+module apiManagementModule 'modules/api-managements/my-api-management/myApiManagement.bicep' = if (featureFlags.enableApiManagement) {
   name: 'apiManagementDeployment'
   params: {
-    location: location
-    apiManagementName: apiManagementName
-    publisherEmail: publisherEmail
-    publisherName: publisherName
+    location: general.location
+    apiManagementName: apiManagement.name
+    publisherEmail: apiManagement.publisherEmail
+    publisherName: apiManagement.publisherName
     vnetId: vnetModule.outputs.vnetId
     apiManagementSubnetName: 'APIManagementSubnet'
-    videoApiUrl: 'https://${videoApiWebAppName}.azurewebsites.net'
-    musicApiUrl: 'https://${musicApiWebAppName}.azurewebsites.net'
-    apiManagementSku: apiManagementSku
-    apiManagementCapacity: apiManagementCapacity
+    videoApiUrl: 'https://${webApps.apps.videoApi}.azurewebsites.net'
+    musicApiUrl: 'https://${webApps.apps.musicApi}.azurewebsites.net'
+    apiManagementSku: apiManagement.sku
+    apiManagementCapacity: apiManagement.capacity
     tags: commonTags
   }
 }
 
 // Output Application Gateway Public IP
-output applicationGatewayPublicIP string = enableApplicationGateway ? applicationGatewayModule!.outputs.publicIPAddress : ''
+output applicationGatewayPublicIP string = featureFlags.enableApplicationGateway ? applicationGatewayModule!.outputs.publicIPAddress : ''
 
 // Output Application Gateway WAF Information
-output applicationGatewayWAF object = enableApplicationGateway ? {
+output applicationGatewayWAF object = featureFlags.enableApplicationGateway ? {
   wafEnabled: applicationGatewayModule!.outputs.wafEnabled
   wafPolicyId: applicationGatewayModule!.outputs.wafPolicyId
   wafPolicyName: applicationGatewayModule!.outputs.wafPolicyName
-  wafMode: wafMode
-  ruleSetVersion: wafRuleSetVersion
+  wafMode: applicationGateway.waf.mode
+  ruleSetVersion: applicationGateway.waf.ruleSetVersion
 } : {
   wafEnabled: false
   wafPolicyId: ''
@@ -137,16 +154,16 @@ output applicationGatewayWAF object = enableApplicationGateway ? {
 }
 
 // Output API Management Gateway URL
-output apiManagementGatewayUrl string = enableApiManagement ? apiManagementModule!.outputs.apiManagementGatewayUrl : ''
+output apiManagementGatewayUrl string = featureFlags.enableApiManagement ? apiManagementModule!.outputs.apiManagementGatewayUrl : ''
 
 // Output API Management Developer Portal URL
-output apiManagementDeveloperPortalUrl string = enableApiManagement ? apiManagementModule!.outputs.apiManagementDeveloperPortalUrl : ''
+output apiManagementDeveloperPortalUrl string = featureFlags.enableApiManagement ? apiManagementModule!.outputs.apiManagementDeveloperPortalUrl : ''
 
 // Output API Management Management URL
-output apiManagementManagementUrl string = enableApiManagement ? apiManagementModule!.outputs.apiManagementManagementUrl : ''
+output apiManagementManagementUrl string = featureFlags.enableApiManagement ? apiManagementModule!.outputs.apiManagementManagementUrl : ''
 
 // Output API Endpoints
-output apiEndpoints array = enableApiManagement ? [
+output apiEndpoints array = featureFlags.enableApiManagement ? [
   {
     name: 'Video API'
     url: apiManagementModule!.outputs.videoApiUrl
@@ -160,7 +177,7 @@ output apiEndpoints array = enableApiManagement ? [
 ] : []
 
 // Internal DNS Names for Private Access (from consolidated private DNS zones module)
-output internalDnsNames array = enablePrivateEndpoints ? privateDnsZonesModule!.outputs.internalDnsNames : []
+output internalDnsNames array = featureFlags.enablePrivateEndpoints ? privateDnsZonesModule!.outputs.internalDnsNames : []
 
 // Network Security Group Outputs
 output apiManagementNSGId string = apiManagementNSGModule.outputs.apiManagementNSGId
