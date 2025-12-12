@@ -4,6 +4,7 @@ param cosmosAccountName string
 param consistencyLevel string = 'Session'
 param enableAutomaticFailover bool = true
 param enableMultipleWriteLocations bool = false
+param enableAvailabilityZones bool = false
 
 // Private Endpoint Parameters
 param createPrivateEndpoint bool = false
@@ -55,7 +56,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
       {
         locationName: location
         failoverPriority: 0
-        isZoneRedundant: false
+        isZoneRedundant: enableAvailabilityZones
       }
     ]
     enableAutomaticFailover: enableAutomaticFailover

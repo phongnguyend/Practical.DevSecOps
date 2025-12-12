@@ -2,9 +2,12 @@ param location string
 param cosmosAccountName string
 param consistencyLevel string = 'Session'
 param enableAutomaticFailover bool = true
+param enableAvailabilityZones bool = false
+
 param createPrivateEndpoint bool = false
 param privateEndpointSubnetId string = ''
 param enablePublicNetworkAccess bool = true
+
 // Array of role assignments with structure: { principalId: string, roleDefinitionId: string }
 param roleAssignments array = []
 param sqlRoleAssignments array = []
@@ -24,7 +27,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-09-15' = {
       {
         locationName: location
         failoverPriority: 0
-        isZoneRedundant: false
+        isZoneRedundant: enableAvailabilityZones
       }
     ]
     enableAutomaticFailover: enableAutomaticFailover

@@ -5,6 +5,16 @@ param enablePrivateEndpoints bool = false
 param privateEndpointSubnetId string = ''
 param tags object = {}
 
+// Diagnostic Settings Parameters
+param diagnosticLogAnalyticsWorkspaceId string = ''
+param diagnosticCategories array = [
+  'AppServiceHTTPLogs'
+  'AppServiceConsoleLogs'
+  'AppServiceAppLogs'
+  'AppServiceAuditLogs'
+  'AppServicePlatformLogs'
+]
+
 // Product API Web App
 resource productApiWebApp 'Microsoft.Web/sites@2023-01-01' = {
   name: productApiWebAppName
@@ -48,6 +58,19 @@ resource productApiPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-04-0
     ]
   }
   tags: tags
+}
+
+// Diagnostic Settings for App Service (conditional)
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(diagnosticLogAnalyticsWorkspaceId)) {
+  name: '${productApiWebAppName}-diagnostic-settings'
+  scope: productApiWebApp
+  properties: {
+    workspaceId: diagnosticLogAnalyticsWorkspaceId
+    logs: [for category in diagnosticCategories: {
+      category: category
+      enabled: true
+    }]
+  }
 }
 
 // Outputs
