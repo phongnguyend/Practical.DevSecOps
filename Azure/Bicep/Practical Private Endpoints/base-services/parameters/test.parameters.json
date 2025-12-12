@@ -54,6 +54,7 @@
         "accountName": "practicalpe-cosmos-test",
         "consistencyLevel": "Session",
         "enableAutomaticFailover": true,
+        "enableAvailabilityZones": true,
         "databases": {
           "adminDbName": "PracticalPE-ADMIN-COSMOS-DB-TEST",
           "customerDbName": "PracticalPE-CUSTOMER-COSMOS-DB-TEST",

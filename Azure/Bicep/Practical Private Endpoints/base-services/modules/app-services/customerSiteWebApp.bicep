@@ -20,6 +20,16 @@ param createPrivateEndpoint bool = false
 param privateEndpointSubnetId string = ''
 param privateDnsZoneId string = ''
 
+// Diagnostic Settings Parameters
+param diagnosticLogAnalyticsWorkspaceId string = ''
+param diagnosticCategories array = [
+  'AppServiceHTTPLogs'
+  'AppServiceConsoleLogs'
+  'AppServiceAppLogs'
+  'AppServiceAuditLogs'
+  'AppServicePlatformLogs'
+]
+
 // Customer Site Web App with enhanced security
 resource customerSiteWebApp 'Microsoft.Web/sites@2023-01-01' = {
   name: webAppName
@@ -78,6 +88,19 @@ resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
         }
       }
     ]
+  }
+}
+
+// Diagnostic Settings for App Service (conditional)
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(diagnosticLogAnalyticsWorkspaceId)) {
+  name: '${webAppName}-diagnostic-settings'
+  scope: customerSiteWebApp
+  properties: {
+    workspaceId: diagnosticLogAnalyticsWorkspaceId
+    logs: [for category in diagnosticCategories: {
+      category: category
+      enabled: true
+    }]
   }
 }
 

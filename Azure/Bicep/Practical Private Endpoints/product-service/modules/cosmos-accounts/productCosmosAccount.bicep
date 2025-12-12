@@ -2,6 +2,7 @@ param location string
 param cosmosAccountName string
 param consistencyLevel string = 'Session'
 param enableAutomaticFailover bool = true
+param enableAvailabilityZones bool = false
 param createPrivateEndpoint bool = false
 param privateEndpointSubnetId string = ''
 param enablePublicNetworkAccess bool = true
@@ -24,7 +25,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-09-15' = {
       {
         locationName: location
         failoverPriority: 0
-        isZoneRedundant: false
+        isZoneRedundant: enableAvailabilityZones
       }
     ]
     enableAutomaticFailover: enableAutomaticFailover

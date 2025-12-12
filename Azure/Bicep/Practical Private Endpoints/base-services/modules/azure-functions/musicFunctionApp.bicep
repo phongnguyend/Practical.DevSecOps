@@ -22,6 +22,12 @@ param applicationInsightsConnectionString string
 // Additional app settings from outside (optional)
 param additionalAppSettings object = {}
 
+// Diagnostic Settings Parameters
+param diagnosticLogAnalyticsWorkspaceId string = ''
+param diagnosticCategories array = [
+  'FunctionAppLogs'
+]
+
 // Tags
 param tags object
 
@@ -114,6 +120,19 @@ resource networkConfig 'Microsoft.Web/sites/networkConfig@2022-03-01' = if (enab
   parent: musicFunctionApp
   properties: {
     subnetResourceId: vnetIntegrationSubnetId
+  }
+}
+
+// Diagnostic Settings for Function App (conditional)
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(diagnosticLogAnalyticsWorkspaceId)) {
+  name: '${functionAppName}-diagnostic-settings'
+  scope: musicFunctionApp
+  properties: {
+    workspaceId: diagnosticLogAnalyticsWorkspaceId
+    logs: [for category in diagnosticCategories: {
+      category: category
+      enabled: true
+    }]
   }
 }
 

@@ -45,6 +45,7 @@ param cosmosDb object = {
   accountName: 'practicalpe-cosmos-${uniqueString(resourceGroup().id)}'
   consistencyLevel: 'Session'
   enableAutomaticFailover: true
+  enableAvailabilityZones: false
   databases: {
     adminDbName: 'PracticalPrivateEndpoints-ADMIN-COSMOS-DB'
     customerDbName: 'PracticalPrivateEndpoints-CUSTOMER-COSMOS-DB'
@@ -461,6 +462,7 @@ module cosmosDbAccountModule 'modules/cosmos-accounts/myCosmosAccount.bicep' = i
     cosmosAccountName: cosmosDb.accountName
     consistencyLevel: cosmosDb.consistencyLevel
     enableAutomaticFailover: cosmosDb.enableAutomaticFailover
+    enableAvailabilityZones: cosmosDb.enableAvailabilityZones
     createPrivateEndpoint: featureFlags.enablePrivateEndpoints
     privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? vnetModule.outputs.privateEndpointSubnetId : ''
     privateDnsZoneId: (featureFlags.enablePrivateEndpoints && featureFlags.enableCosmosDb) ? privateDnsZonesModule!.outputs.cosmosPrivateDnsZoneId : ''

@@ -41,6 +41,7 @@ param cosmosDb object = {
   accountName: 'practicalpe-product-cosmos'
   consistencyLevel: 'Session'
   enableAutomaticFailover: true
+  enableAvailabilityZones: false
   database: {
     productCosmosDbName: 'PracticalPrivateEndpoints-PRODUCT-COSMOS-DB'
   }
@@ -213,6 +214,7 @@ module productCosmosDbModule 'modules/cosmos-accounts/productCosmosAccount.bicep
     cosmosAccountName: cosmosDb.accountName
     consistencyLevel: cosmosDb.consistencyLevel
     enableAutomaticFailover: cosmosDb.enableAutomaticFailover
+    enableAvailabilityZones: cosmosDb.enableAvailabilityZones
     createPrivateEndpoint: featureFlags.enablePrivateEndpoints
     privateEndpointSubnetId: featureFlags.enablePrivateEndpoints ? existingVnet.properties.subnets[2].id : '' // PrivateEndpointSubnet
     enablePublicNetworkAccess: !featureFlags.enablePrivateEndpoints

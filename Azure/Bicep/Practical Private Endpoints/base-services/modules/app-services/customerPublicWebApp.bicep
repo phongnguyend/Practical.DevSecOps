@@ -8,6 +8,16 @@ param tags object = {}
 param enableVNetIntegration bool = false
 param vnetIntegrationSubnetId string = ''
 
+// Diagnostic Settings Parameters
+param diagnosticLogAnalyticsWorkspaceId string = ''
+param diagnosticCategories array = [
+  'AppServiceHTTPLogs'
+  'AppServiceConsoleLogs'
+  'AppServiceAppLogs'
+  'AppServiceAuditLogs'
+  'AppServicePlatformLogs'
+]
+
 // Customer Public specific settings
 param linuxFxVersion string = 'DOTNET|8.0'
 param alwaysOn bool = true
@@ -35,6 +45,19 @@ resource customerPublicWebApp 'Microsoft.Web/sites@2023-01-01' = {
     publicNetworkAccess: 'Enabled'
     httpsOnly: httpsOnly
     virtualNetworkSubnetId: enableVNetIntegration ? vnetIntegrationSubnetId : null
+  }
+}
+
+// Diagnostic Settings for App Service (conditional)
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(diagnosticLogAnalyticsWorkspaceId)) {
+  name: '${webAppName}-diagnostic-settings'
+  scope: customerPublicWebApp
+  properties: {
+    workspaceId: diagnosticLogAnalyticsWorkspaceId
+    logs: [for category in diagnosticCategories: {
+      category: category
+      enabled: true
+    }]
   }
 }
 

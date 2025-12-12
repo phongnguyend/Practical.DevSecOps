@@ -43,6 +43,7 @@
         "accountName": "practicalpe-product-cosmos-dev",
         "consistencyLevel": "Session",
         "enableAutomaticFailover": true,
+        "enableAvailabilityZones": false,
         "database": {
           "productCosmosDbName": "PracticalPE-PRODUCT-COSMOS-DB-DEV"
         }
