@@ -12,6 +12,10 @@
 - [https://github.com/nicolargo/glances](https://github.com/nicolargo/glances)
 - [https://www.portainer.io](https://www.portainer.io)
 
+### Docker Desktop Alternatives
+- [Rancher Desktop](https://github.com/rancher-sandbox/rancher-desktop)
+- [Podman Desktop](https://github.com/podman-desktop/podman-desktop)
+
 ### Commands:
 ```
 docker -v
@@ -57,17 +61,17 @@ docker volume ls
 docker network ls
 ```
 
-### docker-compose
+### docker compose
 ```
-docker-compose --version
-docker-compose --help
-docker-compose up
-docker-compose up servicename
-docker-compose down
-docker-compose start
-docker-compose start servicename
-docker-compose stop 
-docker-compose stop servicename
-docker-compose build
-docker-compose build servicename
+docker compose --version
+docker compose --help
+docker compose up
+docker compose up servicename
+docker compose down
+docker compose start
+docker compose start servicename
+docker compose stop 
+docker compose stop servicename
+docker compose build
+docker compose build servicename
 ```
