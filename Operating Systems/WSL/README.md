@@ -34,3 +34,9 @@
   wsl --distribution Ubuntu
   wsl --distribution Ubuntu --user phongnguyend
   ```
+
+- Upgrade WSL Version
+  ```
+  wsl --version
+  wsl --update
+  ```
