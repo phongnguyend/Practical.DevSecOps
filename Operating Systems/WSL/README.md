@@ -40,3 +40,4 @@
   wsl --version
   wsl --update
   ```
+- Download and Install/Upgrade directly from GitHub releases: https://github.com/microsoft/WSL/releases
