@@ -1,3 +1,7 @@
+### PowerShell
+- [Install PowerShell on Windows, Linux, and macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell)
+- [What's New in PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/whats-new/overview)
+
 ### Generate Strong Password:
 ```ps1
 Add-Type -AssemblyName System.Web
