@@ -1,5 +1,5 @@
 
-# [Certifications:](https://docs.microsoft.com/en-us/learn/certifications/browse/?term=azure&resource_type=certification)
+# [Certifications:](https://learn.microsoft.com/en-us/credentials/browse/?terms=azure&credential_types=certification)
 
 ## [Microsoft Certified: Azure Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-fundamentals)
 ##
