@@ -16,8 +16,10 @@
 ## [Microsoft Certified: Azure AI Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-ai-fundamentals)
 ##
 ## [Microsoft Certified: Azure AI Engineer Associate](https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-engineer/)
+- [Azure AI Engineer Associate Certification (AI-102) – Full Course to PASS the Exam - YouTube](https://www.youtube.com/watch?v=scJ4mobwjBQ)
 ##
 ## [Microsoft Certified: Azure Data Scientist Associate](https://learn.microsoft.com/en-us/credentials/certifications/azure-data-scientist)
+- [DP-100: Designing and Implementing a Data Science Solution on Azure - YouTube](https://www.youtube.com/playlist?list=PLahhVEj9XNTdbbqZh4B0lkLqg8aYbDyr9)
 ##
 ## [Microsoft Certified: Azure Developer Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-developer)
 - [Whizlabs | Microsoft Azure Exam AZ-204 Certification](https://www.whizlabs.com/microsoft-azure-certification-az-204/)
