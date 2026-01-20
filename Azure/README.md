@@ -8,8 +8,10 @@
 ## [Microsoft Certified: Azure Database Administrator Associate](https://docs.microsoft.com/en-us/learn/certifications/azure-database-administrator-associate)
 ##
 ## [Microsoft Certified: Fabric Analytics Engineer Associate](https://learn.microsoft.com/en-us/credentials/certifications/fabric-analytics-engineer-associate/)
+- [DP-600: Microsoft Fabric Analytics Engineer - YouTube](https://www.youtube.com/playlist?list=PLahhVEj9XNTeEjJRYvYa3qJx9iS2RA2dT)
 ##
 ## [Microsoft Certified: Fabric Data Engineer Associate](https://learn.microsoft.com/en-us/credentials/certifications/fabric-data-engineer-associate)
+- [DP-700: Microsoft Fabric Data Engineer - YouTube](https://www.youtube.com/playlist?list=PLahhVEj9XNTca_uWOeM4HdzVEiRIW_oGv)
 ##
 ## [Microsoft Certified: Azure AI Fundamentals](https://docs.microsoft.com/en-us/learn/certifications/azure-ai-fundamentals)
 ##
