@@ -602,41 +602,270 @@ CREATE INDEX ix_audit_resource_time
 
 Allowed trip transitions, quote acceptance versus expiry, driver/vehicle eligibility, pooled capacity, final fare aggregation, and provider callback ordering require transactional procedures or deferred triggers. Immutable quote snapshots and trip events should reject `UPDATE`/`DELETE`; assignment acceptance must conditionally update both trip and driver state in one transaction.
 
-## Booking and dispatch flows
+## Main use-case sequence diagrams
 
-### Request ride
+Read the diagrams from top to bottom. The sequence follows the business lifecycle, with alternative and failure paths branching from the relevant step.
 
-1. Generate and store an expiring quote from a recorded route, pricing rule, service area, and surge input version.
-2. On acceptance, claim idempotency, recheck quote ownership/expiry, snapshot it into a ride request/trip, and authorize the payment method outside any long database transaction.
-3. Write the trip transition and outbox event together; a dispatch worker starts a round.
+**Lifecycle:** Establish supply → request → match → assign → cancel branch or complete → handle safety exception
 
-### Accept driver offer
+### 1. Update driver availability and location
 
-1. Verify the offer is still open and unexpired.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Driver
+    participant App as Driver App
+    participant Supply as Supply API
+    participant Geo as Geospatial Store
+    participant DB as PostgreSQL
+
+    Driver->>App: Go online(vehicle, service types)
+    App->>Supply: Set availability ONLINE
+    Supply->>DB: Validate driver, vehicle, documents, and active trip
+    Supply->>DB: Update availability version and outbox atomically
+    loop While online
+        App->>Supply: Location(sequence, coordinates, timestamp)
+        Supply->>Geo: Upsert latest valid position with TTL
+    end
+    Driver->>App: Go offline
+    App->>Supply: Conditional availability update
+    Supply->>DB: Set OFFLINE unless assigned/on trip
+```
+
+### 2. Request a ride
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Rider
+    participant API as Ride API
+    participant Route as Routing/Pricing
+    participant Pay as Payment Provider
+    participant DB as PostgreSQL
+    participant Dispatch
+
+    Rider->>API: Request quote(pickup, destination, service)
+    API->>Route: Calculate route, ETA, and fare
+    Route-->>API: Versioned quote inputs and price
+    API->>DB: Store expiring quote
+    API-->>Rider: Quote and expiry
+    Rider->>API: Accept quote(idempotency key)
+    API->>DB: Claim key; validate ownership and expiry
+    API->>Pay: Authorize payment method
+    Pay-->>API: Authorization result
+    API->>DB: Create request/trip snapshot and outbox atomically
+    API-->>Rider: Searching for driver
+    DB-->>Dispatch: Publish dispatch request
+```
+
+#### Flow details
+
+1. Generate and store an expiring quote using recorded route, pricing-rule, service-area, and surge-input versions.
+2. On acceptance, claim idempotency, recheck ownership/expiry, snapshot the quote into the request/trip, and authorize payment outside any long database transaction.
+3. Commit the trip transition with its outbox event; the dispatch worker then starts a round.
+
+### 3. Match nearby drivers
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Dispatch
+    participant Geo as Geospatial Store
+    participant DB as PostgreSQL
+    participant Push as Notification Gateway
+    actor Driver
+
+    DB-->>Dispatch: New trip dispatch event
+    Dispatch->>Geo: Query eligible nearby ONLINE drivers
+    Geo-->>Dispatch: Ranked candidates with fresh locations
+    Dispatch->>DB: Create dispatch round and expiring offers
+    par Notify candidates
+        Dispatch->>Push: Send offer to driver devices
+        Push-->>Driver: Ride offer with expiry
+    end
+    opt No acceptance before deadline
+        Dispatch->>DB: Close round; expand radius or service rules
+        Dispatch->>Geo: Query next candidate set
+    end
+```
+
+### 4. Driver accepts an offer
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Dispatch
+    actor Driver
+    participant App as Driver App
+    participant DB as PostgreSQL
+    actor Rider
+
+    Dispatch->>DB: Create expiring offers for eligible drivers
+    Dispatch-->>App: Ride offer
+    Driver->>App: Accept
+    App->>DB: Conditional accept(offer, driver, trip)
+    DB->>DB: Lock trip and availability rows in ID order
+    alt Offer still open and trip unassigned
+        DB->>DB: Accept offer; close competitors; reserve driver
+        DB-->>App: Assignment confirmed
+        DB-->>Rider: Driver assigned event
+    else Another offer/state won
+        DB-->>App: Current state; offer unavailable
+    end
+```
+
+#### Flow details
+
+1. Verify that the offer remains open and unexpired.
 2. Lock trip and driver-availability rows in deterministic ID order.
-3. Atomically mark the offer accepted, close competing offers, assign driver/vehicle, reserve driver capacity, append the trip event, and publish through the outbox.
-4. If the conditional update affects zero rows, another offer/state won; return the current state idempotently.
+3. Atomically accept the offer, close competitors, assign the driver/vehicle, reserve capacity, append the trip event, and write the outbox record.
+4. If the conditional update changes zero rows, another offer or state won; return the current state idempotently.
 
-### Complete and charge
+### 5. Cancel a ride
 
-Record completion inputs, calculate an itemized fare with its rule version, and transition the trip in one transaction. Capture payment remotely through an idempotent saga step; provider callbacks update payment state and create driver earnings without reopening the completed trip history. Corrections use fare adjustments/refunds.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Rider
+    participant API as Ride API
+    participant Policy as Cancellation Policy
+    participant DB as PostgreSQL
+    participant Pay as Payment Provider
+    actor Driver
 
-## Consistency, indexing, and scale
+    Rider->>API: Cancel trip(reason, key)
+    API->>Policy: Calculate eligibility and fee from trip milestone
+    Policy-->>API: Cancellation decision and fee
+    API->>DB: Lock trip; conditional transition to CANCELLED
+    API->>DB: Release driver capacity; close offers; write outbox
+    opt Cancellation fee applies
+        DB-->>Pay: Publish idempotent fee capture command
+        Pay-->>DB: Capture callback
+    end
+    DB-->>Driver: Cancellation notification
+    API-->>Rider: Cancelled state and fee
+```
 
-- Use optimistic versions for trip commands and explicit row locks for dispatch acceptance/capacity. Never keep locks while calling routing/payment services.
-- GiST index service boundaries and current locations. Index trips by rider/date, driver/date, and active status; index open offers by driver/expiry.
-- Partition location samples, trip events, payment attempts, audits, and outbox history by time. Apply short TTLs to raw locations.
+### 6. Complete trip and charge
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Driver
+    participant API as Trip API
+    participant Fare as Fare Service
+    participant DB as PostgreSQL
+    participant Pay as Payment Provider
+    actor Rider
+
+    Driver->>API: Complete trip(distance, duration, end location)
+    API->>Fare: Calculate itemized fare using rule version
+    Fare-->>API: Fare breakdown
+    API->>DB: Save completion/fare; set COMPLETED; write capture command
+    API-->>Driver: Trip completed
+    DB-->>Pay: Publish idempotent capture command
+    Pay-->>DB: Capture callback
+    DB->>DB: Update payment and driver earnings atomically
+    DB-->>Rider: Receipt and final trip status
+```
+
+#### Flow details
+
+Record completion inputs, calculate an itemized fare with its rule version, and transition the trip in one transaction. Capture payment through an idempotent remote saga step. Provider callbacks update payment state and create driver earnings without reopening completed-trip history; corrections use fare adjustments or refunds.
+
+### 7. Report a safety incident
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Rider
+    participant App as Rider App
+    participant Safety as Safety Service
+    participant DB as PostgreSQL
+    participant Responder as Emergency/Support Responder
+
+    Rider->>App: Trigger SOS or report incident
+    App->>Safety: Incident(trip, live location, category)
+    Safety->>DB: Create restricted-access case and immutable timeline
+    Safety-->>Responder: Alert with minimum necessary trip context
+    Responder->>DB: Append actions and case status
+    opt Account restriction required
+        Responder->>DB: Suspend actor/vehicle eligibility; append audit/outbox
+    end
+    Safety-->>Rider: Acknowledge and show support channel
+```
+
+
+
+## Non-functional Requirements
+
+The targets below are initial objectives and should be tested by city, peak period, and safety tier.
+
+### Exception Handling
+
+- Return stable error codes and correlation IDs; distinguish invalid state, lost dispatch race, retryable dependency failure, and terminal rejection.
+- Retry payment, push, and mapping commands idempotently with bounded backoff; compensate authorizations, driver reservations, and fees through explicit saga actions.
+- Escalate stale trips, payment/trip mismatches, dispatch exhaustion, and safety events to owned operational queues with SLAs.
+
+- Use optimistic trip versions and explicit locks for dispatch acceptance/capacity; never hold a database lock while calling routing or payment services.
+- Reconcile trip state to ordered events and payment/earning totals to immutable accounting attempts.
+
+### Availability
+
+- Target 99.99% monthly availability for active-trip, dispatch-acceptance, and safety APIs and 99.95% for quote/history features.
+- Keep trip status, cancellation, and safety contact paths usable when recommendations, ratings, or receipts are degraded.
+- Deploy transactional services across failure domains with RPO ≤ 5 minutes and RTO ≤ 30 minutes; location caches may rebuild from fresh devices.
+
+- Use regional PostgreSQL HA, point-in-time recovery, encrypted off-domain backups, and tested failover/restore.
+- Route state-changing and read-your-writes requests to the primary; privacy-aggregated historical analytics may use replicas or a warehouse.
+
+### Scalability
+
+- Scale quote, dispatch, location ingestion, trip, payment, and notification services independently.
+- Shard dispatch and geospatial indexes by city/service area while preserving one authoritative trip/driver assignment.
+- Apply location-update throttling, TTLs, queue backpressure, and graceful search-radius expansion during demand spikes.
+
+- Geospatially index service boundaries and current locations; index trips by rider/date, driver/date, and active state, plus offers by driver/expiry.
+- Partition location samples, trip events, payment attempts, audits, and outbox history by time; keep globally unique idempotency keys in an unpartitioned registry.
 - Add partial indexes for active trips, available drivers, expiring offers, pending payments, and unpublished events.
-- Workers use small `FOR UPDATE SKIP LOCKED` batches. API/provider/source event idempotency keys remain in unpartitioned registries when global uniqueness is needed.
-- Reconcile trip aggregate state to ordered events and payment/earning totals to immutable attempt/accounting records.
 
-## Security and operations
+### Performance
 
-- Encrypt PII, precise addresses, and sensitive trip locations; tokenize payment and vehicle identifiers; log every support/admin access.
-- Use tenant row-level security and separate roles for dispatch, payments, support, analytics, and migrations.
-- Give riders and drivers only the counterpart data needed during an active trip. Use short-lived contact masking and media links.
-- Run PostgreSQL with regional HA, point-in-time recovery, encrypted off-domain backups, and tested failover/restore.
-- State-changing and read-your-writes requests use the primary. Historical analytics and heat maps use replicas/warehouse data with privacy aggregation.
+- Target p95 ≤ 300 ms for quote/trip commands excluding map and payment providers.
+- Generate the first dispatch candidate set within 2 seconds and deliver assignment updates within 1 second at normal load.
+- Ingest active-driver locations at the configured cadence with p95 ≤ 500 ms to the dispatch index.
+
+- Use small `FOR UPDATE SKIP LOCKED` worker batches and short TTLs for raw location data.
+
+### Security
+
+- Require MFA and step-up verification for payout, account recovery, vehicle/driver approval, overrides, and administrative access.
+- Enforce rider, driver, support, safety, finance, and admin scopes with TLS, secret rotation, signed callbacks, rate limits, and device controls.
+- Reveal precise locations and masked contact channels only to authorized trip participants during the required time window.
+
+- Separate dispatch, payment, support, analytics, and migration roles with tenant row-level security.
+
+### Data Protection
+
+- Encrypt identity, driver documents, locations, trip routes, contact data, payment references, safety cases, databases, and backups.
+- Apply short, policy-driven retention for precise location; tightly restrict safety evidence and support legal hold where required.
+- Tokenize payment instruments, mask identities in analytics, and prevent production PII from entering nonproduction environments.
+
+- Use short-lived contact masking and media links, and expose counterpart identity/location only during an active trip.
+
+### Logging
+
+- Emit structured logs with trace, trip/offer pseudonymous IDs, city, state transition, dependency latency, and stable result code.
+- Exclude exact coordinates, phone numbers, messages, payment data, identity documents, and safety-case content from general logs.
+- Alert on dispatch latency, stale drivers, assignment conflicts, payment failures, trip-state stalls, and safety-channel degradation.
+
+### Audit Logging
+
+- Record driver approval/status changes, fare adjustments, refunds, assignment overrides, safety-case access/actions, and privileged location access.
+- Include actor, role, reason, request ID, before/after hashes, trip context, and outcome in append-only events.
+- Export audit data to tamper-evident storage with restricted safety/finance views, integrity monitoring, and policy-based retention.
+
+- Record every support or administrative access to rider, driver, payment, and precise-trip data.
 
 ## Validation checklist
 

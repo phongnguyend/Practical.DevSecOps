@@ -479,81 +479,302 @@ for every ledger_entry:
 
 Database roles used by applications should receive `EXECUTE` on the posting procedure, not direct `INSERT`, `UPDATE`, or `DELETE` rights on ledger tables. An immutability trigger must reject updates and deletes after insertion.
 
-## Posting flows
+## Main use-case sequence diagrams
 
-### Internal transfer of 100 USD
+Read the diagrams from top to bottom. The sequence follows the business lifecycle, with alternative and failure paths branching from the relevant step.
 
-Both customer deposit accounts are liabilities to the bank. Moving money from Alice to Bob reduces the bank's liability to Alice and increases its liability to Bob.
+**Lifecycle:** Account setup → account inquiry → fund reservation → internal movement → currency conversion → external settlement → correction
+
+### 1. Open a customer account
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Banking API
+    participant KYC as KYC/AML Service
+    participant DB as PostgreSQL
+    participant Docs as Document Store
+
+    Customer->>API: Apply for account(product, identity data)
+    API->>KYC: Submit verification with application ID
+    KYC-->>API: Decision and opaque case reference
+    alt Approved
+        API->>DB: Create customer/account relationships and PENDING account
+        API->>Docs: Store signed terms and disclosures
+        Docs-->>API: Document references and checksums
+        API->>DB: Activate account; append audit/outbox atomically
+        API-->>Customer: Account opened
+    else Review or rejected
+        API->>DB: Record decision reference and application state
+        API-->>Customer: Review/rejection status
+    end
+```
+
+### 2. Retrieve balance and statement
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Banking API
+    participant Auth as Authorization Service
+    participant DB as PostgreSQL
+
+    Customer->>API: Get balance and transaction page(cursor)
+    API->>Auth: Authorize customer/account relationship
+    Auth-->>API: Authorized account scope
+    API->>DB: Read balance projection from consistency-safe node
+    API->>DB: Read immutable entries using keyset cursor
+    API-->>Customer: Posted/available balance, entries, next cursor
+    opt Reconciliation mismatch detected
+        API->>DB: Raise operational reconciliation alert
+    end
+```
+
+### 3. Hold and capture
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant API as Banking API
+    participant DB as PostgreSQL
+    participant Expiry as Hold Expiry Worker
+
+    Client->>API: Create hold(account, amount, key)
+    API->>DB: Lock balance; check available funds
+    API->>DB: Insert ACTIVE hold; reduce available balance
+    API-->>Client: Hold created
+    alt Merchant captures
+        Client->>API: Capture hold
+        API->>DB: Lock ACTIVE hold and balance
+        API->>DB: Post ledger entries; mark CAPTURED atomically
+        API-->>Client: Capture posted
+    else Hold expires or is released
+        Expiry->>DB: Claim due ACTIVE hold with SKIP LOCKED
+        Expiry->>DB: Restore availability; mark EXPIRED atomically
+    end
+```
+
+#### Flow details
+
+- Creating a hold locks the balance row, checks funds, inserts an `ACTIVE` hold, and decreases only `available_balance`.
+- Capturing posts normal ledger entries and atomically changes the hold to `CAPTURED`; it must not subtract the amount twice.
+- Release or expiry restores available funds and changes status exactly once using the optimistic `version`.
+- The expiry worker claims small batches with `FOR UPDATE SKIP LOCKED`.
+
+### 4. Internal account transfer
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Banking API
+    participant Auth as Authorization/Risk
+    participant DB as PostgreSQL
+    participant Bus as Event Bus
+
+    Customer->>API: Transfer(source, destination, amount, idempotency key)
+    API->>DB: Claim idempotency key
+    alt Replayed request
+        DB-->>API: Stored response
+        API-->>Customer: Original result
+    else New request
+        API->>Auth: Validate actor, limits, and policy
+        Auth-->>API: Approved
+        API->>DB: BEGIN; lock balance rows in ID order
+        DB-->>API: Accounts and available balance
+        alt Funds and account state valid
+            API->>DB: Insert balanced ledger entries
+            API->>DB: Update balance projections and transfer
+            API->>DB: Insert audit and outbox events; COMMIT
+            API-->>Customer: Transfer posted
+            DB-->>Bus: Publish transfer event from outbox
+        else Validation fails
+            API->>DB: Record failure; ROLLBACK/COMMIT result
+            API-->>Customer: Transfer declined
+        end
+    end
+```
+
+#### Flow details
+
+Both customer deposit accounts are liabilities to the bank. For a transfer of 100 USD:
 
 | Sequence | Ledger account | Debit | Credit |
 |---:|---|---:|---:|
-| 1 | Alice deposit liability | 100.00 | — |
-| 2 | Bob deposit liability | — | 100.00 |
+| 1 | Source deposit liability | 100.00 | — |
+| 2 | Destination deposit liability | — | 100.00 |
 
 Within one serializable or carefully locked database transaction:
 
 1. Claim the idempotency key and verify its request hash.
-2. Lock the source and destination `account_balances` rows in deterministic `ledger_account_id` order to prevent deadlocks.
-3. Confirm account status, currency, limits, and `available_balance >= amount` (including allowed overdraft).
+2. Lock the source and destination `account_balances` rows in deterministic `ledger_account_id` order.
+3. Confirm account status, currency, limits, and sufficient available balance, including any allowed overdraft.
 4. Insert the balanced ledger transaction and entries.
-5. Update debit/credit totals and the balance projections.
-6. Mark the transfer `POSTED`, attach its `ledger_transaction_id`, and insert outbox/audit events.
-7. Commit, then return the stored idempotent response.
+5. Update debit/credit totals and balance projections.
+6. Mark the transfer `POSTED`, attach its ledger transaction, and insert outbox/audit events.
+7. Commit and return the stored idempotent response.
 
-### External outgoing payment
+### 5. Cross-currency transfer
 
-At initiation, debit the customer's deposit liability and credit an outgoing-settlement liability. When the payment network settles, debit that settlement liability and credit the bank's cash/nostro asset. Failed payments use an explicit reversal; they do not delete the original posting.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Banking API
+    participant FX as FX Quote Service
+    participant DB as PostgreSQL Ledger
 
-### Holds and capture
+    Customer->>API: Request transfer(source, destination, amount)
+    API->>FX: Request executable FX quote
+    FX-->>API: Rate, quote ID, expiry
+    API-->>Customer: Converted amount and fees
+    Customer->>API: Accept quote(idempotency key)
+    API->>DB: Validate quote and lock account balances
+    API->>DB: Post balanced source-currency entries via FX clearing
+    API->>DB: Post balanced destination-currency entries via FX clearing
+    API->>DB: Save quote/rate, transfer, audit, and outbox atomically
+    API-->>Customer: Transfer posted
+```
 
-- Creating a hold locks the balance row, checks funds, inserts an `ACTIVE` hold, and decreases only `available_balance`.
-- Capturing a hold posts normal ledger entries and atomically changes the hold to `CAPTURED`; do not subtract the amount twice from available funds.
-- Release or expiry restores available funds and changes the hold status exactly once using its optimistic `version`.
-- A worker expires holds in small batches with `FOR UPDATE SKIP LOCKED`.
+#### Flow details
 
-### Reversal
+Persist the executable quote ID and rate, then post separately balanced legs in each currency through controlled FX clearing accounts. The source currency balances between the source and its FX account; the destination currency balances between its FX account and the destination. Never force two currencies into one arithmetic balance.
 
-A reversal creates a new `ledger_transactions` whose `reversal_of` points to the original. Each original entry is copied with `DEBIT` and `CREDIT` swapped. The unique constraint on `reversal_of` prevents duplicate full reversals. Partial refunds are new business transactions linked through metadata or a dedicated refund table.
+### 6. External payment settlement
 
-### Cross-currency transfer
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Banking API
+    participant DB as Ledger/PostgreSQL
+    participant Worker as Payment Worker
+    participant Network as Payment Network
 
-A cross-currency operation records the quoted rate and quote ID in a transfer/FX-order record and posts balanced legs in each currency through controlled FX clearing accounts. For example, the USD entries balance among the source and USD FX account, while the EUR entries balance among the EUR FX account and destination. Never force two currencies into a single arithmetic balance.
+    Customer->>API: Submit outgoing payment
+    API->>DB: Post customer debit and settlement-liability credit
+    API->>DB: Save payment command and outbox event atomically
+    API-->>Customer: Payment accepted
+    Worker->>DB: Claim unpublished payment command
+    Worker->>Network: Send payment with stable command ID
+    Network-->>Worker: Settled or failed
+    alt Settled
+        Worker->>DB: Debit settlement liability; credit cash/nostro
+        Worker->>DB: Mark settled and append events atomically
+    else Failed
+        Worker->>DB: Post linked reversal and mark failed atomically
+    end
+```
 
-## Consistency and isolation
+#### Flow details
 
-- Use `READ COMMITTED` with explicit row locks for the well-defined posting path, or `SERIALIZABLE` with bounded retry handling. Do not read a balance and later update it without a lock or atomic predicate.
-- Acquire multiple balance locks in a deterministic order.
-- Keep database transactions short; perform sanctions checks or remote calls before posting, then revalidate mutable account state inside the transaction.
-- Treat ambiguous commit results as retryable with the same idempotency key.
-- Use an atomic conditional update or locked row when changing workflow states so two workers cannot post one transfer twice.
-- Reconciliation must recompute totals from immutable entries and compare them with `account_balances`; any difference raises an operational alert.
+At initiation, debit the customer's deposit liability and credit an outgoing-settlement liability. At network settlement, debit that liability and credit the bank's cash/nostro asset. A failed payment creates an explicit linked reversal; it never deletes the original posting.
 
-## Indexing, partitioning, and retention
+### 7. Reverse a posted transaction
 
-- Index account lookup by `(tenant_id, account_number_hash)` and customer relationships by `(tenant_id, customer_id, valid_to)`.
-- Index transfer history by both `(tenant_id, source_account_id, created_at DESC)` and destination account.
-- Partition `ledger_entries`, `ledger_transactions`, `audit_events`, and `outbox_events` by monthly `business_date`/timestamp when volume justifies it. Preserve uniqueness by including the partition key or maintain idempotency in a small unpartitioned registry.
-- Use monotonic `entry_id` as a statement cursor. Keyset pagination (`entry_id < :cursor`) is more stable than offset pagination.
-- Keep ledger and regulatory audit data for the required legal retention period. PII erasure should anonymize or cryptographically erase PII while retaining legally required financial records.
-- Archive old partitions to encrypted, immutable storage only after reconciliation and restore testing.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Operator
+    participant API as Banking API
+    participant Policy as Authorization/Policy
+    participant DB as PostgreSQL Ledger
+    participant Bus as Event Bus
 
-## Security controls
+    Operator->>API: Reverse transaction(reason, idempotency key)
+    API->>Policy: Verify permission and reversal eligibility
+    Policy-->>API: Approved
+    API->>DB: Lock original transaction and affected balances
+    alt Not previously reversed
+        API->>DB: Insert linked transaction with entry sides swapped
+        API->>DB: Update projections; append audit/outbox atomically
+        DB-->>Bus: Publish transaction.reversed
+        API-->>Operator: Reversal posted
+    else Already reversed
+        DB-->>API: Existing reversal
+        API-->>Operator: Original idempotent result
+    end
+```
 
-- Separate roles for migrations, posting, customer-service reads, reporting replicas, audit, and break-glass administration.
-- Enable row-level security by `tenant_id` as defense in depth; set tenant context from a trusted connection pool path, not client input alone.
-- Encrypt storage and backups, use application/column-level envelope encryption for PII, and rotate keys by version.
-- Tokenize account numbers and never log raw identifiers, secrets, access tokens, or PII.
-- Store actor, request, and trace IDs in append-only audits. Stream audit copies to write-once storage with integrity verification.
-- Apply least privilege: only the posting routine owns ledger write privileges, and reporting workloads use read replicas.
-- Keep KYC/AML case details and uploaded documents in access-controlled bounded contexts; reference them by opaque ID.
+#### Flow details
 
-## Availability and disaster recovery
+A reversal inserts a new `ledger_transactions` row whose `reversal_of` points to the original, copying every original entry with `DEBIT` and `CREDIT` swapped. The unique constraint on `reversal_of` prevents duplicate full reversals. Partial refunds are separate linked business transactions.
 
-- Run PostgreSQL with synchronous high-availability replication within the primary region and encrypted point-in-time recovery backups in a separate failure domain.
-- Define explicit targets, for example RPO ≤ 5 minutes and RTO ≤ 30 minutes, based on business requirements.
-- Publish events with the transactional outbox; consumers must also be idempotent.
-- Route statements and balance reads requiring read-your-writes consistency to the primary. Replicas are suitable for analytics and older history.
+
+
+## Non-functional Requirements
+
+The targets below are initial service objectives and must be reconciled with regulatory, product-tier, and regional commitments.
+
+### Exception Handling
+
+- Return stable error codes with a correlation ID; do not expose account, ledger, or policy internals.
+- Treat validation failures as terminal, dependency timeouts as retryable with bounded exponential backoff, and ambiguous commits as retries using the original idempotency key.
+- Never repair financial errors by editing posted entries. Create linked reversals or adjustments and route reconciliation breaks to operations.
+
+- Use `READ COMMITTED` with explicit balance-row locks, or `SERIALIZABLE` with bounded retries; never check and later debit a balance outside the protected transaction.
+- Acquire multiple balance locks in deterministic ID order and use conditional state updates so concurrent workers cannot post twice.
+- Continuously reconcile immutable entries to `account_balances`; any mismatch creates an operational exception.
+
+### Availability
+
+- Target 99.99% monthly availability for posting and balance APIs, excluding approved maintenance.
+- Run the primary database across failure domains with automated failover; target RPO ≤ 5 minutes and RTO ≤ 30 minutes.
+- Degrade noncritical functions such as statement enrichment and notifications without blocking ledger posting.
+
+- Use synchronous in-region PostgreSQL replication plus encrypted point-in-time recovery backups in another failure domain.
+- Route read-your-writes statements and balances to the primary; use replicas only for lag-tolerant history and analytics.
 - Regularly test failover, point-in-time restore, reconciliation, key recovery, and replay of unpublished outbox events.
+
+### Scalability
+
+- Scale stateless API and worker tiers horizontally; partition ledger, audit, and outbox history by business date when volume requires it.
+- Isolate heavy tenants and reporting workloads with quotas, read replicas, and workload-specific pools.
+- Apply backpressure to event consumers and process retry/dead-letter queues in bounded batches.
+
+- Index account lookup by `(tenant_id, account_number_hash)`, customer relationships by `(tenant_id, customer_id, valid_to)`, and transfer history by source and destination.
+- Partition ledger transactions/entries, audit events, and outbox history by business date; preserve global idempotency in an unpartitioned registry when needed.
+
+### Performance
+
+- Target p95 ≤ 300 ms and p99 ≤ 750 ms for internal posting, excluding step-up authentication and external networks.
+- Target p95 ≤ 150 ms for current-balance reads from the authoritative projection.
+- Use keyset pagination for statements and keep posting transactions short with deterministic lock ordering.
+
+- Use monotonic `entry_id` keyset pagination for statements and keep sanctions or other remote calls outside short posting transactions.
+
+### Security
+
+- Require phishing-resistant MFA for staff and high-risk customer actions; enforce RBAC/ABAC with tenant and account scope.
+- Use TLS for every network hop, managed secret rotation, least-privilege database roles, and a privileged posting procedure for ledger writes.
+- Rate-limit authentication and money movement; evaluate device, sanctions, fraud, and transaction limits before posting.
+
+- Separate database roles for migration, posting, support reads, reporting, audit, and break-glass administration.
+- Enable tenant row-level security from trusted connection context; only the posting routine may write ledger tables.
+
+### Data Protection
+
+- Encrypt databases, backups, and object storage; use envelope encryption or tokenization for account numbers and regulated PII.
+- Apply data classification, jurisdiction-aware residency, purpose-limited access, and documented retention/deletion schedules.
+- Test encrypted backup restoration and cryptographic key recovery; preserve legally required ledger records when PII is anonymized.
+
+- Retain ledger and regulatory audit evidence for its legal period while anonymizing or cryptographically erasing removable PII.
+- Archive reconciled partitions only to encrypted immutable storage after restore testing; keep KYC/AML files in a restricted bounded context referenced by opaque ID.
+
+### Logging
+
+- Emit structured operational logs with timestamp, service, environment, trace/request ID, severity, outcome, latency, and stable error code.
+- Redact credentials, tokens, raw account identifiers, PII, and transaction payloads; use sampling only for non-error diagnostic events.
+- Centralize logs with access controls, alerting, clock synchronization, and retention appropriate to incident investigation.
+
+### Audit Logging
+
+- Record actor, delegated authority, action, resource, reason, request ID, source, before/after hashes, and outcome for privileged and financial actions.
+- Commit audit records atomically with the business transition, then copy them to tamper-evident or write-once storage.
+- Restrict audit access, monitor gaps or alteration attempts, and retain records for the applicable financial and regulatory period.
 
 ## Validation checklist
 

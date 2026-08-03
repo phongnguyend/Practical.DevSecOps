@@ -618,40 +618,257 @@ CREATE INDEX ix_audit_resource_time
 
 Valid parcel transitions, single current custodian, manifest/route overlap, aggregate shipment totals, and acceptance of late source events require a transactional event-ingestion procedure or deferred triggers. Tracking, custody, measurement, attempt, and proof records are append-only; normal application roles must not update or delete them.
 
-## Core flows
+## Main use-case sequence diagrams
 
-### Create shipment
+Read the diagrams from top to bottom. The sequence follows the business lifecycle, with alternative and failure paths branching from the relevant step.
+
+**Lifecycle:** Create → pick up → transfer custody → sort and line-haul → deliver → retry failure → return
+
+### 1. Create a shipment and label
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Parcel API
+    participant Rating as Rating/Policy Service
+    participant DB as PostgreSQL
+    participant Label as Label Worker
+    participant Store as Object Store
+
+    Customer->>API: Create shipment(parcels, addresses, service, key)
+    API->>DB: Claim idempotency key
+    API->>Rating: Validate restrictions and calculate price
+    Rating-->>API: Rate and rule versions
+    API->>DB: Insert snapshots, parcels, tracking IDs, charges, events
+    API->>DB: Insert label command in outbox; COMMIT
+    API-->>Customer: Shipment and tracking numbers
+    DB-->>Label: Publish label command
+    Label->>Store: Store versioned label artifact
+    Label->>DB: Save checksum/reference; emit LABEL_READY
+```
+
+#### Flow details
 
 1. Claim the idempotency key and validate customer, service, address, parcel limits, restricted goods, and pickup window.
 2. Calculate price from a recorded zone/rate-card version.
 3. Insert shipment, address/service/price snapshots, parcels, tracking numbers, initial events, charges, and outbox records in one transaction.
-4. Generate label artifacts asynchronously; store checksum/version metadata and emit `LABEL_READY`.
+4. Generate labels asynchronously, retain checksum/version metadata, and emit `LABEL_READY`.
 
-### Scan and transfer custody
+### 2. Schedule and complete pickup
 
-1. Deduplicate `(device_id, source_event_id)` and retain both device and receive timestamps.
-2. Validate parcel, facility/route/manifest context and expected transition. Flag but retain suspicious events for investigation.
-3. Append tracking/custody events, update the parcel projection with optimistic versioning, and publish through the outbox atomically.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Parcel API
+    participant Planner as Pickup Planner
+    participant DB as PostgreSQL
+    actor Courier
 
-### Deliver parcel
+    Customer->>API: Request pickup(shipment, window, address)
+    API->>DB: Validate shipment readiness and service area
+    API->>Planner: Find capacity and route slot
+    Planner-->>API: Proposed assignment/window
+    API->>DB: Reserve slot; create pickup stop and outbox atomically
+    API-->>Customer: Pickup confirmed
+    DB-->>Courier: Publish pickup assignment
+    Courier->>DB: Scan parcels and record custody at pickup
+    DB-->>Customer: Publish PICKED_UP status
+```
 
-Lock the parcel/assignment, confirm courier custody and geofence/policy, insert the attempt and proof reference, transition the parcel, update route/stop progress, and emit the public event in one transaction. Redelivery or return-to-sender is a new planned flow, never history mutation.
+### 3. Scan and transfer custody
 
-## Consistency, indexing, and scale
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Operator
+    participant Device as Scan Device
+    participant API as Tracking API
+    participant DB as PostgreSQL
+    participant Bus as Event Bus
 
-- Use optimistic versions for parcel/route state and locks for manifest close, custody handoff, and delivery completion.
-- GiST index zones, facilities, and stop locations. B-tree index tracking number/barcode hash, customer shipment history, route stops, and open exception SLAs.
-- Partition tracking/custody events, scans, audits, and outbox history by month; optionally hash-subpartition by tenant or parcel ID.
-- Add partial indexes for active routes, undelivered parcels, open exceptions, pending labels, expiring pickups, and unpublished outbox rows.
-- Use event/parcel IDs for keyset pagination. Search/read replicas can serve public history after acceptable lag; delivery commands use the primary.
-- Workers claim batches with `FOR UPDATE SKIP LOCKED`; all event consumers and device synchronization paths are idempotent.
+    Operator->>Device: Scan parcel at facility/vehicle
+    Device->>API: Event(device ID, source ID, timestamps, context)
+    API->>DB: Deduplicate device/source event
+    API->>DB: Validate parcel, route, manifest, and transition
+    alt Expected transition
+        API->>DB: Append tracking/custody event
+        API->>DB: Update parcel projection and outbox atomically
+        DB-->>Bus: Publish tracking update
+    else Suspicious transition
+        API->>DB: Retain event; flag exception for investigation
+    end
+    API-->>Device: Accepted/current parcel state
+```
 
-## Security and operations
+#### Flow details
 
-- Encrypt names, addresses, phones, declared contents, proof, and precise locations; tokenize public tracking access and rate-limit enumeration.
-- Restrict couriers to assigned work and minimum recipient data. Log all proof/address access and use short-lived object URLs.
-- Apply tenant row-level security, least-privilege operational roles, immutable audit events, encrypted backups, and retention-specific media deletion.
-- Run regional PostgreSQL HA with point-in-time recovery and off-domain backups. Test restore, device replay, projection rebuild, and outbox recovery.
+1. Deduplicate `(device_id, source_event_id)` while retaining device and receive timestamps.
+2. Validate the parcel, facility, route, manifest, and expected transition; suspicious events are flagged but retained.
+3. Append tracking/custody events, update the parcel projection with optimistic versioning, and write the outbox record atomically.
+
+### 4. Sort parcels and dispatch a manifest
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Operator
+    participant Scanner as Facility Scanner
+    participant API as Network API
+    participant DB as PostgreSQL
+    participant Planner as Route Planner
+
+    Operator->>Scanner: Scan parcel into facility/container
+    Scanner->>API: Sort event(parcel, chute, source ID)
+    API->>DB: Deduplicate; validate route and custody
+    API->>DB: Append sort/container event atomically
+    Planner->>DB: Build manifest from eligible parcels
+    Operator->>API: Seal and dispatch manifest
+    API->>DB: Lock manifest/parcels; record seal and custody transfer
+    API->>DB: Set IN_TRANSIT and write outbox atomically
+```
+
+### 5. Deliver a parcel
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Courier
+    participant App as Courier App
+    participant API as Delivery API
+    participant Proof as Proof Object Store
+    participant DB as PostgreSQL
+    actor Recipient
+
+    Courier->>App: Capture recipient/signature/photo
+    App->>Proof: Upload encrypted proof artifact
+    Proof-->>App: Opaque proof reference and checksum
+    App->>API: Complete stop(parcel, location, proof reference)
+    API->>DB: Lock parcel and assignment
+    API->>DB: Verify custody, geofence, and delivery policy
+    API->>DB: Insert attempt; set DELIVERED; advance route; emit event
+    API-->>App: Delivery confirmed
+    DB-->>Recipient: Publish delivery notification
+```
+
+#### Flow details
+
+Lock the parcel and assignment, confirm courier custody and geofence/policy, insert the attempt and proof reference, transition the parcel, update route/stop progress, and emit the public event in one transaction. Redelivery and return-to-sender are new planned flows, never mutations of delivery history.
+
+### 6. Handle a failed delivery attempt
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Courier
+    participant App as Courier App
+    participant API as Delivery API
+    participant DB as PostgreSQL
+    actor Recipient
+
+    Courier->>App: Record failed attempt(reason, evidence)
+    App->>API: Submit attempt(parcel, location, timestamp)
+    API->>DB: Verify assignment/custody; insert immutable attempt
+    API->>DB: Apply attempt policy and update parcel projection
+    alt Attempts remain and recipient reschedules
+        DB-->>Recipient: Offer redelivery windows
+        Recipient->>API: Select new window
+        API->>DB: Create new delivery stop and outbox event
+    else Attempts exhausted
+        API->>DB: Transition to RETURN_PLANNED; emit routing command
+    end
+```
+
+### 7. Return a parcel to sender
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Planner as Return Planner
+    participant DB as PostgreSQL
+    actor Courier
+    actor Sender
+
+    DB-->>Planner: Publish RETURN_PLANNED event
+    Planner->>DB: Create versioned reverse route and assignments
+    DB-->>Courier: Return pickup/transfer tasks
+    Courier->>DB: Append custody scans along reverse route
+    Courier->>DB: Record return delivery and proof reference
+    DB->>DB: Set RETURNED; finalize charges; append outbox atomically
+    DB-->>Sender: Return delivered notification
+```
+
+
+
+## Non-functional Requirements
+
+The targets below are initial service objectives for normal network operation and require peak-season validation.
+
+### Exception Handling
+
+- Return stable error codes and correlation IDs to customer, courier, facility, and device clients.
+- Accept offline or delayed scans idempotently, retain event/receive times, and flag impossible custody or route transitions instead of discarding evidence.
+- Move exhausted label, routing, notification, and carrier retries to controlled dead-letter workflows with an owner and SLA.
+
+- Use optimistic parcel/route versions and locks for manifest close, custody handoff, and delivery completion; device synchronization and consumers remain idempotent.
+- Workers claim bounded batches with `FOR UPDATE SKIP LOCKED`.
+
+### Availability
+
+- Target 99.95% monthly availability for shipment creation/tracking and 99.99% for custody-scan ingestion.
+- Buffer scans on devices or gateways during outages and replay them in source order after durable connectivity returns.
+- Use multi-zone database failover with RPO ≤ 5 minutes and RTO ≤ 30 minutes; restore custody projections from immutable events.
+
+- Use regional PostgreSQL HA, point-in-time recovery, and off-domain backups; test restore, offline-device replay, projection rebuild, and outbox recovery.
+- Serve lag-tolerant public history from replicas while all delivery commands use the primary.
+
+### Scalability
+
+- Scale shipment, label, tracking, routing, and notification components independently.
+- Partition tracking/custody events by time and network region; distribute consumers by parcel or route key to preserve ordering.
+- Support peak-season bursts with queue backpressure, batch manifest processing, and horizontal scan-ingestion capacity.
+
+- Geospatially index zones, facilities, and stops; index tracking/barcode hashes, customer history, route stops, and exception SLAs.
+- Partition tracking, custody, scan, audit, and outbox history by month and optionally tenant/parcel hash; add partial indexes for active operational work.
+
+### Performance
+
+- Target p95 ≤ 300 ms for shipment creation excluding asynchronous label rendering and p95 ≤ 150 ms for current tracking projection reads.
+- Durably acknowledge scans within 200 ms at normal load and publish public tracking updates within 2 seconds.
+- Use keyset pagination for history, small locked batches for routing work, and asynchronous proof/label processing.
+
+- Use event/parcel keyset pagination and bounded worker batches.
+
+### Security
+
+- Authenticate facility devices and courier apps with rotatable device credentials; enforce scoped customer, courier, operator, and support permissions.
+- Use TLS, signed events, replay protection, secret rotation, rate limits, and network segmentation for facility integrations.
+- Restrict delivery override, custody correction, proof access, and address lookup to explicitly authorized roles.
+
+- Tokenize public tracking access, rate-limit enumeration, restrict couriers to assigned work, and use short-lived proof-object URLs.
+
+### Data Protection
+
+- Encrypt addresses, contacts, location data, customs/restricted-goods references, proofs, databases, backups, and object storage.
+- Minimize precise location and proof retention, apply regional residency, and mask recipient data after the fulfillment window.
+- Use opaque references and checksums for proof/label objects and test encrypted restore plus key recovery.
+
+- Apply retention-specific deletion to delivery media and minimize recipient data exposed to couriers.
+
+### Logging
+
+- Emit structured logs with trace, shipment/parcel pseudonymous IDs, device/source event ID, facility, operation, latency, and error code.
+- Do not log raw addresses, phone numbers, signatures, images, restricted-goods details, or authentication material.
+- Monitor scan gaps, stale manifests, route backlog, duplicate rates, label failures, and delayed public-event publication.
+
+### Audit Logging
+
+- Append custody transfers, manual tracking corrections, manifest sealing, route changes, delivery overrides, proof access, and return decisions.
+- Record actor/device, authority, reason, event and receive timestamps, request/source ID, before/after state hashes, and outcome.
+- Replicate audit records to tamper-evident storage and regularly verify chain completeness against parcel event history.
+
+- Record every proof and address access in immutable audit events.
 
 ## Validation checklist
 

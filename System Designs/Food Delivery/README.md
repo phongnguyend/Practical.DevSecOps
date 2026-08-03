@@ -605,35 +605,251 @@ CREATE INDEX ix_audit_resource_time
 
 Allowed order/delivery transitions, promotion budgets, order-header totals versus all item rows, and refund totals across multiple refund rows require a transactional command procedure or deferred triggers. Accepted order snapshots and status events should be protected by immutability triggers; normal application roles should not update them directly.
 
-## Order lifecycle and saga
+## Main use-case sequence diagrams
+
+Read the diagrams from top to bottom. The sequence follows the business lifecycle, with alternative and failure paths branching from the relevant step.
+
+**Lifecycle:** Discover and price → place and accept → cancel/compensate branch or dispatch → track and deliver → settle → review
+
+### 1. Browse a restaurant and price a basket
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Marketplace API
+    participant Catalog as Catalog Cache/Search
+    participant Pricing as Pricing/Promotion Service
+    participant DB as PostgreSQL
+
+    Customer->>API: Browse nearby restaurants(location, filters)
+    API->>Catalog: Search open branches and menus
+    Catalog-->>API: Restaurants and menu versions
+    API-->>Customer: Available restaurants and items
+    Customer->>API: Price basket(items, address, promo)
+    API->>Pricing: Calculate items, tax, fees, delivery, discount
+    Pricing->>DB: Validate promotion and current rule versions
+    Pricing-->>API: Itemized expiring quote
+    API-->>Customer: Basket total and quote expiry
+```
+
+### 2. Place and accept an order
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Ordering API
+    participant DB as PostgreSQL
+    participant Pay as Payment Provider
+    participant Restaurant
+    participant Saga as Order Saga Worker
+
+    Customer->>API: Place order(basket, address, payment, key)
+    API->>DB: Claim key; price and snapshot order
+    API->>DB: Reserve inventory/promotion; set PENDING_PAYMENT
+    API->>Pay: Authorize payment with stable command ID
+    Pay-->>API: Authorization result
+    API->>DB: Record authorization; set PLACED; write outbox
+    API-->>Customer: Order placed
+    Saga->>Restaurant: Request acceptance
+    alt Restaurant accepts
+        Restaurant-->>Saga: Accepted
+        Saga->>DB: Set RESTAURANT_ACCEPTED; append event/outbox
+    else Rejected or timed out
+        Restaurant-->>Saga: Rejected/timeout
+        Saga->>Pay: Void authorization or request refund
+        Saga->>DB: Release reservations; set CANCELLED atomically
+    end
+```
+
+#### Flow details
 
 Typical order states are `DRAFT`, `PENDING_PAYMENT`, `PLACED`, `RESTAURANT_ACCEPTED`, `PREPARING`, `READY_FOR_PICKUP`, `PICKED_UP`, `DELIVERED`, `CANCELLED`, and `FAILED`.
 
 1. Price the basket, claim idempotency, snapshot lines/address/rules, and reserve promotion/inventory in one transaction.
-2. Authorize payment through the provider, then process the callback idempotently. Do not hold a database transaction across the remote call.
-3. Ask the branch to accept. On rejection/timeout, release stock/promotion and void/refund payment through compensating commands.
-4. Create delivery and dispatch offers. Acceptance uses an atomic conditional update/partial unique constraint.
-5. Capture payment at the configured milestone and release restaurant/courier settlement through a separate accounting/ledger service.
-6. Every transition writes its state event and transactional outbox record in the same commit.
+2. Authorize payment remotely and process its callback idempotently; never hold a database transaction across the call.
+3. Ask the branch to accept. Rejection or timeout releases stock/promotion and voids or refunds payment through compensating commands.
 
-Saga steps store command IDs, attempt counts, deadlines, and last errors so workers can safely resume after crashes.
+Saga steps retain command IDs, attempt counts, deadlines, and last errors so a worker can safely resume after a crash.
 
-## Consistency, indexing, and scale
+### 3. Customer cancellation and compensation
 
-- Use optimistic `version` checks for user/restaurant updates and row locks for scarce inventory, promotion quotas, and assignment claims.
-- Index published menus by branch/effective window; orders by customer/date and branch/status/scheduled time; active delivery work by courier/status.
-- Add GiST indexes to branch and courier locations, plus partial indexes for open orders, expiring offers, pending payments, and unpublished outbox rows.
-- Partition high-volume order events, delivery events, payment attempts, audit events, and outbox history by month.
-- Use keyset pagination for order/event history. Search/menu discovery can use a derived search index; checkout always revalidates PostgreSQL data.
-- Workers claim small batches with `FOR UPDATE SKIP LOCKED`. Consumers and callbacks remain idempotent.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Ordering API
+    participant Policy as Cancellation Policy
+    participant DB as PostgreSQL
+    participant Pay as Payment Provider
+    participant Dispatch
 
-## Security and operations
+    Customer->>API: Cancel order(reason, key)
+    API->>Policy: Evaluate order milestone and cancellation fee
+    Policy-->>API: Allowed with compensation plan
+    API->>DB: Conditional transition to CANCELLING
+    par Stop fulfillment
+        API->>Dispatch: Cancel open offers/assignment
+    and Compensate payment
+        API->>Pay: Void or refund with stable command ID
+    end
+    API->>DB: Release inventory/promo; record fee/refund; set CANCELLED
+    API-->>Customer: Cancellation and refund status
+```
 
-- Encrypt PII/address fields, tokenize payment methods, use signed short-lived proof/media URLs, and never expose restaurant/courier personal data unnecessarily.
-- Apply tenant row-level security, least-privilege roles, immutable audit events, and explicit customer-support access logging.
-- Minimize precise courier-location retention and restrict it by purpose and time window.
+### 4. Dispatch and assign a courier
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Restaurant
+    participant Dispatch
+    actor Courier
+    participant DB as PostgreSQL
+    actor Customer
+
+    Restaurant->>DB: Mark order READY_FOR_PICKUP
+    DB-->>Dispatch: Publish delivery requested from outbox
+    Dispatch-->>Courier: Offer delivery
+    Courier->>Dispatch: Accept offer
+    Dispatch->>DB: Atomically assign courier and close other offers
+    DB-->>Courier: Assignment and pickup details
+    DB-->>Customer: Courier-assigned status
+```
+
+#### Flow details
+
+Create the delivery and dispatch offers after restaurant acceptance. Courier acceptance uses an atomic conditional update plus the partial unique constraint so only one offer can win.
+
+### 5. Track, deliver, and settle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Courier
+    participant App as Courier App
+    participant Location as Location Ingestion
+    participant DB as Location Store/PostgreSQL
+    participant Push as Realtime Gateway
+    participant Pay as Payment Provider
+    actor Customer
+
+    Courier->>DB: Confirm pickup with proof reference
+    DB-->>Customer: Publish PICKED_UP status
+    loop During active delivery
+        App->>Location: GPS update(trip, sequence, timestamp)
+        Location->>DB: Deduplicate and store latest valid position
+        Location->>Push: Publish throttled location/ETA update
+        Push-->>Customer: Courier position and ETA
+    end
+    opt Location becomes stale
+        Location->>DB: Open tracking exception
+        Push-->>Customer: Location temporarily unavailable
+    end
+    Courier->>DB: Confirm delivery with proof reference
+    DB-->>Customer: Publish DELIVERED status
+    DB-->>Pay: Emit idempotent capture command
+    Pay-->>DB: Capture callback
+    DB->>DB: Record payment and settlement obligations atomically
+```
+
+#### Flow details
+
+Capture payment at the configured milestone and release restaurant/courier settlement through the accounting or ledger service. Every order, delivery, and payment transition writes its state event and transactional outbox record in the same commit.
+
+### 6. Rate an order and courier
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Review API
+    participant DB as PostgreSQL
+    participant Moderation
+    participant Aggregate as Rating Projection Worker
+
+    Customer->>API: Submit restaurant/courier rating and review
+    API->>DB: Verify delivered order and reviewer ownership
+    API->>DB: Insert immutable review version and outbox event
+    API-->>Customer: Review received
+    DB-->>Moderation: Publish review-created event
+    Moderation->>DB: Store moderation decision
+    DB-->>Aggregate: Publish approved rating
+    Aggregate->>DB: Update rebuildable rating aggregates
+```
+
+
+
+## Non-functional Requirements
+
+The targets below are initial objectives for normal regional operation; peak-event capacity must be tested separately.
+
+### Exception Handling
+
+- Use stable error codes and correlation IDs for customer, restaurant, and courier clients; distinguish validation, conflict, retryable, and terminal failures.
+- Persist saga commands before remote calls, retry with bounded backoff, and compensate inventory, promotions, payments, and assignments idempotently.
+- Route exhausted retries and inconsistent order/payment/delivery states to a dead-letter queue and operations dashboard.
+
+- Use optimistic versions for ordinary updates and row locks for inventory, promotion quotas, and assignment claims; callbacks and consumers remain idempotent.
+- Workers claim only small batches with `FOR UPDATE SKIP LOCKED`.
+
+### Availability
+
+- Target 99.95% monthly availability for ordering and active-delivery APIs and 99.9% for catalog/review features.
+- Keep active-order state, courier assignment, and delivery confirmation available when search, recommendations, or reviews are degraded.
+- Deploy across failure domains with tested failover; target RPO ≤ 5 minutes and RTO ≤ 30 minutes for transactional data.
+
 - Use regional PostgreSQL HA, point-in-time recovery, encrypted off-domain backups, and tested restore/failover procedures.
-- Route checkout and state-changing reads to the primary. Replicas and the analytics warehouse handle reporting.
+- Route checkout and state-changing reads to the primary; reporting uses replicas or the analytics warehouse.
+
+### Scalability
+
+- Horizontally scale marketplace, ordering, dispatch, location-ingestion, and notification services independently.
+- Partition orders and delivery events by region/time; shard dispatch and location workloads by service area.
+- Apply queue backpressure, admission control, restaurant-level throttles, and load shedding for nonessential updates during meal peaks.
+
+- Index menus by branch/effective window, orders by customer/date and branch/status/time, and delivery work by courier/status.
+- Add geospatial indexes for branch/courier locations and partial indexes for open orders, expiring offers, pending payments, and unpublished outbox events.
+- Partition order, delivery, payment-attempt, audit, and outbox history by month.
+
+### Performance
+
+- Target p95 ≤ 300 ms for basket pricing and order-state commands, excluding payment-provider time.
+- Target p95 ≤ 1 second from accepted courier location update to customer-visible position, with throttling and stale-location detection.
+- Target dispatch candidate generation within 2 seconds for the normal search radius and use asynchronous notifications.
+
+- Use keyset pagination for order/event history; derived search indexes may serve discovery, but checkout must revalidate PostgreSQL state.
+
+### Security
+
+- Enforce scoped roles for customers, restaurant staff, couriers, support, finance, and administrators with step-up authentication for sensitive actions.
+- Validate signed provider callbacks, protect APIs with TLS, rate limits, bot defenses, secret rotation, and device/session controls.
+- Reveal customer/courier contact and precise location only during the necessary fulfillment window.
+
+- Apply tenant row-level security and least-privilege operational roles; use signed short-lived URLs for delivery proof and media.
+
+### Data Protection
+
+- Encrypt addresses, contact details, location history, proof artifacts, databases, and backups; tokenize payment instruments.
+- Apply strict retention to precise location and delivery proof, retaining only what fraud, safety, tax, and legal requirements justify.
+- Separate analytics identifiers from direct identity and honor deletion/consent requirements without corrupting financial records.
+
+- Minimize precise courier-location retention and expose restaurant, courier, and customer personal data only for a documented purpose and time window.
+
+### Logging
+
+- Emit structured logs with trace/order/delivery IDs, service area, state transition, dependency outcome, latency, and error code.
+- Exclude raw addresses, phone numbers, messages, payment data, proof images, and precise coordinates from general logs.
+- Alert on saga backlog, dispatch saturation, stale courier locations, payment callback failures, and elevated cancellation rates.
+
+### Audit Logging
+
+- Record menu/price changes, promotion overrides, manual order transitions, refunds, courier reassignment, proof access, and privileged data access.
+- Include actor, role, reason, request ID, before/after state hashes, and outcome in append-only audit events.
+- Replicate audit records to tamper-evident storage with access reviews and retention aligned to finance, safety, and marketplace obligations.
+
+- Immutably record customer-support access to addresses, proof, payments, and other protected order data.
 
 ## Validation checklist
 

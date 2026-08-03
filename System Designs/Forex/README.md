@@ -553,42 +553,247 @@ CREATE INDEX ix_audit_resource_time
 
 Order transition validity, total fills across execution rows, position projection updates, margin availability, and per-currency ledger balancing require a sequenced command procedure or deferred triggers because they aggregate multiple rows. Normal application roles must not update executions, order events, or posted ledger rows directly; busts/corrections append linked facts.
 
-## Transaction flows
+## Main use-case sequence diagrams
 
-### Accept order
+Read the diagrams from top to bottom. The sequence follows the business lifecycle, with alternative and failure paths branching from the relevant step.
 
-1. Claim `(trading_account_id, client_order_id)` and canonical request hash.
-2. Validate account/instrument/session, scales, limits, and quote freshness.
-3. Lock the trading account risk row, recompute required margin using a recorded price/valuation sequence, and create a reservation.
-4. Insert the order and `ACCEPTED` event with the engine's sequence, then write an outbox event in the same commit.
+**Lifecycle:** Build market state → accept order → cancel/replace branch → execute → control risk → settle and reconcile
 
-### Apply execution
+### 1. Ingest market data
 
-1. Deduplicate the venue execution and process it in authoritative execution-sequence order.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Venue as Market Data Venue
+    participant Feed as Feed Handler
+    participant DB as Time-Series Store
+    participant Risk as Risk Engine
+    participant API as Quote API
+
+    Venue->>Feed: Tick/book update(sequence, timestamp)
+    Feed->>Feed: Validate schema, ordering, and staleness
+    alt Next valid sequence
+        Feed->>DB: Append normalized market-data event
+        Feed-->>Risk: Publish valuation update
+        Feed-->>API: Refresh client quote cache
+    else Gap or stale update
+        Feed->>DB: Record feed-quality incident
+        Feed->>Venue: Request snapshot/recovery
+    end
+```
+
+### 2. Submit and accept an order
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Trader
+    participant API as Trading API
+    participant Market as Market Data
+    participant Risk as Risk Engine
+    participant DB as PostgreSQL
+    participant Engine as Matching/Execution Engine
+
+    Trader->>API: Submit order(client order ID, terms)
+    API->>DB: Claim client order ID and request hash
+    API->>Market: Read current quote and valuation sequence
+    Market-->>API: Price snapshot
+    API->>Risk: Validate limits and required margin
+    Risk-->>API: Approved with reservation amount
+    API->>DB: Lock risk row; reserve margin
+    API->>DB: Insert ACCEPTED order, event, audit, and outbox
+    API-->>Trader: Order accepted
+    DB-->>Engine: Publish accepted order from outbox
+```
+
+#### Flow details
+
+1. Claim `(trading_account_id, client_order_id)` with the canonical request hash.
+2. Validate the account, instrument, session, scales, limits, and quote freshness.
+3. Lock the trading-account risk row, recompute margin from a recorded price/valuation sequence, and create the reservation.
+4. Insert the order, `ACCEPTED` event, engine sequence, and outbox event in the same commit.
+
+### 3. Cancel or replace an open order
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Trader
+    participant API as Trading API
+    participant DB as PostgreSQL
+    participant Engine as Execution Engine
+
+    Trader->>API: Cancel order(client request ID)
+    API->>DB: Claim request and load current order state
+    API->>Engine: Cancel using stable command ID
+    alt Remaining quantity cancelled
+        Engine-->>API: Cancel acknowledgement and engine sequence
+        API->>DB: Lock order; append CANCELLED event
+        API->>DB: Release remaining margin; write audit/outbox atomically
+        API-->>Trader: Cancelled quantity and final state
+    else Fill won the race
+        Engine-->>API: Already filled/partially filled state
+        API->>DB: Apply authoritative executions before cancel result
+        API-->>Trader: Current filled and remaining quantity
+    end
+```
+
+### 4. Apply an execution
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Venue as Execution Venue
+    participant Consumer as Execution Consumer
+    participant DB as PostgreSQL
+    participant Bus as Event Bus
+    actor Trader
+
+    Venue->>Consumer: Execution(venue ID, sequence, fill)
+    Consumer->>DB: Deduplicate venue execution ID
+    alt Next expected sequence
+        Consumer->>DB: Lock order, position, and cash rows
+        Consumer->>DB: Insert execution; update fill and position
+        Consumer->>DB: Release margin; post fees/settlement
+        Consumer->>DB: Append events/audit/outbox; COMMIT
+        DB-->>Bus: Publish execution and order-state events
+        Bus-->>Trader: Fill notification
+    else Sequence gap
+        Consumer->>DB: Persist gap; defer execution and alert
+    else Duplicate
+        DB-->>Consumer: Previously applied result
+    end
+```
+
+#### Flow details
+
+1. Deduplicate the venue execution and process it in authoritative sequence order.
 2. Lock the order and affected position/cash rows in deterministic order.
 3. Insert the immutable execution, advance filled quantity/status, update lots and position, release proportional margin, and post fees/settlement.
 4. Record order events, audit data, and outbox events atomically.
-5. On uncertain commit, retry the same venue execution ID; uniqueness makes the operation safe.
+5. After an uncertain commit, retry the same venue execution ID; uniqueness makes the operation safe.
 
-If an execution arrives out of sequence, hold it in a gap table/queue and alert after a bounded delay rather than silently deriving a wrong position.
+An out-of-sequence execution is retained in a gap table or queue and alerts after a bounded delay; it must not silently produce an incorrect position.
 
-## Consistency and scale
+### 5. Handle a margin breach and liquidation
 
-- A single sequencer per account or partition greatly reduces order/execution races. At database scale, use row locks or optimistic versions with bounded retries.
-- Partition `market_quotes` by time (and subpartition/hash by instrument when needed); partition executions, order events, ledger entries, and audits by month.
-- Index open orders by `(tenant_id, trading_account_id, status, created_at)`, executions by account/instrument/sequence, and positions by account.
-- Use partial indexes for open orders, active risk reservations, unprocessed gaps, and unpublished outbox events.
-- Use keyset pagination for executions and history. Keep operational queries away from raw tick partitions.
-- Reconcile orders to executions, positions to ordered executions/lots, and cash projections to ledger entries. All three checks are required.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Market as Market Data
+    participant Risk as Risk Engine
+    participant DB as PostgreSQL
+    participant Liquidator as Liquidation Worker
+    participant Engine as Execution Engine
+    actor Trader
 
-## Security, compliance, and recovery
+    Market-->>Risk: New valuation price/sequence
+    Risk->>DB: Revalue positions and margin projection
+    alt Maintenance margin breached
+        Risk->>DB: Freeze new risk; create margin call and outbox
+        DB-->>Trader: Margin-call notification
+        DB-->>Liquidator: Publish liquidation command after policy deadline
+        Liquidator->>Engine: Submit reduce-only orders
+        Engine-->>Liquidator: Execution reports
+        Liquidator->>DB: Apply fills and recompute margin atomically
+    end
+```
 
-- Use tenant row-level security, separate posting/execution/reporting roles, encrypted PII, tokenized bank instruments, and append-only audit records.
-- Record quote ID, model/rule version, actor, request ID, device/session risk reference, and reason codes for material trading decisions.
-- Apply jurisdiction-specific suitability, leverage, best-execution, market-abuse, AML, and record-retention rules outside direct client control.
-- Run PostgreSQL with synchronous regional HA, point-in-time recovery, encrypted off-domain backups, and regular restore/failover tests.
-- Execution and ledger writes require the primary. Reporting and historical chart reads can use replicas/time-series storage.
-- Outbox consumers and inbound venue adapters must be idempotent and preserve source sequence numbers.
+### 6. Settle trades and reconcile cash
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Scheduler
+    participant DB as PostgreSQL
+    participant Custodian
+    participant Recon as Reconciliation Worker
+    participant Ops as Operations
+
+    Scheduler->>DB: Select due unsettled obligations
+    Scheduler->>Custodian: Send net settlement instruction with batch ID
+    Custodian-->>Scheduler: Accepted and settlement reference
+    Scheduler->>DB: Mark batch SUBMITTED; append audit/outbox
+    Custodian-->>Recon: Settlement confirmation/file
+    Recon->>DB: Match external lines to internal obligations
+    alt Fully matched
+        Recon->>DB: Post cash movements; mark SETTLED atomically
+    else Break detected
+        Recon->>DB: Record reconciliation break
+        Recon-->>Ops: Alert with unmatched references
+    end
+```
+
+
+
+## Non-functional Requirements
+
+The targets below are initial objectives; instrument, venue, and regulatory obligations may require stricter values.
+
+### Exception Handling
+
+- Reject invalid orders with stable protocol/business codes and correlation IDs without leaking risk models or counterparty data.
+- Retry ambiguous submissions and executions only with the same client/venue identifiers; quarantine sequence gaps instead of applying them out of order.
+- Escalate reconciliation breaks, stale prices, negative-margin anomalies, and exhausted settlement retries to operations with trading safeguards.
+
+- Serialize commands per account or partition where possible; otherwise use row locks or optimistic versions with bounded retries.
+- Reconcile orders to executions, positions to ordered executions/lots, and cash projections to ledger entries as three independent controls.
+
+### Availability
+
+- Target 99.99% monthly availability during configured trading sessions for order entry, execution ingestion, and risk controls.
+- Use multi-zone failover and replicated event recovery; target RPO near zero for accepted orders/executions and RTO ≤ 15 minutes.
+- Fail closed for stale market data or unavailable risk controls while keeping cancellation and risk-reduction operations available where safe.
+
+- Use synchronous regional HA, point-in-time recovery, encrypted off-domain backups, and regular restore/failover tests.
+- Send execution and ledger writes to the primary; historical charts and reporting may use replicas or time-series storage.
+
+### Scalability
+
+- Partition orders, executions, market data, and audit history by venue/instrument and time while preserving account-level ordering.
+- Scale feed handlers, read APIs, valuation workers, and settlement workers independently; isolate hot instruments and accounts.
+- Use bounded queues, gap detection, snapshots, and backpressure to survive market-data and execution bursts.
+
+- Partition quotes by time and optionally instrument hash; partition executions, order events, ledger entries, and audits by month.
+- Index open orders by tenant/account/status/time, executions by account/instrument/sequence, and positions by account; add partial indexes for active orders, reservations, gaps, and outbox rows.
+
+### Performance
+
+- Target p99 ≤ 20 ms for internal order validation/persistence and p99 ≤ 10 ms for execution application, excluding venue transit, when deployed near the venue.
+- Publish accepted orders and fills from the outbox within 100 ms at normal load.
+- Measure end-to-end percentiles by instrument and session; prevent analytics and reconciliation queries from contending with trading writes.
+
+- Use keyset pagination for execution history and keep operational queries away from raw tick partitions.
+
+### Security
+
+- Require strong MFA and scoped entitlements for traders, risk staff, operations, and administrators; enforce account, instrument, and notional limits.
+- Use mutual TLS or signed authenticated sessions for venue connectivity, managed secret/key rotation, and network segmentation.
+- Protect order interfaces against replay, abuse, unauthorized algorithms, and privilege escalation; require dual control for limit overrides.
+
+- Separate execution, posting, and reporting roles and enforce tenant row-level security.
+
+### Data Protection
+
+- Encrypt customer, account, order, execution, and settlement data in transit and at rest with controlled key rotation.
+- Enforce jurisdictional residency, market-record retention, legal hold, and purpose-limited access.
+- Mask client identities in analytics and nonproduction datasets while preserving deterministic references required for reconciliation.
+
+- Apply jurisdiction-specific suitability, leverage, best-execution, market-abuse, AML, and record-retention controls outside direct client influence.
+
+### Logging
+
+- Emit low-allocation structured logs with trace, client-order, venue-order, execution, instrument, sequence, latency, and stable result code.
+- Never log credentials, session keys, full client identity, or proprietary risk parameters; sample only noncritical high-volume diagnostics.
+- Synchronize clocks to an approved source and monitor feed gaps, latency outliers, rejected orders, queue depth, and settlement failures.
+
+### Audit Logging
+
+- Immutably record order lifecycle events, executions, cancels/replaces, risk decisions, limit changes, manual interventions, and data exports.
+- Preserve actor/algorithm identity, timestamps, source sequence, request hashes, before/after state, reason, and outcome.
+- Store regulatory audit copies in tamper-evident, access-controlled storage with verified completeness and mandated retention.
+
+- Retain quote/model/rule versions, actor, request ID, device/session risk reference, and reason codes for material trading decisions.
 
 ## Validation checklist
 

@@ -737,43 +737,281 @@ CREATE INDEX ix_audit_resource_time
 
 Itinerary continuity across adjacent legs, cargo totals versus booking/shipment totals, capacity totals across reservations, invoice totals versus all line rows, and payment allocations require locked transactional procedures or deferred triggers. Issued documents, shipment events, equipment events, and charge lines are immutable; changes append superseding records.
 
-## Core flows
+## Main use-case sequence diagrams
 
-### Quote and confirm booking
+Read the diagrams from top to bottom. The sequence follows the business lifecycle, with alternative and failure paths branching from the relevant step.
+
+**Lifecycle:** Quote and book → plan itinerary → consolidate/load → clear customs → track movement → issue documents → invoice and settle
+
+### 1. Quote and confirm a booking
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Shipper
+    participant API as Shipping API
+    participant Compliance
+    participant Rating as Routing/Rating
+    participant DB as PostgreSQL
+    participant Carrier
+
+    Shipper->>API: Request quote(lane, cargo, service)
+    API->>Compliance: Check sanctions and restricted goods
+    Compliance-->>API: Decision reference
+    API->>Rating: Find schedule and calculate itemized charges
+    Rating-->>API: Route/rate/schedule versions
+    API->>DB: Persist immutable quote snapshots
+    API-->>Shipper: Quote and validity window
+    Shipper->>API: Accept quote(idempotency key)
+    API->>DB: Lock capacity pools in deterministic order
+    API->>DB: Reserve capacity; create booking/events/outbox
+    API->>Carrier: Confirm using stable command ID
+    alt Carrier confirms
+        Carrier-->>API: Carrier booking reference
+        API->>DB: Confirm booking and reservations atomically
+        API-->>Shipper: Booking confirmed
+    else Rejected or timed out
+        API->>DB: Release reservations; record exception/state
+        API-->>Shipper: Booking not confirmed
+    end
+```
+
+#### Flow details
 
 1. Claim idempotency and validate party, lane, cargo, sanctions/restricted-goods decision, schedule, and rate validity.
-2. Persist route/rate/cargo/party snapshots and itemized quote charges.
-3. On acceptance, lock the relevant capacity pools in deterministic order, reserve within available limits, create the booking, state event, audit, and outbox records atomically.
-4. Remote carrier confirmation runs as an idempotent saga step; confirm or release reservations based on the response/timeout policy.
+2. Persist route, rate, cargo, party, and itemized-charge snapshots.
+3. On acceptance, lock capacity pools in deterministic order, reserve available capacity, and create the booking, state event, audit, and outbox records atomically.
+4. Run carrier confirmation as an idempotent saga step, confirming or releasing reservations according to its response and timeout policy.
 
-### Activate or revise itinerary
+### 2. Revise and activate an itinerary
 
-Insert a complete new itinerary version, validate leg continuity/time ordering and capacity, then atomically mark it active and supersede the prior version. Generate downstream document/notification amendments; never edit legs that supported issued documents.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Planner
+    participant API as Shipping API
+    participant Optimizer as Route Optimizer
+    participant DB as PostgreSQL
+    participant Worker as Amendment Worker
 
-### Ingest carrier event
+    Planner->>API: Request itinerary revision(shipment, constraints)
+    API->>Optimizer: Generate candidate legs and schedules
+    Optimizer-->>API: Versioned itinerary candidate
+    API->>DB: Validate continuity, timing, and capacity
+    API->>DB: Insert complete new itinerary version
+    API->>DB: Atomically activate new version and supersede prior one
+    DB-->>Worker: Publish itinerary-revised event
+    Worker->>DB: Create required document/notification amendments
+    API-->>Planner: New active itinerary
+```
 
-Deduplicate provider/source event ID, retain event and receive times, append the event, and update projections only if source priority/sequence and the state machine permit. Suspicious or contradictory events open an exception rather than disappearing.
+#### Flow details
 
-### Issue legal document
+Insert a complete new itinerary version, validate leg continuity, time ordering, and capacity, then atomically activate it and supersede the prior version. Generate downstream document and notification amendments; never edit legs that support issued documents.
 
-Build the document from immutable party/cargo/itinerary snapshots, store the encrypted object and checksum/signature externally, and commit its metadata/version. Amendments create a new version linked through `supersedes_document_id` and retain the original.
+### 3. Consolidate cargo and load equipment
 
-## Consistency, indexing, and scale
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Warehouse
+    participant API as Operations API
+    participant DB as PostgreSQL
+    participant Compliance
+    participant Carrier
+
+    Warehouse->>API: Add house shipments to consolidation
+    API->>DB: Lock consolidation, cargo, and capacity rows
+    API->>Compliance: Validate compatibility and dangerous goods rules
+    Compliance-->>API: Approved allocation
+    API->>DB: Save weight/volume/cost allocations
+    Warehouse->>API: Load cargo into equipment and apply seal
+    API->>DB: Validate equipment capacity; append load/equipment events
+    API->>DB: Finalize manifest and outbox atomically
+    DB-->>Carrier: Publish ready-to-load/manifest message
+```
+
+### 4. Submit customs filing and handle a hold
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Broker
+    participant API as Shipping API
+    participant Customs
+    participant DB as PostgreSQL
+    actor Operator
+
+    Broker->>API: Submit filing reference and document set
+    API->>Customs: File declaration with stable submission ID
+    Customs-->>API: Accepted filing reference/status
+    API->>DB: Save opaque filing reference and event atomically
+    Customs-->>API: Release or hold notification
+    alt Released
+        API->>DB: Record release; unblock affected legs
+        DB-->>Operator: Customs released
+    else Held
+        API->>DB: Record hold; open exception with SLA/owner
+        DB-->>Operator: Customs action required
+        Broker->>API: Submit amendment/additional evidence
+    end
+```
+
+### 5. Track a shipment event
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Carrier
+    participant Ingest as Event Ingestion
+    participant DB as PostgreSQL
+    participant Bus as Event Bus
+    actor Shipper
+
+    Carrier->>Ingest: Milestone(source event ID, sequence, times)
+    Ingest->>DB: Deduplicate provider/source event ID
+    Ingest->>DB: Append immutable shipment event
+    alt Sequence and transition are valid
+        Ingest->>DB: Update shipment projection and outbox atomically
+        DB-->>Bus: Publish public milestone
+        Bus-->>Shipper: Tracking notification
+    else Late but valid history
+        Ingest->>DB: Retain event without regressing projection
+    else Contradictory or suspicious
+        Ingest->>DB: Open exception case and preserve raw metadata
+    end
+```
+
+#### Flow details
+
+Deduplicate the provider/source event ID, retain event and receive times, and append the event. Update projections only when source priority, sequence, and the state machine permit. A suspicious or contradictory event opens an exception instead of disappearing.
+
+### 6. Issue or amend a legal document
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Operator
+    participant Docs as Document Service
+    participant DB as PostgreSQL
+    participant Store as Encrypted Object Store
+    participant Sign as Signature Service
+    actor Consignee
+
+    Operator->>Docs: Issue document(shipment, type)
+    Docs->>DB: Load immutable party/cargo/itinerary snapshots
+    Docs->>Docs: Render versioned legal document
+    Docs->>Sign: Sign document checksum
+    Sign-->>Docs: Signature reference
+    Docs->>Store: Store encrypted document object
+    Store-->>Docs: Object reference and checksum
+    Docs->>DB: Insert immutable document metadata and outbox
+    Docs-->>Consignee: Document-issued notification
+    opt Amendment required
+        Operator->>Docs: Amend prior document
+        Docs->>DB: Insert new version linked by supersedes_document_id
+        Docs-->>Consignee: Amendment notification
+    end
+```
+
+#### Flow details
+
+Build the document from immutable party, cargo, and itinerary snapshots; store its encrypted object and checksum/signature externally; then commit immutable metadata and version. An amendment inserts a new version linked through `supersedes_document_id` and retains the original.
+
+### 7. Invoice and settle shipment charges
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Finance
+    participant Billing
+    participant DB as PostgreSQL
+    participant Payment as Payment/Ledger Service
+    actor Customer
+
+    Finance->>Billing: Generate invoice(shipment, billable charges)
+    Billing->>DB: Lock eligible immutable charge lines
+    Billing->>DB: Insert invoice/lines; reconcile currency and totals
+    Billing->>DB: Mark charges billed; append audit/outbox atomically
+    Billing-->>Customer: Issue invoice and due date
+    Customer->>Payment: Pay invoice(reference, amount)
+    Payment-->>Billing: Idempotent settlement callback
+    Billing->>DB: Insert payment allocation; update paid/balance totals
+    alt Overpayment, failure, or currency mismatch
+        Billing->>DB: Reject allocation or open reconciliation exception
+    end
+```
+
+
+
+## Non-functional Requirements
+
+The targets below are initial objectives and must be aligned with carrier, customs, finance, and trade-lane agreements.
+
+### Exception Handling
+
+- Return stable error codes and correlation IDs while keeping carrier, customs, sanctions, and pricing internals private.
+- Retry carrier/customs/document/payment commands with stable IDs, bounded backoff, circuit breakers, and durable dead-letter workflows.
+- Preserve contradictory or late operational events, open owned exception cases, and use amendments or compensating charges instead of rewriting history.
 
 - Use optimistic aggregate versions and row locks for capacity reservation, itinerary activation, invoice allocation, and document issuance.
-- Index bookings/shipments by customer/date/status, legs by facility/time/status, equipment by tokenized number, events by shipment/time, and open exceptions by SLA.
-- Use GiST for facility/service-area geography. Partition events, equipment history, audits, and outbox history by month; optionally tenant-hash subpartition.
-- Add partial indexes for active capacity reservations, in-transit shipments, upcoming legs, missing documents, overdue invoices, open exceptions, and unpublished events.
-- Workers use `FOR UPDATE SKIP LOCKED`; inbound adapters and consumers are idempotent. Use keyset pagination for operational histories.
-- Reconcile capacity pools to active reservations, shipment projections to events, cargo/equipment totals, charges to invoice lines, and invoices to payment allocations.
+- Reconcile capacity to reservations, shipment projections to events, cargo/equipment totals, charges to invoice lines, and invoices to payment allocations.
 
-## Security, compliance, and recovery
+### Availability
 
-- Encrypt PII, commercial terms, contents, documents, seals, and precise tracking details; use short-lived object links and log every sensitive access.
-- Apply tenant row-level security and least-privilege roles for operations, customs, finance, customer service, audit, and integrations.
-- Record rule/screening versions and opaque decisions for sanctions, export control, dangerous goods, customs, and retention workflows.
-- Run PostgreSQL with regional HA, point-in-time recovery, encrypted off-domain backups, and regularly tested failover/restore/document recovery.
-- Operational commands/read-your-writes use the primary; replicas and a warehouse serve analytics and older tracking history.
+- Target 99.95% monthly availability for booking, tracking, and document APIs and 99.9% for optimization/reporting.
+- Keep tracking ingestion and exception recording available when optimization, notifications, or document rendering is degraded.
+- Use multi-zone failover with RPO ≤ 5 minutes and RTO ≤ 30 minutes; validate restoration of shipments, capacity, documents, and invoices.
+
+- Use regional PostgreSQL HA, point-in-time recovery, encrypted off-domain backups, and tested failover, restore, and document recovery.
+- Route commands and read-your-writes traffic to the primary; analytics and older tracking history may use replicas or a warehouse.
+
+### Scalability
+
+- Scale quote/rating, booking, tracking ingestion, document, optimization, and billing workers independently.
+- Partition shipment/equipment events, audit data, and outbox history by time and tenant; distribute processing by shipment or carrier key.
+- Isolate high-volume tenants/carriers with quotas, dedicated consumers, read replicas, and backpressure during feed bursts.
+
+- Index bookings/shipments by customer/date/status, legs by facility/time/status, equipment by tokenized number, events by shipment/time, and exceptions by SLA.
+- Partition event, equipment, audit, and outbox history by month and optionally tenant hash; add partial indexes for active operational and financial work.
+
+### Performance
+
+- Target p95 ≤ 500 ms for booking-state commands excluding carrier/compliance calls and p95 ≤ 200 ms for current tracking reads.
+- Durably acknowledge carrier events within 250 ms and update public projections within 5 seconds at normal load.
+- Run route optimization, document rendering, invoice generation, and large reconciliation asynchronously with observable deadlines.
+
+- Use geospatial indexes for facilities/service areas, keyset pagination for operational histories, and bounded `FOR UPDATE SKIP LOCKED` worker batches.
+
+### Security
+
+- Enforce scoped shipper, carrier, broker, customs, finance, operations, and audit roles with MFA for privileged actions.
+- Use TLS or mutual TLS for partner connections, signed webhook/file validation, secret rotation, rate limits, and tenant isolation.
+- Require dual control for sensitive document issuance, sanctions overrides, capacity overrides, and high-value financial adjustments.
+
+- Apply tenant row-level security and least-privilege roles for operations, customs, finance, service, audit, and integrations; use short-lived links for protected documents.
+
+### Data Protection
+
+- Encrypt party/contact data, cargo descriptions, trade documents, customs references, databases, backups, and object storage.
+- Apply country-specific residency, trade-record retention, legal hold, and purpose-limited access; minimize customs payloads stored locally.
+- Store document objects by opaque reference with checksum/signature verification and test encrypted backup/key recovery.
+
+- Retain rule/screening versions and opaque decisions for sanctions, export control, dangerous goods, customs, and retention workflows.
+
+### Logging
+
+- Emit structured logs with trace, tenant, shipment/booking pseudonymous IDs, carrier source ID, operation, latency, and stable error code.
+- Exclude raw trade-document contents, addresses, contact data, dangerous-goods emergency details, credentials, and payment data.
+- Monitor carrier feed gaps, capacity contention, document backlog, customs deadlines, exception SLA breaches, and reconciliation failures.
+
+### Audit Logging
+
+- Append booking/capacity decisions, itinerary activation, custody events, customs status, document issuance/amendment, charge changes, and payment allocation.
+- Include actor/partner identity, authority, reason, source sequence/time, request ID, before/after hashes, and outcome.
+- Replicate audit records and document integrity metadata to tamper-evident storage with restricted access and trade/regulatory retention.
+
+- Record every sensitive access to documents, commercial terms, cargo details, seals, and precise tracking data.
 
 ## Validation checklist
 

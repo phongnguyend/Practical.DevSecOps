@@ -544,18 +544,42 @@ CREATE INDEX ix_audit_resource_time
 
 A deferred constraint trigger must verify that each ledger transaction balances per currency and that entry currency equals ledger-account currency. The posting procedure must atomically enforce available funds and update projections; aggregate balance rules cannot be expressed as row-level `CHECK` constraints. Immutability triggers deny `UPDATE` and `DELETE` on posted transactions and entries.
 
-## Posting examples
+## Main use-case sequence diagrams
 
-### P2P transfer of 25 USD
+Read the diagrams from top to bottom. The sequence follows the business lifecycle, with alternative and failure paths branching from the relevant step.
 
-Both customer balances are liabilities of the wallet operator.
+**Lifecycle:** Fund wallet → transfer or spend → cash out → refund → secure/recover
 
-| Ledger account | Debit | Credit |
-|---|---:|---:|
-| Sender wallet liability | 25.00 | — |
-| Recipient wallet liability | — | 25.00 |
+### 1. Card-funded top-up
 
-### Card-funded top-up of 100 USD with a 2 USD fee
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Wallet API
+    participant Processor as Card Processor
+    participant DB as PostgreSQL Ledger
+    participant Worker as Settlement Worker
+
+    Customer->>API: Top up(amount, payment token, key)
+    API->>DB: Create PENDING top-up command
+    API->>Processor: Authorize/capture with stable command ID
+    Processor-->>API: Provider transaction reference
+    API->>DB: Post processor receivable, wallet liability, and fee
+    API->>DB: Mark top-up POSTED and write outbox atomically
+    API-->>Customer: Balance credited
+    Processor-->>Worker: Settlement or chargeback webhook
+    alt Settlement
+        Worker->>DB: Clear receivable against bank cash
+    else Chargeback
+        Worker->>DB: Post linked compensating entries
+        Worker->>DB: Open dispute and emit event atomically
+    end
+```
+
+#### Posting example
+
+For a 100 USD top-up with a 2 USD fee:
 
 | Ledger account | Debit | Credit |
 |---|---:|---:|
@@ -563,7 +587,142 @@ Both customer balances are liabilities of the wallet operator.
 | Customer wallet liability | — | 100.00 |
 | Fee revenue | — | 2.00 |
 
-When processor settlement arrives, clear the receivable against the bank cash account. Chargebacks create linked compensating postings and a dispute workflow.
+When processor settlement arrives, clear the receivable against bank cash. A chargeback creates linked compensating postings and a dispute workflow.
+
+### 2. Peer-to-peer transfer
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Sender
+    participant API as Wallet API
+    participant Risk as Risk/AML Service
+    participant DB as PostgreSQL Ledger
+    participant Bus as Event Bus
+
+    Sender->>API: Send money(recipient, amount, idempotency key)
+    API->>DB: Claim key and load wallet state
+    alt Duplicate request
+        DB-->>API: Stored response
+        API-->>Sender: Original result
+    else New request
+        API->>Risk: Check limits, sanctions, and fraud signals
+        Risk-->>API: Approved
+        API->>DB: BEGIN; lock both balances in ID order
+        API->>DB: Debit sender liability; credit recipient liability
+        API->>DB: Update projections, transfer, audit, and outbox; COMMIT
+        API-->>Sender: Transfer completed
+        DB-->>Bus: Publish wallet.transfer.completed
+    end
+```
+
+#### Posting example
+
+Both customer balances are liabilities of the wallet operator. For a 25 USD transfer:
+
+| Ledger account | Debit | Credit |
+|---|---:|---:|
+| Sender wallet liability | 25.00 | — |
+| Recipient wallet liability | — | 25.00 |
+
+### 3. Pay a merchant
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant App as Wallet App
+    participant API as Wallet API
+    participant Risk as Risk Service
+    participant DB as PostgreSQL Ledger
+    actor Merchant
+
+    Customer->>App: Scan merchant QR and confirm amount
+    App->>API: Pay(merchant, amount, key)
+    API->>Risk: Validate merchant, device, limits, and fraud signals
+    Risk-->>API: Approved
+    API->>DB: Lock customer and merchant balances
+    API->>DB: Post liability transfer and fee entries atomically
+    API->>DB: Save payment, receipt, audit, and outbox
+    API-->>App: Payment receipt
+    DB-->>Merchant: Publish payment confirmation
+```
+
+### 4. Withdraw to a bank account
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as Wallet API
+    participant DB as PostgreSQL Ledger
+    participant Worker as Payout Worker
+    participant Bank as Banking Network
+
+    Customer->>API: Cash out(destination token, amount, key)
+    API->>DB: Reserve funds and create PENDING payout atomically
+    API-->>Customer: Payout pending
+    DB-->>Worker: Publish payout command
+    Worker->>Bank: Send transfer with stable command ID
+    alt Bank confirms
+        Bank-->>Worker: Settlement reference
+        Worker->>DB: Capture reservation; post settlement; mark PAID
+    else Bank rejects or times out finally
+        Bank-->>Worker: Failure
+        Worker->>DB: Release reservation; mark FAILED; emit event
+    end
+```
+
+### 5. Refund a wallet payment
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Merchant
+    participant API as Wallet API
+    participant Policy as Refund Policy
+    participant DB as PostgreSQL Ledger
+    actor Customer
+
+    Merchant->>API: Refund(payment, amount, key)
+    API->>Policy: Validate ownership, window, and refundable amount
+    Policy-->>API: Approved
+    API->>DB: Lock payment and relevant balances
+    alt Refund capacity available
+        API->>DB: Post linked compensating entries
+        API->>DB: Update cumulative refunded amount and outbox
+        API-->>Merchant: Refund posted
+        DB-->>Customer: Publish refund notification
+    else Duplicate or excess refund
+        DB-->>API: Existing result or validation error
+        API-->>Merchant: Idempotent result or rejection
+    end
+```
+
+### 6. Freeze a compromised wallet
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant Support as Support/Security API
+    participant Auth as Identity Service
+    participant DB as PostgreSQL
+    participant Sessions as Session Service
+
+    Customer->>Support: Report compromised wallet
+    Support->>Auth: Step-up identity verification
+    Auth-->>Support: Verified
+    Support->>DB: Lock wallet; set FROZEN; append reason/audit/outbox
+    Support->>Sessions: Revoke active sessions and payment tokens
+    Support-->>Customer: Wallet frozen
+    opt Recovery completed
+        Customer->>Support: Request unfreeze with recovery evidence
+        Support->>DB: Record approval; set ACTIVE; append audit/outbox
+        Support-->>Customer: Wallet restored
+    end
+```
+
 
 ## Safe posting procedure
 
@@ -579,23 +738,73 @@ All services call one privileged database procedure or a tightly controlled post
 
 Application roles receive `EXECUTE` on this path, not direct ledger update/delete privileges. Immutability triggers reject updates and deletes on posting tables.
 
-## Concurrency, indexing, and scale
 
-- Use short transactions with explicit `FOR UPDATE` balance locks, or `SERIALIZABLE` plus bounded retries. Never check funds outside the protected transaction.
-- Index wallet lookup `(tenant_id, customer_id, status)`, account lookup `(tenant_id, wallet_id, currency)`, and history `(tenant_id, ledger_account_id, entry_id DESC)`.
-- Add unique provider callback keys and partial indexes for pending workflows, active holds, and unpublished outbox events.
-- Partition ledger entries, transactions, audit events, and provider attempts by monthly business date at high volume. Preserve global idempotency in an unpartitioned registry.
-- Use `entry_id` keyset pagination for statements. Rebuild and reconcile balance projections from entries continuously.
-- Expire holds and publish outbox rows in small batches with `FOR UPDATE SKIP LOCKED`.
+## Non-functional Requirements
 
-## Security and operations
+The targets below are initial service objectives and should be adjusted by market, payment rail, and product tier.
 
-- Apply tenant-scoped row-level security, least-privilege roles, encrypted backups, and envelope encryption for PII.
-- Tokenize all external funding credentials and restrict provider payload retention. Do not log raw identifiers or secrets.
-- Enforce velocity and transaction limits in a dedicated limits service/table, then recheck authoritative balance/account state when posting.
-- Use synchronous HA in-region, point-in-time recovery, cross-failure-domain backups, and tested reconciliation/failover runbooks.
-- Consumers of outbox events must be idempotent. Read-your-writes balance requests go to the primary; analytics use replicas.
-- Retain financial and audit records per regulation while cryptographically erasing or anonymizing PII where legally permitted.
+### Exception Handling
+
+- Return stable client-safe error codes and correlation IDs; classify failures as terminal, retryable, or requiring manual review.
+- Retry processor, bank, and notification calls with stable command IDs, bounded backoff, circuit breakers, and dead-letter handling.
+- Resolve monetary exceptions through linked compensating postings, refunds, or disputes rather than ledger mutation.
+
+- Protect funds checks with explicit `FOR UPDATE` locks or `SERIALIZABLE` bounded retries, and continuously reconcile balance projections from immutable entries.
+- Expire holds and publish outbox rows in small `FOR UPDATE SKIP LOCKED` batches.
+
+### Availability
+
+- Target 99.99% monthly availability for wallet balance and internal transfer APIs and 99.9% for externally funded operations.
+- Use multi-zone database failover, transactional outbox recovery, and idempotent consumer replay; target RPO ≤ 5 minutes and RTO ≤ 30 minutes.
+- Keep balance inquiry and internal payments available when optional rewards, analytics, or notification services fail.
+
+- Use synchronous in-region HA, point-in-time recovery, off-domain encrypted backups, and tested reconciliation/failover runbooks.
+- Route read-your-writes balances to the primary and lag-tolerant analytics to replicas.
+
+### Scalability
+
+- Scale APIs and saga workers horizontally; partition ledger entries, payments, audit events, and outbox data by time and tenant.
+- Protect hot wallets and merchants with per-aggregate serialization, sharded queues, rate limits, and deterministic balance locking.
+- Autoscale webhook and settlement consumers while preserving provider sequence and idempotency constraints.
+
+- Index wallets by tenant/customer/status, accounts by tenant/wallet/currency, and history by tenant/ledger account/descending entry ID.
+- Add partial indexes for pending workflows, active holds, and unpublished outbox events; partition ledger, provider-attempt, and audit history by business month.
+
+### Performance
+
+- Target p95 ≤ 250 ms for P2P and merchant-payment posting after risk approval, and p95 ≤ 150 ms for balance reads.
+- Acknowledge provider webhooks within 500 ms after durable receipt and complete processing asynchronously.
+- Avoid remote calls inside database transactions and use cursor pagination for wallet activity.
+
+- Use `entry_id` keyset pagination and bounded `SKIP LOCKED` worker batches.
+
+### Security
+
+- Require MFA or device-bound step-up authentication for risky transfers, new payout destinations, recovery, and administrative actions.
+- Enforce least-privilege tenant/wallet authorization, TLS, secret rotation, signed webhook validation, rate limiting, and replay protection.
+- Tokenize external payment instruments and keep card data outside the wallet database's compliance boundary where possible.
+
+- Enforce tenant row-level security, least-privilege roles, tokenized funding credentials, and authoritative velocity/transaction limits rechecked during posting.
+
+### Data Protection
+
+- Encrypt wallet PII, payment references, databases, backups, and object storage with versioned keys.
+- Minimize stored identity and device data, enforce regional residency and retention rules, and support lawful deletion without altering ledger evidence.
+- Mask balances and identifiers in support tools unless the operator has an approved purpose and scoped role.
+
+- Restrict provider-payload retention and retain financial evidence while anonymizing or cryptographically erasing PII where legally permitted.
+
+### Logging
+
+- Produce structured logs containing trace ID, wallet/payment pseudonymous IDs, operation, state transition, dependency latency, and stable error code.
+- Never log access tokens, PINs, OTPs, raw cards, bank details, identity documents, or full webhook payloads.
+- Centralize logs, synchronize clocks, monitor error/latency trends, and alert on webhook backlog or repeated retry exhaustion.
+
+### Audit Logging
+
+- Immutably record wallet freezes, role changes, limit overrides, recovery, manual refunds, dispute actions, and every ledger-affecting command.
+- Include actor, authority, reason, request/command ID, previous/new state hashes, and outcome.
+- Export audit events to tamper-evident storage with restricted access, integrity checks, and compliance-aligned retention.
 
 ## Validation checklist
 
