@@ -1,0 +1,536 @@
+# Ride Booking Database Design
+
+This design models a multi-tenant ride-hailing platform using PostgreSQL with PostGIS. PostgreSQL stores riders, drivers, vehicles, quotes, ride requests, trips, dispatch outcomes, fares, and payments. Low-latency driver discovery and location streaming may use geo caches and event infrastructure, but all accepted assignments and trip transitions are committed to PostgreSQL.
+
+## Scope and principles
+
+- Supports on-demand/scheduled rides, multiple service levels, quote expiry, driver offers, pickup/trip tracking, cancellation, fare adjustment, payment/refund, and ratings.
+- A trip stores immutable pickup/dropoff, quote, pricing-rule, and service snapshots.
+- Dispatch, trip, and payment are separate state machines coordinated with idempotent commands.
+- Coordinates use PostGIS `geography(Point,4326)`; money uses `numeric(19,4)` and explicit currency.
+- High-frequency raw driver locations have short retention and are separated from durable business history.
+
+## Critical invariants
+
+1. A ride request has at most one active trip, and a trip has at most one active accepted driver assignment.
+2. A driver/vehicle cannot serve conflicting active trips unless an explicitly modeled pooled-ride capacity permits it.
+3. Quote price, expiry, locations, service type, and pricing-rule version are immutable once accepted.
+4. Trip transitions are valid, monotonic, sequenced, and append-only in history.
+5. Only one driver can atomically accept a dispatch round/offer.
+6. Captures and refunds cannot exceed authorized and captured amounts.
+7. Duplicate API calls, driver events, and provider callbacks yield one outcome.
+8. State changes and outbox/audit records commit atomically.
+
+## Entity relationship model
+
+```mermaid
+erDiagram
+    TENANTS ||--o{ RIDERS : owns
+    TENANTS ||--o{ DRIVERS : onboards
+    DRIVERS ||--o{ DRIVER_VEHICLES : uses
+    VEHICLES ||--o{ DRIVER_VEHICLES : assigned_to
+    SERVICE_TYPES ||--o{ FARE_RULES : prices
+    RIDERS ||--o{ RIDE_QUOTES : requests
+    FARE_RULES ||--o{ RIDE_QUOTES : calculated_by
+    RIDE_QUOTES ||--o| RIDE_REQUESTS : accepts_as
+    RIDE_REQUESTS ||--o| TRIPS : creates
+    TRIPS ||--o{ DISPATCH_OFFERS : offers
+    DRIVERS ||--o{ DISPATCH_OFFERS : receives
+    TRIPS ||--o{ TRIP_EVENTS : transitions
+    DRIVERS ||--o{ DRIVER_LOCATIONS : reports
+    TRIPS ||--o{ FARE_ADJUSTMENTS : adjusts
+    TRIPS ||--o{ PAYMENTS : pays
+    TRIPS ||--o{ RATINGS : reviews
+    TENANTS ||--o{ OUTBOX_EVENTS : publishes
+```
+
+## Identity, supply, and pricing tables
+
+All tenant-owned relationships use tenant-inclusive composite foreign keys to prevent cross-tenant references.
+
+| Table | Key columns | Purpose and constraints |
+|---|---|---|
+| `tenants` | `tenant_id`, `code`, `default_currency`, `timezone`, `status` | Marketplace/legal entity. |
+| `riders` | `rider_id`, `tenant_id`, customer number, encrypted PII reference, `status`, rating aggregates, `created_at` | Passenger profile. |
+| `drivers` | `driver_id`, `tenant_id`, encrypted identity/contact reference, onboarding/background statuses, rating aggregates, `status`, `version` | Driver eligibility aggregate. |
+| `vehicles` | `vehicle_id`, `tenant_id`, tokenized plate/VIN hashes, make/model/year/color, seats, inspection/insurance expiries, `status` | Vehicle and compliance attributes. |
+| `driver_vehicles` | `driver_id`, `vehicle_id`, `valid_from`, `valid_to`, `is_primary` | Historical authorized assignment. |
+| `driver_availabilities` | `driver_id`, `vehicle_id`, `status`, `service_area_id`, `current_location`, `location_at`, `active_trip_id NULL`, `version` | Current supply projection. |
+| `service_types` | `service_type_id`, `tenant_id`, code/name, minimum capacity, constraints, `status` | Economy, premium, XL, accessible, and similar products. |
+| `fare_rules` | `fare_rule_id`, `tenant_id`, `service_type_id`, region, currency, base/per-distance/per-time/minimum/cancellation values, surge policy version, effective window, `status` | Immutable/versioned pricing configuration. |
+| `service_areas` | `service_area_id`, `tenant_id`, name, `boundary geography`, timezone, `status` | Geographic availability and rule boundary. |
+
+## Quote, request, and trip tables
+
+| Table | Key columns | Purpose and constraints |
+|---|---|---|
+| `ride_quotes` | `quote_id`, `tenant_id`, `rider_id`, `service_type_id`, pickup/dropoff snapshots, distance/duration estimates, currency, estimated/min/max fare, surge multiplier, `fare_rule_id`, routing/pricing versions, `expires_at`, `created_at` | Immutable quote. Check positive values and expiry after creation. |
+| `ride_requests` | `request_id`, `tenant_id`, `rider_id`, `quote_id`, `status`, requested/scheduled times, `idempotency_key`, cancellation fields, `version` | Rider intent. Unique tenant/idempotency key and one request per accepted quote. |
+| `trips` | `trip_id`, `tenant_id`, `request_id`, `trip_number`, rider/driver/vehicle IDs, service/location/quote snapshots, `status`, estimated and actual timestamps/distances/durations, `version` | Durable trip aggregate. Driver/vehicle are nullable until assignment. |
+| `trip_events` | `event_id bigint`, `trip_id`, `sequence_no`, `from_status`, `to_status`, actor, reason, optional location, `occurred_at`, `received_at`, metadata | Append-only state history; unique trip/sequence and source event ID. |
+| `trip_waypoints` | `waypoint_id`, `trip_id`, `sequence_no`, type, address snapshot, location, `status`, arrival/departure timestamps | Ordered stops for multi-stop or pooled rides. |
+| `cancellations` | `cancellation_id`, `trip_id`, actor type/id, reason code, charge amount, currency, policy version, `created_at` | Immutable cancellation decision and policy evidence. |
+
+Typical trip states are `SEARCHING`, `DRIVER_ASSIGNED`, `DRIVER_EN_ROUTE`, `DRIVER_ARRIVED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`, and `NO_DRIVER`. Allowed transitions are enforced in one command handler and recorded with an expected aggregate version.
+
+## Dispatch and location tables
+
+| Table | Key columns | Purpose and constraints |
+|---|---|---|
+| `dispatch_rounds` | `round_id`, `trip_id`, `round_no`, search parameters/algorithm version, `status`, `started_at`, `expires_at` | Auditable dispatch attempt and decision inputs. |
+| `dispatch_offers` | `offer_id`, `round_id`, `trip_id`, `driver_id`, `vehicle_id`, `status`, `offered_at`, `expires_at`, `responded_at`, score/rank snapshot | Unique round/driver. Partial unique indexes enforce one accepted offer per trip and one conflicting active trip per driver. |
+| `driver_locations` | `driver_id`, `source_sequence`, `location`, heading/speed/accuracy, `recorded_at`, `received_at` | Short-retention append-only telemetry, partitioned by time. Reject/flag stale or implausible sequence movement. |
+| `trip_location_samples` | `trip_id`, `sequence_no`, encrypted/generalized location, `recorded_at`, source | Restricted samples retained only as required for route, safety, and dispute evidence. |
+
+At scale, drivers publish locations to a stream and a geo cache indexed by H3/S2/geohash. PostgreSQL receives sampled durable points and the current availability projection. Assignment acceptance still uses an atomic conditional transaction against authoritative driver/trip rows.
+
+## Fare, payment, and rating tables
+
+| Table | Key columns | Purpose and constraints |
+|---|---|---|
+| `trip_fares` | `trip_id`, currency, base/distance/time/surge/toll/tax/discount/tip/cancellation components, `total`, pricing inputs and rule version, `status`, `version` | Itemized immutable final-fare version; corrections create adjustments. |
+| `fare_adjustments` | `adjustment_id`, `trip_id`, type, signed amount, currency, reason, actor, evidence reference, `created_at` | Append-only correction/refund evidence. |
+| `payments` | `payment_id`, `trip_id`, provider/method token references, `status`, authorized/captured/refunded amounts, provider reference, `idempotency_key`, `version` | Payment aggregate. Unique provider/reference. |
+| `payment_attempts` | `attempt_id`, `payment_id`, operation, provider event/idempotency keys, status/failure, timestamps | Append-oriented remote-call/callback history. |
+| `driver_earnings` | `earning_id`, `trip_id`, `driver_id`, gross/commission/tax/bonus/net components, currency, rule version, settlement status | Auditable driver payable calculation; actual money movement belongs in a wallet/ledger service. |
+| `ratings` | `rating_id`, `trip_id`, `rater_type`, `rater_id`, `ratee_type`, `ratee_id`, score, encrypted comment, moderation status | Unique rater role per trip; only eligible after terminal trip state. |
+
+## Complete PostgreSQL schema, constraints, and indexes
+
+The following dependency-ordered DDL creates the complete relational model documented above. PostGIS supplies geographic types and indexes.
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+CREATE TABLE tenants (
+    tenant_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    code text NOT NULL UNIQUE, default_currency char(3) NOT NULL,
+    timezone text NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','CLOSED'))
+);
+
+CREATE TABLE riders (
+    rider_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    customer_number text NOT NULL, pii_reference text NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','RESTRICTED','CLOSED')),
+    rating_sum numeric(18,4) NOT NULL DEFAULT 0 CHECK (rating_sum >= 0),
+    rating_count bigint NOT NULL DEFAULT 0 CHECK (rating_count >= 0),
+    created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    UNIQUE (tenant_id, rider_id), UNIQUE (tenant_id, customer_number)
+);
+
+CREATE TABLE drivers (
+    driver_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    identity_reference text NOT NULL,
+    onboarding_status text NOT NULL,
+    background_status text NOT NULL,
+    status text NOT NULL CHECK (status IN ('PENDING','ACTIVE','PAUSED','SUSPENDED','CLOSED')),
+    rating_sum numeric(18,4) NOT NULL DEFAULT 0 CHECK (rating_sum >= 0),
+    rating_count bigint NOT NULL DEFAULT 0 CHECK (rating_count >= 0),
+    version bigint NOT NULL DEFAULT 0,
+    UNIQUE (tenant_id, driver_id)
+);
+
+CREATE TABLE vehicles (
+    vehicle_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    plate_hash bytea NOT NULL, vin_hash bytea NULL,
+    make text NOT NULL, model text NOT NULL, model_year smallint NOT NULL,
+    color text NOT NULL, seats smallint NOT NULL CHECK (seats > 0),
+    inspection_expires_on date NULL, insurance_expires_on date NULL,
+    status text NOT NULL CHECK (status IN ('PENDING','ACTIVE','SUSPENDED','RETIRED')),
+    UNIQUE (tenant_id, vehicle_id), UNIQUE (tenant_id, plate_hash)
+);
+
+CREATE TABLE driver_vehicles (
+    driver_id uuid NOT NULL REFERENCES drivers(driver_id),
+    vehicle_id uuid NOT NULL REFERENCES vehicles(vehicle_id),
+    valid_from timestamptz NOT NULL, valid_to timestamptz NULL,
+    is_primary boolean NOT NULL DEFAULT false,
+    PRIMARY KEY (driver_id, vehicle_id, valid_from),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE service_types (
+    service_type_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    code text NOT NULL, name text NOT NULL,
+    minimum_capacity smallint NOT NULL CHECK (minimum_capacity > 0),
+    constraints jsonb NOT NULL DEFAULT '{}'::jsonb,
+    status text NOT NULL CHECK (status IN ('ACTIVE','PAUSED','RETIRED')),
+    UNIQUE (tenant_id, service_type_id), UNIQUE (tenant_id, code)
+);
+
+CREATE TABLE service_areas (
+    service_area_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    name text NOT NULL, boundary geography(MultiPolygon,4326) NOT NULL,
+    timezone text NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','PAUSED','RETIRED'))
+);
+
+CREATE TABLE fare_rules (
+    fare_rule_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    service_type_id uuid NOT NULL REFERENCES service_types(service_type_id),
+    service_area_id uuid NOT NULL REFERENCES service_areas(service_area_id),
+    currency char(3) NOT NULL,
+    base_fare numeric(19,4) NOT NULL CHECK (base_fare >= 0),
+    per_distance numeric(19,4) NOT NULL CHECK (per_distance >= 0),
+    per_time numeric(19,4) NOT NULL CHECK (per_time >= 0),
+    minimum_fare numeric(19,4) NOT NULL CHECK (minimum_fare >= 0),
+    cancellation_fee numeric(19,4) NOT NULL DEFAULT 0 CHECK (cancellation_fee >= 0),
+    surge_policy_version text NOT NULL,
+    valid_from timestamptz NOT NULL, valid_to timestamptz NULL,
+    status text NOT NULL CHECK (status IN ('DRAFT','ACTIVE','RETIRED')),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE driver_availabilities (
+    driver_id uuid PRIMARY KEY REFERENCES drivers(driver_id),
+    vehicle_id uuid NULL REFERENCES vehicles(vehicle_id),
+    service_area_id uuid NULL REFERENCES service_areas(service_area_id),
+    status text NOT NULL CHECK (status IN ('OFFLINE','AVAILABLE','BUSY','PAUSED')),
+    current_location geography(Point,4326) NULL,
+    location_at timestamptz NULL, active_trip_id uuid NULL,
+    version bigint NOT NULL DEFAULT 0
+);
+
+CREATE TABLE ride_quotes (
+    quote_id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id           uuid NOT NULL REFERENCES tenants(tenant_id),
+    rider_id            uuid NOT NULL REFERENCES riders(rider_id),
+    service_type_id     uuid NOT NULL REFERENCES service_types(service_type_id),
+    fare_rule_id        uuid NOT NULL REFERENCES fare_rules(fare_rule_id),
+    pickup_location     geography(Point,4326) NOT NULL,
+    dropoff_location    geography(Point,4326) NOT NULL,
+    address_snapshot    jsonb NOT NULL,
+    estimated_distance_m integer NOT NULL CHECK (estimated_distance_m >= 0),
+    estimated_duration_s integer NOT NULL CHECK (estimated_duration_s >= 0),
+    currency            char(3) NOT NULL,
+    minimum_fare        numeric(19,4) NOT NULL CHECK (minimum_fare >= 0),
+    estimated_fare      numeric(19,4) NOT NULL CHECK (estimated_fare >= 0),
+    maximum_fare        numeric(19,4) NOT NULL CHECK (maximum_fare >= 0),
+    surge_multiplier    numeric(8,4) NOT NULL DEFAULT 1 CHECK (surge_multiplier >= 1),
+    routing_version     text NOT NULL,
+    pricing_version     text NOT NULL,
+    created_at          timestamptz NOT NULL DEFAULT clock_timestamp(),
+    expires_at          timestamptz NOT NULL,
+    CHECK (minimum_fare <= estimated_fare AND estimated_fare <= maximum_fare),
+    CHECK (expires_at > created_at),
+    UNIQUE (tenant_id, quote_id)
+);
+
+CREATE TABLE ride_requests (
+    request_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id        uuid NOT NULL REFERENCES tenants(tenant_id),
+    rider_id         uuid NOT NULL REFERENCES riders(rider_id),
+    quote_id         uuid NOT NULL UNIQUE REFERENCES ride_quotes(quote_id),
+    status           text NOT NULL CHECK
+        (status IN ('CREATED','SEARCHING','MATCHED','CANCELLED','NO_DRIVER','EXPIRED')),
+    requested_at     timestamptz NOT NULL DEFAULT clock_timestamp(),
+    scheduled_at     timestamptz NULL,
+    idempotency_key  text NOT NULL,
+    version          bigint NOT NULL DEFAULT 0,
+    UNIQUE (tenant_id, request_id),
+    UNIQUE (tenant_id, idempotency_key)
+);
+
+CREATE TABLE trips (
+    trip_id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id         uuid NOT NULL,
+    request_id        uuid NOT NULL UNIQUE,
+    trip_number       text NOT NULL,
+    rider_id          uuid NOT NULL REFERENCES riders(rider_id),
+    driver_id         uuid NULL REFERENCES drivers(driver_id),
+    vehicle_id        uuid NULL REFERENCES vehicles(vehicle_id),
+    status            text NOT NULL CHECK (status IN
+        ('SEARCHING','DRIVER_ASSIGNED','DRIVER_EN_ROUTE','DRIVER_ARRIVED',
+         'IN_PROGRESS','COMPLETED','CANCELLED','NO_DRIVER')),
+    pickup_snapshot   jsonb NOT NULL,
+    dropoff_snapshot  jsonb NOT NULL,
+    quote_snapshot    jsonb NOT NULL,
+    started_at        timestamptz NULL,
+    completed_at      timestamptz NULL,
+    version           bigint NOT NULL DEFAULT 0,
+    created_at        timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, request_id) REFERENCES ride_requests(tenant_id, request_id),
+    CHECK ((driver_id IS NULL) = (vehicle_id IS NULL)),
+    CHECK (status = 'SEARCHING' OR status = 'NO_DRIVER' OR driver_id IS NOT NULL),
+    UNIQUE (tenant_id, trip_id),
+    UNIQUE (tenant_id, trip_number)
+);
+
+ALTER TABLE driver_availabilities
+    ADD CONSTRAINT fk_driver_active_trip FOREIGN KEY (active_trip_id) REFERENCES trips(trip_id);
+
+CREATE TABLE trip_waypoints (
+    waypoint_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id uuid NOT NULL REFERENCES trips(trip_id),
+    sequence_no integer NOT NULL CHECK (sequence_no > 0),
+    waypoint_type text NOT NULL CHECK (waypoint_type IN ('PICKUP','STOP','DROPOFF')),
+    address_snapshot jsonb NOT NULL, location geography(Point,4326) NOT NULL,
+    status text NOT NULL CHECK (status IN ('PENDING','ARRIVED','DEPARTED','SKIPPED')),
+    arrived_at timestamptz NULL, departed_at timestamptz NULL,
+    UNIQUE (trip_id, sequence_no),
+    CHECK (departed_at IS NULL OR arrived_at IS NOT NULL)
+);
+
+CREATE TABLE cancellations (
+    cancellation_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id uuid NOT NULL UNIQUE REFERENCES trips(trip_id),
+    actor_type text NOT NULL, actor_id uuid NULL, reason_code text NOT NULL,
+    charge_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (charge_amount >= 0),
+    currency char(3) NOT NULL, policy_version text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT clock_timestamp()
+);
+
+CREATE TABLE dispatch_rounds (
+    round_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id uuid NOT NULL REFERENCES trips(trip_id),
+    round_no integer NOT NULL CHECK (round_no > 0),
+    search_parameters jsonb NOT NULL, algorithm_version text NOT NULL,
+    status text NOT NULL CHECK (status IN ('OPEN','MATCHED','EXPIRED','CANCELLED')),
+    started_at timestamptz NOT NULL, expires_at timestamptz NOT NULL,
+    CHECK (expires_at > started_at), UNIQUE (trip_id, round_no)
+);
+
+CREATE TABLE dispatch_offers (
+    offer_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id      uuid NOT NULL,
+    trip_id        uuid NOT NULL,
+    driver_id      uuid NOT NULL REFERENCES drivers(driver_id),
+    vehicle_id     uuid NOT NULL REFERENCES vehicles(vehicle_id),
+    round_no       integer NOT NULL CHECK (round_no > 0),
+    status         text NOT NULL CHECK
+        (status IN ('OFFERED','ACCEPTED','REJECTED','EXPIRED','RELEASED','COMPLETED')),
+    rank           integer NULL CHECK (rank > 0),
+    score_snapshot jsonb NOT NULL DEFAULT '{}'::jsonb,
+    offered_at     timestamptz NOT NULL,
+    expires_at     timestamptz NOT NULL,
+    responded_at   timestamptz NULL,
+    FOREIGN KEY (tenant_id, trip_id) REFERENCES trips(tenant_id, trip_id),
+    CHECK (expires_at > offered_at),
+    UNIQUE (trip_id, round_no, driver_id)
+);
+
+CREATE TABLE trip_events (
+    event_id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tenant_id     uuid NOT NULL,
+    trip_id       uuid NOT NULL,
+    sequence_no   bigint NOT NULL CHECK (sequence_no > 0),
+    source_event_id text NULL,
+    from_status   text NULL,
+    to_status     text NOT NULL,
+    actor_type    text NOT NULL,
+    actor_id      uuid NULL,
+    location      geography(Point,4326) NULL,
+    occurred_at   timestamptz NOT NULL,
+    received_at   timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, trip_id) REFERENCES trips(tenant_id, trip_id),
+    UNIQUE (trip_id, sequence_no),
+    UNIQUE (tenant_id, source_event_id)
+);
+
+CREATE TABLE driver_locations (
+    driver_id uuid NOT NULL REFERENCES drivers(driver_id),
+    source_sequence bigint NOT NULL CHECK (source_sequence > 0),
+    location geography(Point,4326) NOT NULL,
+    heading numeric(6,2) NULL CHECK (heading >= 0 AND heading < 360),
+    speed_mps numeric(10,3) NULL CHECK (speed_mps >= 0),
+    accuracy_m numeric(10,2) NULL CHECK (accuracy_m >= 0),
+    recorded_at timestamptz NOT NULL,
+    received_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    PRIMARY KEY (driver_id, source_sequence)
+);
+
+CREATE TABLE trip_location_samples (
+    trip_id uuid NOT NULL REFERENCES trips(trip_id),
+    sequence_no bigint NOT NULL CHECK (sequence_no > 0),
+    location_ciphertext bytea NOT NULL,
+    recorded_at timestamptz NOT NULL, source text NOT NULL,
+    PRIMARY KEY (trip_id, sequence_no)
+);
+
+CREATE TABLE trip_fares (
+    trip_id uuid PRIMARY KEY REFERENCES trips(trip_id),
+    currency char(3) NOT NULL,
+    base_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (base_amount >= 0),
+    distance_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (distance_amount >= 0),
+    time_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (time_amount >= 0),
+    surge_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (surge_amount >= 0),
+    toll_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (toll_amount >= 0),
+    tax_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
+    discount_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
+    tip_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (tip_amount >= 0),
+    cancellation_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (cancellation_amount >= 0),
+    total numeric(19,4) NOT NULL CHECK (total >= 0),
+    pricing_inputs jsonb NOT NULL, rule_version text NOT NULL,
+    status text NOT NULL CHECK (status IN ('ESTIMATED','FINAL','ADJUSTED')),
+    version bigint NOT NULL DEFAULT 0,
+    CHECK (total = base_amount + distance_amount + time_amount + surge_amount
+           + toll_amount + tax_amount + tip_amount + cancellation_amount - discount_amount)
+);
+
+CREATE TABLE fare_adjustments (
+    adjustment_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id uuid NOT NULL REFERENCES trips(trip_id),
+    adjustment_type text NOT NULL, amount numeric(19,4) NOT NULL CHECK (amount <> 0),
+    currency char(3) NOT NULL, reason text NOT NULL, actor_id text NOT NULL,
+    evidence_reference text NULL,
+    created_at timestamptz NOT NULL DEFAULT clock_timestamp()
+);
+
+CREATE TABLE payments (
+    payment_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id          uuid NOT NULL REFERENCES trips(trip_id),
+    provider         text NOT NULL,
+    provider_reference text NULL,
+    currency         char(3) NOT NULL,
+    status           text NOT NULL CHECK
+        (status IN ('PENDING','AUTHORIZED','CAPTURED','PARTIALLY_REFUNDED','REFUNDED','VOIDED','FAILED')),
+    authorized_amount numeric(19,4) NOT NULL DEFAULT 0 CHECK (authorized_amount >= 0),
+    captured_amount  numeric(19,4) NOT NULL DEFAULT 0 CHECK (captured_amount >= 0),
+    refunded_amount  numeric(19,4) NOT NULL DEFAULT 0 CHECK (refunded_amount >= 0),
+    idempotency_key  text NOT NULL UNIQUE,
+    version          bigint NOT NULL DEFAULT 0,
+    CHECK (captured_amount <= authorized_amount),
+    CHECK (refunded_amount <= captured_amount),
+    UNIQUE (provider, provider_reference)
+);
+
+CREATE TABLE payment_attempts (
+    attempt_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    payment_id uuid NOT NULL REFERENCES payments(payment_id),
+    operation text NOT NULL CHECK (operation IN ('AUTHORIZE','CAPTURE','VOID','REFUND')),
+    provider_event_id text NULL,
+    status text NOT NULL CHECK (status IN ('PENDING','SUCCEEDED','FAILED','UNKNOWN')),
+    failure_code text NULL, started_at timestamptz NOT NULL, completed_at timestamptz NULL,
+    CHECK (completed_at IS NULL OR completed_at >= started_at),
+    UNIQUE (provider_event_id, operation)
+);
+
+CREATE TABLE driver_earnings (
+    earning_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id uuid NOT NULL UNIQUE REFERENCES trips(trip_id),
+    driver_id uuid NOT NULL REFERENCES drivers(driver_id),
+    gross_amount numeric(19,4) NOT NULL CHECK (gross_amount >= 0),
+    commission_amount numeric(19,4) NOT NULL CHECK (commission_amount >= 0),
+    tax_amount numeric(19,4) NOT NULL CHECK (tax_amount >= 0),
+    bonus_amount numeric(19,4) NOT NULL CHECK (bonus_amount >= 0),
+    net_amount numeric(19,4) NOT NULL, currency char(3) NOT NULL,
+    rule_version text NOT NULL,
+    settlement_status text NOT NULL CHECK (settlement_status IN ('PENDING','SETTLED','REVERSED')),
+    CHECK (net_amount = gross_amount - commission_amount - tax_amount + bonus_amount)
+);
+
+CREATE TABLE ratings (
+    rating_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id uuid NOT NULL REFERENCES trips(trip_id),
+    rater_type text NOT NULL CHECK (rater_type IN ('RIDER','DRIVER')),
+    rater_id uuid NOT NULL, ratee_type text NOT NULL CHECK (ratee_type IN ('RIDER','DRIVER')),
+    ratee_id uuid NOT NULL, score smallint NOT NULL CHECK (score BETWEEN 1 AND 5),
+    comment_ciphertext bytea NULL,
+    moderation_status text NOT NULL DEFAULT 'PENDING',
+    UNIQUE (trip_id, rater_type)
+);
+
+CREATE TABLE outbox_events (
+    event_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    aggregate_type text NOT NULL, aggregate_id uuid NOT NULL, event_type text NOT NULL,
+    payload jsonb NOT NULL, occurred_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    published_at timestamptz NULL,
+    attempt_count integer NOT NULL DEFAULT 0 CHECK (attempt_count >= 0)
+);
+
+CREATE TABLE audit_events (
+    audit_event_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id), actor_id text NULL,
+    action text NOT NULL, resource_type text NOT NULL, resource_id text NOT NULL,
+    occurred_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    details jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE UNIQUE INDEX ux_trip_active_request
+    ON trips (request_id)
+    WHERE status IN ('SEARCHING','DRIVER_ASSIGNED','DRIVER_EN_ROUTE','DRIVER_ARRIVED','IN_PROGRESS');
+CREATE UNIQUE INDEX ux_driver_active_trip
+    ON trips (driver_id)
+    WHERE driver_id IS NOT NULL
+      AND status IN ('DRIVER_ASSIGNED','DRIVER_EN_ROUTE','DRIVER_ARRIVED','IN_PROGRESS');
+CREATE UNIQUE INDEX ux_trip_accepted_offer
+    ON dispatch_offers (trip_id) WHERE status = 'ACCEPTED';
+CREATE UNIQUE INDEX ux_driver_accepted_offer
+    ON dispatch_offers (driver_id) WHERE status = 'ACCEPTED';
+CREATE INDEX ix_offer_driver_expiry
+    ON dispatch_offers (driver_id, expires_at) WHERE status = 'OFFERED';
+CREATE INDEX ix_trip_rider_history
+    ON trips (tenant_id, rider_id, created_at DESC);
+CREATE INDEX ix_trip_driver_history
+    ON trips (tenant_id, driver_id, created_at DESC) WHERE driver_id IS NOT NULL;
+CREATE INDEX ix_trip_event_history ON trip_events (trip_id, sequence_no);
+CREATE INDEX ix_quote_pickup ON ride_quotes USING gist (pickup_location);
+CREATE INDEX ix_driver_current_location
+    ON driver_availabilities USING gist (current_location);
+CREATE INDEX ix_outbox_unpublished
+    ON outbox_events (event_id) WHERE published_at IS NULL;
+CREATE INDEX ix_service_area_boundary ON service_areas USING gist (boundary);
+CREATE INDEX ix_driver_location_time ON driver_locations (driver_id, recorded_at DESC);
+CREATE INDEX ix_trip_waypoint_order ON trip_waypoints (trip_id, sequence_no);
+CREATE INDEX ix_payment_attempt_pending
+    ON payment_attempts (started_at) WHERE status IN ('PENDING','UNKNOWN');
+CREATE INDEX ix_audit_resource_time
+    ON audit_events (tenant_id, resource_type, resource_id, occurred_at DESC);
+```
+
+Allowed trip transitions, quote acceptance versus expiry, driver/vehicle eligibility, pooled capacity, final fare aggregation, and provider callback ordering require transactional procedures or deferred triggers. Immutable quote snapshots and trip events should reject `UPDATE`/`DELETE`; assignment acceptance must conditionally update both trip and driver state in one transaction.
+
+## Booking and dispatch flows
+
+### Request ride
+
+1. Generate and store an expiring quote from a recorded route, pricing rule, service area, and surge input version.
+2. On acceptance, claim idempotency, recheck quote ownership/expiry, snapshot it into a ride request/trip, and authorize the payment method outside any long database transaction.
+3. Write the trip transition and outbox event together; a dispatch worker starts a round.
+
+### Accept driver offer
+
+1. Verify the offer is still open and unexpired.
+2. Lock trip and driver-availability rows in deterministic ID order.
+3. Atomically mark the offer accepted, close competing offers, assign driver/vehicle, reserve driver capacity, append the trip event, and publish through the outbox.
+4. If the conditional update affects zero rows, another offer/state won; return the current state idempotently.
+
+### Complete and charge
+
+Record completion inputs, calculate an itemized fare with its rule version, and transition the trip in one transaction. Capture payment remotely through an idempotent saga step; provider callbacks update payment state and create driver earnings without reopening the completed trip history. Corrections use fare adjustments/refunds.
+
+## Consistency, indexing, and scale
+
+- Use optimistic versions for trip commands and explicit row locks for dispatch acceptance/capacity. Never keep locks while calling routing/payment services.
+- GiST index service boundaries and current locations. Index trips by rider/date, driver/date, and active status; index open offers by driver/expiry.
+- Partition location samples, trip events, payment attempts, audits, and outbox history by time. Apply short TTLs to raw locations.
+- Add partial indexes for active trips, available drivers, expiring offers, pending payments, and unpublished events.
+- Workers use small `FOR UPDATE SKIP LOCKED` batches. API/provider/source event idempotency keys remain in unpartitioned registries when global uniqueness is needed.
+- Reconcile trip aggregate state to ordered events and payment/earning totals to immutable attempt/accounting records.
+
+## Security and operations
+
+- Encrypt PII, precise addresses, and sensitive trip locations; tokenize payment and vehicle identifiers; log every support/admin access.
+- Use tenant row-level security and separate roles for dispatch, payments, support, analytics, and migrations.
+- Give riders and drivers only the counterpart data needed during an active trip. Use short-lived contact masking and media links.
+- Run PostgreSQL with regional HA, point-in-time recovery, encrypted off-domain backups, and tested failover/restore.
+- State-changing and read-your-writes requests use the primary. Historical analytics and heat maps use replicas/warehouse data with privacy aggregation.
+
+## Validation checklist
+
+- Expired or altered quotes cannot create a trip.
+- Two drivers cannot accept the same trip and one driver cannot win conflicting trips.
+- Duplicate/out-of-order driver events do not regress trip state.
+- Final fare recomputes from its stored components/rule inputs.
+- Capture/refund totals respect authorized/captured limits.
+- Cancellation/driver reassignment releases capacity exactly once.
+- Location retention and access rules are enforced after restore and export.
