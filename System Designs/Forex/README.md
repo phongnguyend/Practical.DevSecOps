@@ -600,7 +600,7 @@ sequenceDiagram
     Market-->>API: Price snapshot
     API->>Risk: Validate limits and required margin
     Risk-->>API: Approved with reservation amount
-    API->>DB: Lock risk row; reserve margin
+    API->>DB: Lock risk row, reserve margin
     API->>DB: Insert ACCEPTED order, event, audit, and outbox
     API-->>Trader: Order accepted
     DB-->>Engine: Publish accepted order from outbox
@@ -628,8 +628,8 @@ sequenceDiagram
     API->>Engine: Cancel using stable command ID
     alt Remaining quantity cancelled
         Engine-->>API: Cancel acknowledgement and engine sequence
-        API->>DB: Lock order; append CANCELLED event
-        API->>DB: Release remaining margin; write audit/outbox atomically
+        API->>DB: Lock order, append CANCELLED event
+        API->>DB: Release remaining margin, write audit/outbox atomically
         API-->>Trader: Cancelled quantity and final state
     else Fill won the race
         Engine-->>API: Already filled/partially filled state
@@ -653,13 +653,13 @@ sequenceDiagram
     Consumer->>DB: Deduplicate venue execution ID
     alt Next expected sequence
         Consumer->>DB: Lock order, position, and cash rows
-        Consumer->>DB: Insert execution; update fill and position
-        Consumer->>DB: Release margin; post fees/settlement
-        Consumer->>DB: Append events/audit/outbox; COMMIT
+        Consumer->>DB: Insert execution, update fill and position
+        Consumer->>DB: Release margin, post fees/settlement
+        Consumer->>DB: Append events/audit/outbox, COMMIT
         DB-->>Bus: Publish execution and order-state events
         Bus-->>Trader: Fill notification
     else Sequence gap
-        Consumer->>DB: Persist gap; defer execution and alert
+        Consumer->>DB: Persist gap, defer execution and alert
     else Duplicate
         DB-->>Consumer: Previously applied result
     end
@@ -690,7 +690,7 @@ sequenceDiagram
     Market-->>Risk: New valuation price/sequence
     Risk->>DB: Revalue positions and margin projection
     alt Maintenance margin breached
-        Risk->>DB: Freeze new risk; create margin call and outbox
+        Risk->>DB: Freeze new risk, create margin call and outbox
         DB-->>Trader: Margin-call notification
         DB-->>Liquidator: Publish liquidation command after policy deadline
         Liquidator->>Engine: Submit reduce-only orders
@@ -713,11 +713,11 @@ sequenceDiagram
     Scheduler->>DB: Select due unsettled obligations
     Scheduler->>Custodian: Send net settlement instruction with batch ID
     Custodian-->>Scheduler: Accepted and settlement reference
-    Scheduler->>DB: Mark batch SUBMITTED; append audit/outbox
+    Scheduler->>DB: Mark batch SUBMITTED, append audit/outbox
     Custodian-->>Recon: Settlement confirmation/file
     Recon->>DB: Match external lines to internal obligations
     alt Fully matched
-        Recon->>DB: Post cash movements; mark SETTLED atomically
+        Recon->>DB: Post cash movements, mark SETTLED atomically
     else Break detected
         Recon->>DB: Record reconciliation break
         Recon-->>Ops: Alert with unmatched references

@@ -650,7 +650,7 @@ sequenceDiagram
     API->>DB: Store expiring quote
     API-->>Rider: Quote and expiry
     Rider->>API: Accept quote(idempotency key)
-    API->>DB: Claim key; validate ownership and expiry
+    API->>DB: Claim key, validate ownership and expiry
     API->>Pay: Authorize payment method
     Pay-->>API: Authorization result
     API->>DB: Create request/trip snapshot and outbox atomically
@@ -684,7 +684,7 @@ sequenceDiagram
         Push-->>Driver: Ride offer with expiry
     end
     opt No acceptance before deadline
-        Dispatch->>DB: Close round; expand radius or service rules
+        Dispatch->>DB: Close round, expand radius or service rules
         Dispatch->>Geo: Query next candidate set
     end
 ```
@@ -706,11 +706,11 @@ sequenceDiagram
     App->>DB: Conditional accept(offer, driver, trip)
     DB->>DB: Lock trip and availability rows in ID order
     alt Offer still open and trip unassigned
-        DB->>DB: Accept offer; close competitors; reserve driver
+        DB->>DB: Accept offer, close competitors, reserve driver
         DB-->>App: Assignment confirmed
         DB-->>Rider: Driver assigned event
     else Another offer/state won
-        DB-->>App: Current state; offer unavailable
+        DB-->>App: Current state, offer unavailable
     end
 ```
 
@@ -736,8 +736,8 @@ sequenceDiagram
     Rider->>API: Cancel trip(reason, key)
     API->>Policy: Calculate eligibility and fee from trip milestone
     Policy-->>API: Cancellation decision and fee
-    API->>DB: Lock trip; conditional transition to CANCELLED
-    API->>DB: Release driver capacity; close offers; write outbox
+    API->>DB: Lock trip, conditional transition to CANCELLED
+    API->>DB: Release driver capacity, close offers, write outbox
     opt Cancellation fee applies
         DB-->>Pay: Publish idempotent fee capture command
         Pay-->>DB: Capture callback
@@ -761,7 +761,7 @@ sequenceDiagram
     Driver->>API: Complete trip(distance, duration, end location)
     API->>Fare: Calculate itemized fare using rule version
     Fare-->>API: Fare breakdown
-    API->>DB: Save completion/fare; set COMPLETED; write capture command
+    API->>DB: Save completion/fare, set COMPLETED, write capture command
     API-->>Driver: Trip completed
     DB-->>Pay: Publish idempotent capture command
     Pay-->>DB: Capture callback
@@ -790,7 +790,7 @@ sequenceDiagram
     Safety-->>Responder: Alert with minimum necessary trip context
     Responder->>DB: Append actions and case status
     opt Account restriction required
-        Responder->>DB: Suspend actor/vehicle eligibility; append audit/outbox
+        Responder->>DB: Suspend actor/vehicle eligibility, append audit/outbox
     end
     Safety-->>Rider: Acknowledge and show support channel
 ```

@@ -503,7 +503,7 @@ sequenceDiagram
         API->>DB: Create customer/account relationships and PENDING account
         API->>Docs: Store signed terms and disclosures
         Docs-->>API: Document references and checksums
-        API->>DB: Activate account; append audit/outbox atomically
+        API->>DB: Activate account, append audit/outbox atomically
         API-->>Customer: Account opened
     else Review or rejected
         API->>DB: Record decision reference and application state
@@ -543,17 +543,17 @@ sequenceDiagram
     participant Expiry as Hold Expiry Worker
 
     Client->>API: Create hold(account, amount, key)
-    API->>DB: Lock balance; check available funds
-    API->>DB: Insert ACTIVE hold; reduce available balance
+    API->>DB: Lock balance, check available funds
+    API->>DB: Insert ACTIVE hold, reduce available balance
     API-->>Client: Hold created
     alt Merchant captures
         Client->>API: Capture hold
         API->>DB: Lock ACTIVE hold and balance
-        API->>DB: Post ledger entries; mark CAPTURED atomically
+        API->>DB: Post ledger entries, mark CAPTURED atomically
         API-->>Client: Capture posted
     else Hold expires or is released
         Expiry->>DB: Claim due ACTIVE hold with SKIP LOCKED
-        Expiry->>DB: Restore availability; mark EXPIRED atomically
+        Expiry->>DB: Restore availability, mark EXPIRED atomically
     end
 ```
 
@@ -583,16 +583,16 @@ sequenceDiagram
     else New request
         API->>Auth: Validate actor, limits, and policy
         Auth-->>API: Approved
-        API->>DB: BEGIN; lock balance rows in ID order
+        API->>DB: BEGIN, lock balance rows in ID order
         DB-->>API: Accounts and available balance
         alt Funds and account state valid
             API->>DB: Insert balanced ledger entries
             API->>DB: Update balance projections and transfer
-            API->>DB: Insert audit and outbox events; COMMIT
+            API->>DB: Insert audit and outbox events, COMMIT
             API-->>Customer: Transfer posted
             DB-->>Bus: Publish transfer event from outbox
         else Validation fails
-            API->>DB: Record failure; ROLLBACK/COMMIT result
+            API->>DB: Record failure, ROLLBACK/COMMIT result
             API-->>Customer: Transfer declined
         end
     end
@@ -662,7 +662,7 @@ sequenceDiagram
     Worker->>Network: Send payment with stable command ID
     Network-->>Worker: Settled or failed
     alt Settled
-        Worker->>DB: Debit settlement liability; credit cash/nostro
+        Worker->>DB: Debit settlement liability, credit cash/nostro
         Worker->>DB: Mark settled and append events atomically
     else Failed
         Worker->>DB: Post linked reversal and mark failed atomically
@@ -690,7 +690,7 @@ sequenceDiagram
     API->>DB: Lock original transaction and affected balances
     alt Not previously reversed
         API->>DB: Insert linked transaction with entry sides swapped
-        API->>DB: Update projections; append audit/outbox atomically
+        API->>DB: Update projections, append audit/outbox atomically
         DB-->>Bus: Publish transaction.reversed
         API-->>Operator: Reversal posted
     else Already reversed

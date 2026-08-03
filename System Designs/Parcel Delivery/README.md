@@ -641,11 +641,11 @@ sequenceDiagram
     API->>Rating: Validate restrictions and calculate price
     Rating-->>API: Rate and rule versions
     API->>DB: Insert snapshots, parcels, tracking IDs, charges, events
-    API->>DB: Insert label command in outbox; COMMIT
+    API->>DB: Insert label command in outbox, COMMIT
     API-->>Customer: Shipment and tracking numbers
     DB-->>Label: Publish label command
     Label->>Store: Store versioned label artifact
-    Label->>DB: Save checksum/reference; emit LABEL_READY
+    Label->>DB: Save checksum/reference, emit LABEL_READY
 ```
 
 #### Flow details
@@ -670,7 +670,7 @@ sequenceDiagram
     API->>DB: Validate shipment readiness and service area
     API->>Planner: Find capacity and route slot
     Planner-->>API: Proposed assignment/window
-    API->>DB: Reserve slot; create pickup stop and outbox atomically
+    API->>DB: Reserve slot, create pickup stop and outbox atomically
     API-->>Customer: Pickup confirmed
     DB-->>Courier: Publish pickup assignment
     Courier->>DB: Scan parcels and record custody at pickup
@@ -697,7 +697,7 @@ sequenceDiagram
         API->>DB: Update parcel projection and outbox atomically
         DB-->>Bus: Publish tracking update
     else Suspicious transition
-        API->>DB: Retain event; flag exception for investigation
+        API->>DB: Retain event, flag exception for investigation
     end
     API-->>Device: Accepted/current parcel state
 ```
@@ -721,11 +721,11 @@ sequenceDiagram
 
     Operator->>Scanner: Scan parcel into facility/container
     Scanner->>API: Sort event(parcel, chute, source ID)
-    API->>DB: Deduplicate; validate route and custody
+    API->>DB: Deduplicate, validate route and custody
     API->>DB: Append sort/container event atomically
     Planner->>DB: Build manifest from eligible parcels
     Operator->>API: Seal and dispatch manifest
-    API->>DB: Lock manifest/parcels; record seal and custody transfer
+    API->>DB: Lock manifest/parcels, record seal and custody transfer
     API->>DB: Set IN_TRANSIT and write outbox atomically
 ```
 
@@ -747,7 +747,7 @@ sequenceDiagram
     App->>API: Complete stop(parcel, location, proof reference)
     API->>DB: Lock parcel and assignment
     API->>DB: Verify custody, geofence, and delivery policy
-    API->>DB: Insert attempt; set DELIVERED; advance route; emit event
+    API->>DB: Insert attempt, set DELIVERED, advance route, emit event
     API-->>App: Delivery confirmed
     DB-->>Recipient: Publish delivery notification
 ```
@@ -769,14 +769,14 @@ sequenceDiagram
 
     Courier->>App: Record failed attempt(reason, evidence)
     App->>API: Submit attempt(parcel, location, timestamp)
-    API->>DB: Verify assignment/custody; insert immutable attempt
+    API->>DB: Verify assignment/custody, insert immutable attempt
     API->>DB: Apply attempt policy and update parcel projection
     alt Attempts remain and recipient reschedules
         DB-->>Recipient: Offer redelivery windows
         Recipient->>API: Select new window
         API->>DB: Create new delivery stop and outbox event
     else Attempts exhausted
-        API->>DB: Transition to RETURN_PLANNED; emit routing command
+        API->>DB: Transition to RETURN_PLANNED, emit routing command
     end
 ```
 
@@ -795,7 +795,7 @@ sequenceDiagram
     DB-->>Courier: Return pickup/transfer tasks
     Courier->>DB: Append custody scans along reverse route
     Courier->>DB: Record return delivery and proof reference
-    DB->>DB: Set RETURNED; finalize charges; append outbox atomically
+    DB->>DB: Set RETURNED, finalize charges, append outbox atomically
     DB-->>Sender: Return delivered notification
 ```
 

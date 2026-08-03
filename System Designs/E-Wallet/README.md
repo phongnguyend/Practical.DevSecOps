@@ -608,9 +608,9 @@ sequenceDiagram
     else New request
         API->>Risk: Check limits, sanctions, and fraud signals
         Risk-->>API: Approved
-        API->>DB: BEGIN; lock both balances in ID order
-        API->>DB: Debit sender liability; credit recipient liability
-        API->>DB: Update projections, transfer, audit, and outbox; COMMIT
+        API->>DB: BEGIN, lock both balances in ID order
+        API->>DB: Debit sender liability, credit recipient liability
+        API->>DB: Update projections, transfer, audit, and outbox, COMMIT
         API-->>Sender: Transfer completed
         DB-->>Bus: Publish wallet.transfer.completed
     end
@@ -666,10 +666,10 @@ sequenceDiagram
     Worker->>Bank: Send transfer with stable command ID
     alt Bank confirms
         Bank-->>Worker: Settlement reference
-        Worker->>DB: Capture reservation; post settlement; mark PAID
+        Worker->>DB: Capture reservation, post settlement, mark PAID
     else Bank rejects or times out finally
         Bank-->>Worker: Failure
-        Worker->>DB: Release reservation; mark FAILED; emit event
+        Worker->>DB: Release reservation, mark FAILED, emit event
     end
 ```
 
@@ -713,12 +713,12 @@ sequenceDiagram
     Customer->>Support: Report compromised wallet
     Support->>Auth: Step-up identity verification
     Auth-->>Support: Verified
-    Support->>DB: Lock wallet; set FROZEN; append reason/audit/outbox
+    Support->>DB: Lock wallet, set FROZEN, append reason/audit/outbox
     Support->>Sessions: Revoke active sessions and payment tokens
     Support-->>Customer: Wallet frozen
     opt Recovery completed
         Customer->>Support: Request unfreeze with recovery evidence
-        Support->>DB: Record approval; set ACTIVE; append audit/outbox
+        Support->>DB: Record approval, set ACTIVE, append audit/outbox
         Support-->>Customer: Wallet restored
     end
 ```

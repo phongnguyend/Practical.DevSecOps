@@ -646,20 +646,20 @@ sequenceDiagram
     participant Saga as Order Saga Worker
 
     Customer->>API: Place order(basket, address, payment, key)
-    API->>DB: Claim key; price and snapshot order
-    API->>DB: Reserve inventory/promotion; set PENDING_PAYMENT
+    API->>DB: Claim key, price and snapshot order
+    API->>DB: Reserve inventory/promotion, set PENDING_PAYMENT
     API->>Pay: Authorize payment with stable command ID
     Pay-->>API: Authorization result
-    API->>DB: Record authorization; set PLACED; write outbox
+    API->>DB: Record authorization, set PLACED, write outbox
     API-->>Customer: Order placed
     Saga->>Restaurant: Request acceptance
     alt Restaurant accepts
         Restaurant-->>Saga: Accepted
-        Saga->>DB: Set RESTAURANT_ACCEPTED; append event/outbox
+        Saga->>DB: Set RESTAURANT_ACCEPTED, append event/outbox
     else Rejected or timed out
         Restaurant-->>Saga: Rejected/timeout
         Saga->>Pay: Void authorization or request refund
-        Saga->>DB: Release reservations; set CANCELLED atomically
+        Saga->>DB: Release reservations, set CANCELLED atomically
     end
 ```
 
@@ -694,7 +694,7 @@ sequenceDiagram
     and Compensate payment
         API->>Pay: Void or refund with stable command ID
     end
-    API->>DB: Release inventory/promo; record fee/refund; set CANCELLED
+    API->>DB: Release inventory/promo, record fee/refund, set CANCELLED
     API-->>Customer: Cancellation and refund status
 ```
 

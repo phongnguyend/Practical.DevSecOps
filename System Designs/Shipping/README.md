@@ -764,14 +764,14 @@ sequenceDiagram
     API-->>Shipper: Quote and validity window
     Shipper->>API: Accept quote(idempotency key)
     API->>DB: Lock capacity pools in deterministic order
-    API->>DB: Reserve capacity; create booking/events/outbox
+    API->>DB: Reserve capacity, create booking/events/outbox
     API->>Carrier: Confirm using stable command ID
     alt Carrier confirms
         Carrier-->>API: Carrier booking reference
         API->>DB: Confirm booking and reservations atomically
         API-->>Shipper: Booking confirmed
     else Rejected or timed out
-        API->>DB: Release reservations; record exception/state
+        API->>DB: Release reservations, record exception/state
         API-->>Shipper: Booking not confirmed
     end
 ```
@@ -826,7 +826,7 @@ sequenceDiagram
     Compliance-->>API: Approved allocation
     API->>DB: Save weight/volume/cost allocations
     Warehouse->>API: Load cargo into equipment and apply seal
-    API->>DB: Validate equipment capacity; append load/equipment events
+    API->>DB: Validate equipment capacity, append load/equipment events
     API->>DB: Finalize manifest and outbox atomically
     DB-->>Carrier: Publish ready-to-load/manifest message
 ```
@@ -848,10 +848,10 @@ sequenceDiagram
     API->>DB: Save opaque filing reference and event atomically
     Customs-->>API: Release or hold notification
     alt Released
-        API->>DB: Record release; unblock affected legs
+        API->>DB: Record release, unblock affected legs
         DB-->>Operator: Customs released
     else Held
-        API->>DB: Record hold; open exception with SLA/owner
+        API->>DB: Record hold, open exception with SLA/owner
         DB-->>Operator: Customs action required
         Broker->>API: Submit amendment/additional evidence
     end
@@ -931,12 +931,12 @@ sequenceDiagram
 
     Finance->>Billing: Generate invoice(shipment, billable charges)
     Billing->>DB: Lock eligible immutable charge lines
-    Billing->>DB: Insert invoice/lines; reconcile currency and totals
-    Billing->>DB: Mark charges billed; append audit/outbox atomically
+    Billing->>DB: Insert invoice/lines, reconcile currency and totals
+    Billing->>DB: Mark charges billed, append audit/outbox atomically
     Billing-->>Customer: Issue invoice and due date
     Customer->>Payment: Pay invoice(reference, amount)
     Payment-->>Billing: Idempotent settlement callback
-    Billing->>DB: Insert payment allocation; update paid/balance totals
+    Billing->>DB: Insert payment allocation, update paid/balance totals
     alt Overpayment, failure, or currency mismatch
         Billing->>DB: Reject allocation or open reconciliation exception
     end
