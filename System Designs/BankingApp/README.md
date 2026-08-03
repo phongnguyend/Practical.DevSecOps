@@ -22,10 +22,28 @@ This document defines a production-oriented relational database for a retail ban
 7. A transfer cannot make available funds negative unless the account's product permits overdraft.
 8. Balance updates, ledger postings, and workflow state changes commit in one database transaction.
 
+## Identity and authorization tables
+
+Authentication identities are separate from banking customers. One user may represent multiple customer relationships, and organizational customers may have multiple users.
+
+| Table | Important columns | Purpose and constraints |
+|---|---|---|
+| `users` | `user_id`, `tenant_id`, `identity_subject`, `email_hash`, `status`, login timestamps | Application identity linked to an external identity provider; no passwords or tokens are stored here. |
+| `roles` | `role_id`, `tenant_id`, `role_code`, `name`, `description`, `is_system` | Tenant-scoped role such as customer, teller, operations, auditor, or administrator. |
+| `permissions` | `permission_id`, `permission_code`, `description` | Global permission catalog such as `accounts.read` or `ledger.post`. |
+| `user_roles` | `user_role_id`, `tenant_id`, `user_id`, `role_id`, optional scope, assignment/expiry fields | Assigns global or resource-scoped roles to users with an auditable grantor. |
+| `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Normalized many-to-many role permission grants. |
+
 ## High-level data model
 
 ```mermaid
 erDiagram
+    TENANTS ||--o{ USERS : contains
+    TENANTS ||--o{ ROLES : defines
+    USERS ||--o{ USER_ROLES : receives
+    ROLES ||--o{ USER_ROLES : assigns
+    ROLES ||--o{ ROLE_PERMISSIONS : grants
+    PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
     TENANTS ||--o{ CUSTOMERS : owns
     TENANTS ||--o{ BRANCHES : owns
     TENANTS ||--o{ PRODUCTS : offers
@@ -122,6 +140,53 @@ CREATE TABLE branches (
     timezone    text NOT NULL,
     status      text NOT NULL CHECK (status IN ('ACTIVE','CLOSED')),
     UNIQUE (tenant_id, branch_code)
+);
+
+CREATE TABLE users (
+    user_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    identity_subject text NOT NULL, email_hash bytea NULL,
+    status text NOT NULL CHECK (status IN ('INVITED','ACTIVE','LOCKED','DISABLED')),
+    last_login_at timestamptz NULL,
+    created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    UNIQUE (tenant_id, user_id), UNIQUE (tenant_id, identity_subject)
+);
+
+CREATE TABLE roles (
+    role_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
+    role_code text NOT NULL, name text NOT NULL, description text NULL,
+    is_system boolean NOT NULL DEFAULT false,
+    created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    UNIQUE (tenant_id, role_id), UNIQUE (tenant_id, role_code)
+);
+
+CREATE TABLE permissions (
+    permission_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    permission_code text NOT NULL UNIQUE, description text NOT NULL
+);
+
+CREATE TABLE role_permissions (
+    tenant_id uuid NOT NULL, role_id uuid NOT NULL,
+    permission_id uuid NOT NULL REFERENCES permissions(permission_id),
+    granted_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    PRIMARY KEY (role_id, permission_id),
+    FOREIGN KEY (tenant_id, role_id) REFERENCES roles(tenant_id, role_id)
+);
+
+CREATE TABLE user_roles (
+    user_role_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL, user_id uuid NOT NULL, role_id uuid NOT NULL,
+    scope_type text NULL, scope_id uuid NULL,
+    assigned_by_user_id uuid NULL,
+    assigned_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    expires_at timestamptz NULL,
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    FOREIGN KEY (tenant_id, role_id) REFERENCES roles(tenant_id, role_id),
+    FOREIGN KEY (tenant_id, assigned_by_user_id) REFERENCES users(tenant_id, user_id),
+    CHECK ((scope_type IS NULL) = (scope_id IS NULL)),
+    CHECK (expires_at IS NULL OR expires_at > assigned_at)
 );
 
 CREATE TABLE customers (
@@ -325,6 +390,15 @@ CREATE TABLE audit_events (
     after_hash     bytea NULL,
     details        jsonb NOT NULL DEFAULT '{}'::jsonb
 );
+
+CREATE UNIQUE INDEX ux_user_roles_global
+    ON user_roles (user_id, role_id) WHERE scope_type IS NULL;
+CREATE UNIQUE INDEX ux_user_roles_scoped
+    ON user_roles (user_id, role_id, scope_type, scope_id) WHERE scope_type IS NOT NULL;
+CREATE INDEX ix_user_roles_active
+    ON user_roles (tenant_id, user_id, expires_at);
+CREATE INDEX ix_users_email_hash
+    ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
 
 CREATE INDEX ix_entry_account_history
     ON ledger_entries (tenant_id, ledger_account_id, entry_id DESC);
