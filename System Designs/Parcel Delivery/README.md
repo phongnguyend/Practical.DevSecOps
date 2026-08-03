@@ -33,6 +33,10 @@ Authentication identities are separate from customer accounts, couriers, and ope
 | `permissions` | `permission_id`, `permission_code`, `description` | Global action catalog. |
 | `user_roles` | `user_role_id`, `tenant_id`, user/role IDs, optional scope, assignment/expiry fields | Auditable role assignment, optionally scoped to an account, route, or facility. |
 | `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Role-to-permission grants. |
+| `customer_account_users` | customer-account/user IDs, relationship type, validity/status fields | Connects business users to shipping customer accounts. |
+| `courier_users` | courier/user IDs, validity/status fields | Connects mobile login identities to courier profiles. |
+
+The access path is `users → customer_account_users/courier_users → domain principal`; authorization flows through roles and permissions. Shipments and manual scans retain `created_by_user_id` or `scanned_by_user_id`.
 
 ## Entity relationship model
 
@@ -44,6 +48,12 @@ erDiagram
     ROLES ||--o{ USER_ROLES : assigns
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
+    USERS ||--o{ CUSTOMER_ACCOUNT_USERS : represents
+    CUSTOMER_ACCOUNTS ||--o{ CUSTOMER_ACCOUNT_USERS : authorizes
+    USERS ||--o{ COURIER_USERS : works_as
+    COURIERS ||--o{ COURIER_USERS : identifies
+    USERS ||--o{ SHIPMENTS : creates
+    USERS ||--o{ TRACKING_EVENTS : scans
     TENANTS ||--o{ CUSTOMER_ACCOUNTS : owns
     CUSTOMER_ACCOUNTS ||--o{ ADDRESS_BOOK_ENTRIES : saves
     SERVICE_LEVELS ||--o{ RATE_CARDS : prices
@@ -259,6 +269,28 @@ CREATE TABLE couriers (
     UNIQUE (tenant_id, courier_id)
 );
 
+CREATE TABLE customer_account_users (
+    tenant_id uuid NOT NULL, customer_account_id uuid NOT NULL, user_id uuid NOT NULL,
+    relationship_type text NOT NULL CHECK (relationship_type IN ('OWNER','OPERATOR','BILLING','VIEWER')),
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (customer_account_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, customer_account_id)
+        REFERENCES customer_accounts(tenant_id, customer_account_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE courier_users (
+    tenant_id uuid NOT NULL, courier_id uuid NOT NULL, user_id uuid NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (courier_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, courier_id) REFERENCES couriers(tenant_id, courier_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
 CREATE TABLE delivery_routes (
     route_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id uuid NOT NULL REFERENCES tenants(tenant_id), route_date date NOT NULL,
@@ -289,6 +321,7 @@ CREATE TABLE route_stops (
 CREATE TABLE shipments (
     shipment_id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id          uuid NOT NULL REFERENCES tenants(tenant_id),
+    created_by_user_id uuid NULL,
     shipment_number    text NOT NULL,
     customer_account_id uuid NOT NULL REFERENCES customer_accounts(customer_account_id),
     service_level_id   uuid NOT NULL REFERENCES service_levels(service_level_id),
@@ -307,6 +340,7 @@ CREATE TABLE shipments (
     version            bigint NOT NULL DEFAULT 0,
     created_at         timestamptz NOT NULL DEFAULT clock_timestamp(),
     updated_at         timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, created_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK (pickup_window IS NULL OR NOT isempty(pickup_window)),
     CHECK (delivery_window IS NULL OR NOT isempty(delivery_window)),
     UNIQUE (tenant_id, shipment_id),
@@ -389,6 +423,7 @@ CREATE TABLE shipment_charges (
 CREATE TABLE tracking_events (
     event_id        bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tenant_id       uuid NOT NULL,
+    scanned_by_user_id uuid NULL,
     parcel_id       uuid NOT NULL,
     event_type      text NOT NULL,
     operational_status text NOT NULL,
@@ -404,6 +439,7 @@ CREATE TABLE tracking_events (
     reason_code     text NULL,
     metadata        jsonb NOT NULL DEFAULT '{}'::jsonb,
     FOREIGN KEY (tenant_id, parcel_id) REFERENCES parcels(tenant_id, parcel_id),
+    FOREIGN KEY (tenant_id, scanned_by_user_id) REFERENCES users(tenant_id, user_id),
     UNIQUE (tenant_id, device_id, source_event_id)
 );
 
@@ -543,6 +579,14 @@ CREATE INDEX ix_user_roles_active
     ON user_roles (tenant_id, user_id, expires_at);
 CREATE INDEX ix_users_email_hash
     ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
+CREATE UNIQUE INDEX ux_customer_account_users_active
+    ON customer_account_users (customer_account_id, user_id)
+    WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_customer_account_users_user
+    ON customer_account_users (tenant_id, user_id, status);
+CREATE UNIQUE INDEX ux_courier_users_active
+    ON courier_users (courier_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_courier_users_user ON courier_users (tenant_id, user_id, status);
 
 CREATE INDEX ix_shipment_customer_history
     ON shipments (tenant_id, customer_account_id, created_at DESC);

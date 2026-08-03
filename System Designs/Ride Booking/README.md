@@ -32,6 +32,10 @@ Authentication identities are separate from rider and driver profiles, allowing 
 | `permissions` | `permission_id`, `permission_code`, `description` | Global action catalog. |
 | `user_roles` | `user_role_id`, `tenant_id`, user/role IDs, optional scope, assignment/expiry fields | Auditable global or fleet/service-area-scoped role assignment. |
 | `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Role-to-permission grants. |
+| `rider_users` | rider/user IDs, validity/status fields | Connects login identities to rider profiles. |
+| `driver_users` | driver/user IDs, validity/status fields | Connects login identities to driver profiles; the same user may also be a rider. |
+
+The access path is `users → rider_users/driver_users → domain profile`; authorization flows through roles and permissions. Ride requests and human trip events retain `requested_by_user_id` or `actor_user_id`.
 
 ## Entity relationship model
 
@@ -43,6 +47,12 @@ erDiagram
     ROLES ||--o{ USER_ROLES : assigns
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
+    USERS ||--o{ RIDER_USERS : represents
+    RIDERS ||--o{ RIDER_USERS : identifies
+    USERS ||--o{ DRIVER_USERS : represents
+    DRIVERS ||--o{ DRIVER_USERS : identifies
+    USERS ||--o{ RIDE_REQUESTS : requests
+    USERS ||--o{ TRIP_EVENTS : records
     TENANTS ||--o{ RIDERS : owns
     TENANTS ||--o{ DRIVERS : onboards
     DRIVERS ||--o{ DRIVER_VEHICLES : uses
@@ -219,6 +229,26 @@ CREATE TABLE driver_vehicles (
     CHECK (valid_to IS NULL OR valid_to > valid_from)
 );
 
+CREATE TABLE rider_users (
+    tenant_id uuid NOT NULL, rider_id uuid NOT NULL, user_id uuid NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (rider_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, rider_id) REFERENCES riders(tenant_id, rider_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE driver_users (
+    tenant_id uuid NOT NULL, driver_id uuid NOT NULL, user_id uuid NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (driver_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, driver_id) REFERENCES drivers(tenant_id, driver_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
 CREATE TABLE service_types (
     service_type_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id uuid NOT NULL REFERENCES tenants(tenant_id),
@@ -292,6 +322,7 @@ CREATE TABLE ride_quotes (
 CREATE TABLE ride_requests (
     request_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id        uuid NOT NULL REFERENCES tenants(tenant_id),
+    requested_by_user_id uuid NULL,
     rider_id         uuid NOT NULL REFERENCES riders(rider_id),
     quote_id         uuid NOT NULL UNIQUE REFERENCES ride_quotes(quote_id),
     status           text NOT NULL CHECK
@@ -300,6 +331,7 @@ CREATE TABLE ride_requests (
     scheduled_at     timestamptz NULL,
     idempotency_key  text NOT NULL,
     version          bigint NOT NULL DEFAULT 0,
+    FOREIGN KEY (tenant_id, requested_by_user_id) REFERENCES users(tenant_id, user_id),
     UNIQUE (tenant_id, request_id),
     UNIQUE (tenant_id, idempotency_key)
 );
@@ -391,11 +423,12 @@ CREATE TABLE trip_events (
     from_status   text NULL,
     to_status     text NOT NULL,
     actor_type    text NOT NULL,
-    actor_id      uuid NULL,
+    actor_user_id uuid NULL,
     location      geography(Point,4326) NULL,
     occurred_at   timestamptz NOT NULL,
     received_at   timestamptz NOT NULL DEFAULT clock_timestamp(),
     FOREIGN KEY (tenant_id, trip_id) REFERENCES trips(tenant_id, trip_id),
+    FOREIGN KEY (tenant_id, actor_user_id) REFERENCES users(tenant_id, user_id),
     UNIQUE (trip_id, sequence_no),
     UNIQUE (tenant_id, source_event_id)
 );
@@ -528,6 +561,12 @@ CREATE INDEX ix_user_roles_active
     ON user_roles (tenant_id, user_id, expires_at);
 CREATE INDEX ix_users_email_hash
     ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
+CREATE UNIQUE INDEX ux_rider_users_active
+    ON rider_users (rider_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_rider_users_user ON rider_users (tenant_id, user_id, status);
+CREATE UNIQUE INDEX ux_driver_users_active
+    ON driver_users (driver_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_driver_users_user ON driver_users (tenant_id, user_id, status);
 
 CREATE UNIQUE INDEX ux_trip_active_request
     ON trips (request_id)

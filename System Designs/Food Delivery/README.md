@@ -32,6 +32,11 @@ Authentication identities are separate from customer, restaurant, and courier pr
 | `permissions` | `permission_id`, `permission_code`, `description` | Global action catalog. |
 | `user_roles` | `user_role_id`, `tenant_id`, user/role IDs, optional scope, assignment/expiry fields | Auditable role assignment, optionally scoped to a restaurant or branch. |
 | `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Role-to-permission grants. |
+| `customer_users` | customer/user IDs, validity/status fields | Connects consumer identities to customer profiles. |
+| `restaurant_users` | restaurant/user IDs, relationship type, validity/status fields | Connects owners and staff to restaurant profiles. |
+| `courier_users` | courier/user IDs, validity/status fields | Connects delivery identities to courier profiles. |
+
+The access path is `users → customer_users/restaurant_users/courier_users → domain profile`; authorization flows through roles and permissions. Orders and human-generated order events retain `placed_by_user_id` or `actor_user_id`.
 
 ## Entity relationship model
 
@@ -43,6 +48,14 @@ erDiagram
     ROLES ||--o{ USER_ROLES : assigns
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
+    USERS ||--o{ CUSTOMER_USERS : represents
+    CUSTOMERS ||--o{ CUSTOMER_USERS : authorizes
+    USERS ||--o{ RESTAURANT_USERS : operates
+    RESTAURANTS ||--o{ RESTAURANT_USERS : authorizes
+    USERS ||--o{ COURIER_USERS : works_as
+    COURIERS ||--o{ COURIER_USERS : identifies
+    USERS ||--o{ CUSTOMER_ORDERS : places
+    USERS ||--o{ ORDER_STATUS_EVENTS : records
     TENANTS ||--o{ CUSTOMERS : owns
     CUSTOMERS ||--o{ CUSTOMER_ADDRESSES : saves
     TENANTS ||--o{ RESTAURANTS : onboards
@@ -293,9 +306,41 @@ CREATE TABLE couriers (
     UNIQUE (tenant_id, courier_id)
 );
 
+CREATE TABLE customer_users (
+    tenant_id uuid NOT NULL, customer_id uuid NOT NULL, user_id uuid NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (customer_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, customer_id) REFERENCES customers(tenant_id, customer_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE restaurant_users (
+    tenant_id uuid NOT NULL, restaurant_id uuid NOT NULL, user_id uuid NOT NULL,
+    relationship_type text NOT NULL CHECK (relationship_type IN ('OWNER','MANAGER','STAFF','FINANCE')),
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (restaurant_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, restaurant_id) REFERENCES restaurants(tenant_id, restaurant_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE courier_users (
+    tenant_id uuid NOT NULL, courier_id uuid NOT NULL, user_id uuid NOT NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (courier_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, courier_id) REFERENCES couriers(tenant_id, courier_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
 CREATE TABLE customer_orders (
     order_id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id         uuid NOT NULL REFERENCES tenants(tenant_id),
+    placed_by_user_id uuid NULL,
     order_number      text NOT NULL,
     customer_id       uuid NOT NULL REFERENCES customers(customer_id),
     branch_id         uuid NOT NULL REFERENCES restaurant_branches(branch_id),
@@ -318,6 +363,7 @@ CREATE TABLE customer_orders (
     version           bigint NOT NULL DEFAULT 0,
     created_at        timestamptz NOT NULL DEFAULT clock_timestamp(),
     updated_at        timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, placed_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK (grand_total = subtotal + tax_total + fee_total + tip_total - discount_total),
     CHECK (order_type = 'PICKUP' OR delivery_snapshot IS NOT NULL),
     UNIQUE (tenant_id, order_id),
@@ -361,10 +407,11 @@ CREATE TABLE order_status_events (
     from_status  text NULL,
     to_status    text NOT NULL,
     actor_type   text NOT NULL,
-    actor_id     uuid NULL,
+    actor_user_id uuid NULL,
     reason_code  text NULL,
     occurred_at  timestamptz NOT NULL DEFAULT clock_timestamp(),
     FOREIGN KEY (tenant_id, order_id) REFERENCES customer_orders(tenant_id, order_id),
+    FOREIGN KEY (tenant_id, actor_user_id) REFERENCES users(tenant_id, user_id),
     UNIQUE (order_id, sequence_no)
 );
 
@@ -520,6 +567,15 @@ CREATE INDEX ix_user_roles_active
     ON user_roles (tenant_id, user_id, expires_at);
 CREATE INDEX ix_users_email_hash
     ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
+CREATE UNIQUE INDEX ux_customer_users_active
+    ON customer_users (customer_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_customer_users_user ON customer_users (tenant_id, user_id, status);
+CREATE UNIQUE INDEX ux_restaurant_users_active
+    ON restaurant_users (restaurant_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_restaurant_users_user ON restaurant_users (tenant_id, user_id, status);
+CREATE UNIQUE INDEX ux_courier_users_active
+    ON courier_users (courier_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_courier_users_user ON courier_users (tenant_id, user_id, status);
 
 CREATE INDEX ix_order_customer_history
     ON customer_orders (tenant_id, customer_id, created_at DESC);

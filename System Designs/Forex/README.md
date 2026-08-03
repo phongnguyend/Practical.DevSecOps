@@ -33,6 +33,9 @@ Authentication identities are separate from regulated customer and trading-accou
 | `permissions` | `permission_id`, `permission_code`, `description` | Global action catalog. |
 | `user_roles` | `user_role_id`, `tenant_id`, user/role IDs, optional scope, assignment/expiry fields | Auditable role assignment, optionally scoped to a trading account or desk. |
 | `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Role-to-permission grants. |
+| `customer_users` | customer/user IDs, relationship type, validity/status fields | Links identities to individual or institutional customers; trading-account access is then constrained by roles/scopes. |
+
+The access path is `users → customer_users → customers → trading_accounts`; authorization flows through `user_roles → roles → role_permissions`, and every client order records `submitted_by_user_id`.
 
 ## Entity relationship model
 
@@ -44,6 +47,9 @@ erDiagram
     ROLES ||--o{ USER_ROLES : assigns
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
+    USERS ||--o{ CUSTOMER_USERS : represents
+    CUSTOMERS ||--o{ CUSTOMER_USERS : authorizes
+    USERS ||--o{ FX_ORDERS : submits
     TENANTS ||--o{ CUSTOMERS : owns
     CUSTOMERS ||--o{ TRADING_ACCOUNTS : opens
     TRADING_ACCOUNTS ||--o{ CASH_ACCOUNTS : holds
@@ -201,6 +207,18 @@ CREATE TABLE trading_accounts (
     CHECK (stop_out_level <= margin_call_level)
 );
 
+CREATE TABLE customer_users (
+    tenant_id uuid NOT NULL, customer_id uuid NOT NULL, user_id uuid NOT NULL,
+    relationship_type text NOT NULL CHECK
+        (relationship_type IN ('SELF','OWNER','TRADER','AUTHORIZED_REPRESENTATIVE')),
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (customer_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, customer_id) REFERENCES customers(tenant_id, customer_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
 CREATE TABLE cash_accounts (
     cash_account_id    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id          uuid NOT NULL REFERENCES tenants(tenant_id),
@@ -248,6 +266,7 @@ CREATE TABLE trading_sessions (
 CREATE TABLE fx_orders (
     order_id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id            uuid NOT NULL REFERENCES tenants(tenant_id),
+    submitted_by_user_id uuid NULL,
     trading_account_id   uuid NOT NULL REFERENCES trading_accounts(trading_account_id),
     instrument_id        uuid NOT NULL REFERENCES fx_instruments(instrument_id),
     client_order_id      text NOT NULL,
@@ -266,6 +285,7 @@ CREATE TABLE fx_orders (
     version              bigint NOT NULL DEFAULT 0,
     created_at           timestamptz NOT NULL DEFAULT clock_timestamp(),
     updated_at           timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, submitted_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK (filled_quantity <= quantity),
     CHECK (order_type NOT IN ('LIMIT','STOP_LIMIT') OR limit_price IS NOT NULL),
     CHECK (order_type NOT IN ('STOP','STOP_LIMIT') OR stop_price IS NOT NULL),
@@ -501,6 +521,9 @@ CREATE INDEX ix_user_roles_active
     ON user_roles (tenant_id, user_id, expires_at);
 CREATE INDEX ix_users_email_hash
     ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
+CREATE UNIQUE INDEX ux_customer_users_active
+    ON customer_users (customer_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_customer_users_user ON customer_users (tenant_id, user_id, status);
 
 CREATE INDEX ix_order_account_history
     ON fx_orders (tenant_id, trading_account_id, created_at DESC);

@@ -33,6 +33,10 @@ Authentication identities are separate from wallet customers and merchants. This
 | `permissions` | `permission_id`, `permission_code`, `description` | Global permission catalog. |
 | `user_roles` | `user_role_id`, `tenant_id`, user/role IDs, optional scope, assignment/expiry fields | Auditable global or resource-scoped role assignment. |
 | `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Role-to-permission many-to-many grants. |
+| `customer_users` | customer/user IDs, relationship type, validity/status fields | Links identities to consumer or organization wallet customers. |
+| `merchant_users` | merchant/user IDs, relationship type, validity/status fields | Links merchant owners and operators to merchant profiles. |
+
+The access path is `users → customer_users/merchant_users → domain principal`; permissions flow through `user_roles → roles → role_permissions`. Transfers, payments, top-ups, and cash-outs record `requested_by_user_id`.
 
 ## Entity relationship model
 
@@ -44,6 +48,14 @@ erDiagram
     ROLES ||--o{ USER_ROLES : assigns
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
+    USERS ||--o{ CUSTOMER_USERS : represents
+    CUSTOMERS ||--o{ CUSTOMER_USERS : authorizes
+    USERS ||--o{ MERCHANT_USERS : operates
+    MERCHANTS ||--o{ MERCHANT_USERS : authorizes
+    USERS ||--o{ TRANSFERS : requests
+    USERS ||--o{ PAYMENTS : requests
+    USERS ||--o{ TOP_UPS : requests
+    USERS ||--o{ CASH_OUTS : requests
     TENANTS ||--o{ CUSTOMERS : owns
     CUSTOMERS ||--o| CUSTOMER_PII_RECORDS : protects
     CUSTOMERS ||--o{ WALLETS : owns
@@ -235,6 +247,28 @@ CREATE TABLE funding_instruments (
     UNIQUE (tenant_id, provider_token)
 );
 
+CREATE TABLE customer_users (
+    tenant_id uuid NOT NULL, customer_id uuid NOT NULL, user_id uuid NOT NULL,
+    relationship_type text NOT NULL CHECK (relationship_type IN ('SELF','OWNER','AUTHORIZED_REPRESENTATIVE')),
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (customer_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, customer_id) REFERENCES customers(tenant_id, customer_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE merchant_users (
+    tenant_id uuid NOT NULL, merchant_id uuid NOT NULL, user_id uuid NOT NULL,
+    relationship_type text NOT NULL CHECK (relationship_type IN ('OWNER','OPERATOR','FINANCE','SUPPORT')),
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (merchant_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, merchant_id) REFERENCES merchants(tenant_id, merchant_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
 CREATE TABLE wallet_accounts (
     wallet_account_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id         uuid NOT NULL REFERENCES tenants(tenant_id),
@@ -309,6 +343,7 @@ CREATE TABLE balance_holds (
 CREATE TABLE transfers (
     transfer_id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id                    uuid NOT NULL REFERENCES tenants(tenant_id),
+    requested_by_user_id         uuid NULL,
     source_wallet_account_id     uuid NOT NULL REFERENCES wallet_accounts(wallet_account_id),
     destination_wallet_account_id uuid NOT NULL REFERENCES wallet_accounts(wallet_account_id),
     amount                       numeric(19,4) NOT NULL CHECK (amount > 0),
@@ -319,6 +354,7 @@ CREATE TABLE transfers (
     ledger_transaction_id        uuid NULL REFERENCES ledger_transactions(ledger_transaction_id),
     version                      bigint NOT NULL DEFAULT 0,
     created_at                   timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, requested_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK (source_wallet_account_id <> destination_wallet_account_id),
     CHECK (status <> 'POSTED' OR ledger_transaction_id IS NOT NULL),
     UNIQUE (tenant_id, idempotency_key)
@@ -339,6 +375,7 @@ CREATE TABLE account_balances (
 CREATE TABLE payments (
     payment_id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id              uuid NOT NULL REFERENCES tenants(tenant_id),
+    requested_by_user_id   uuid NULL,
     payer_wallet_account_id uuid NOT NULL REFERENCES wallet_accounts(wallet_account_id),
     merchant_id            uuid NOT NULL REFERENCES merchants(merchant_id),
     amount                 numeric(19,4) NOT NULL CHECK (amount > 0),
@@ -352,6 +389,7 @@ CREATE TABLE payments (
     refunded_amount        numeric(19,4) NOT NULL DEFAULT 0 CHECK (refunded_amount >= 0),
     version                bigint NOT NULL DEFAULT 0,
     created_at             timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, requested_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK (captured_amount <= amount),
     CHECK (refunded_amount <= captured_amount),
     UNIQUE (tenant_id, payment_id),
@@ -391,6 +429,7 @@ CREATE TABLE refunds (
 CREATE TABLE top_ups (
     top_up_id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id            uuid NOT NULL REFERENCES tenants(tenant_id),
+    requested_by_user_id uuid NULL,
     wallet_account_id    uuid NOT NULL REFERENCES wallet_accounts(wallet_account_id),
     instrument_id        uuid NOT NULL REFERENCES funding_instruments(instrument_id),
     amount               numeric(19,4) NOT NULL CHECK (amount > 0),
@@ -400,6 +439,7 @@ CREATE TABLE top_ups (
     idempotency_key      text NOT NULL,
     ledger_transaction_id uuid NULL REFERENCES ledger_transactions(ledger_transaction_id),
     created_at           timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, requested_by_user_id) REFERENCES users(tenant_id, user_id),
     UNIQUE (tenant_id, idempotency_key),
     UNIQUE (tenant_id, provider_reference)
 );
@@ -407,6 +447,7 @@ CREATE TABLE top_ups (
 CREATE TABLE cash_outs (
     cash_out_id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id            uuid NOT NULL REFERENCES tenants(tenant_id),
+    requested_by_user_id uuid NULL,
     wallet_account_id    uuid NOT NULL REFERENCES wallet_accounts(wallet_account_id),
     destination_token    text NOT NULL,
     amount               numeric(19,4) NOT NULL CHECK (amount > 0),
@@ -417,6 +458,7 @@ CREATE TABLE cash_outs (
     idempotency_key      text NOT NULL,
     ledger_transaction_id uuid NULL REFERENCES ledger_transactions(ledger_transaction_id),
     created_at           timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, requested_by_user_id) REFERENCES users(tenant_id, user_id),
     UNIQUE (tenant_id, idempotency_key)
 );
 
@@ -469,6 +511,12 @@ CREATE INDEX ix_user_roles_active
     ON user_roles (tenant_id, user_id, expires_at);
 CREATE INDEX ix_users_email_hash
     ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
+CREATE UNIQUE INDEX ux_customer_users_active
+    ON customer_users (customer_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_customer_users_user ON customer_users (tenant_id, user_id, status);
+CREATE UNIQUE INDEX ux_merchant_users_active
+    ON merchant_users (merchant_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_merchant_users_user ON merchant_users (tenant_id, user_id, status);
 
 CREATE INDEX ix_wallet_account_owner
     ON wallet_accounts (tenant_id, wallet_id, status);

@@ -32,6 +32,9 @@ Authentication identities are separate from commercial organizations and shipmen
 | `permissions` | `permission_id`, `permission_code`, `description` | Global action catalog. |
 | `user_roles` | `user_role_id`, `tenant_id`, user/role IDs, optional scope, assignment/expiry fields | Auditable assignment, optionally scoped to an organization, facility, or shipment. |
 | `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Role-to-permission grants. |
+| `organization_users` | organization/user IDs, relationship type, validity/status fields | Connects people to shipper, consignee, carrier, broker, or payer organizations. |
+
+The access path is `users → organization_users → organizations`; authorization flows through roles and permissions. Bookings, issued trade documents, and shipment events retain their responsible user IDs.
 
 ## Entity relationship model
 
@@ -43,6 +46,11 @@ erDiagram
     ROLES ||--o{ USER_ROLES : assigns
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
+    USERS ||--o{ ORGANIZATION_USERS : represents
+    ORGANIZATIONS ||--o{ ORGANIZATION_USERS : authorizes
+    USERS ||--o{ BOOKINGS : creates
+    USERS ||--o{ TRADE_DOCUMENTS : issues
+    USERS ||--o{ SHIPMENT_EVENTS : records
     TENANTS ||--o{ ORGANIZATIONS : manages
     ORGANIZATIONS ||--o{ PARTY_ROLES : acts_as
     LOCATIONS ||--o{ FACILITIES : contains
@@ -200,6 +208,18 @@ CREATE TABLE organizations (
     UNIQUE (tenant_id, organization_id)
 );
 
+CREATE TABLE organization_users (
+    tenant_id uuid NOT NULL, organization_id uuid NOT NULL, user_id uuid NOT NULL,
+    relationship_type text NOT NULL CHECK
+        (relationship_type IN ('OWNER','OPERATOR','LOGISTICS','CUSTOMS','FINANCE','VIEWER')),
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (organization_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, organization_id) REFERENCES organizations(tenant_id, organization_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
 CREATE TABLE party_roles (
     party_role_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id uuid NOT NULL REFERENCES organizations(organization_id),
@@ -313,6 +333,7 @@ CREATE TABLE equipment_units (
 CREATE TABLE bookings (
     booking_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id        uuid NOT NULL REFERENCES tenants(tenant_id),
+    created_by_user_id uuid NULL,
     booking_number   text NOT NULL,
     quote_id         uuid NULL UNIQUE REFERENCES rate_quotes(quote_id),
     customer_id      uuid NOT NULL REFERENCES organizations(organization_id),
@@ -329,6 +350,7 @@ CREATE TABLE bookings (
     version          bigint NOT NULL DEFAULT 0,
     created_at       timestamptz NOT NULL DEFAULT clock_timestamp(),
     updated_at       timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, created_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK ((incoterm_code IS NULL) = (incoterm_place IS NULL)),
     UNIQUE (tenant_id, booking_id),
     UNIQUE (tenant_id, booking_number),
@@ -506,6 +528,7 @@ CREATE TABLE equipment_events (
 CREATE TABLE trade_documents (
     document_id      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id        uuid NOT NULL,
+    issued_by_user_id uuid NULL,
     shipment_id      uuid NOT NULL,
     document_type    text NOT NULL,
     issuer_id        uuid NOT NULL REFERENCES organizations(organization_id),
@@ -518,6 +541,7 @@ CREATE TABLE trade_documents (
     supersedes_document_id uuid NULL REFERENCES trade_documents(document_id),
     issued_at        timestamptz NULL,
     FOREIGN KEY (tenant_id, shipment_id) REFERENCES shipments(tenant_id, shipment_id),
+    FOREIGN KEY (tenant_id, issued_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK (status <> 'ISSUED' OR issued_at IS NOT NULL),
     CHECK (supersedes_document_id IS NULL OR version_no > 1),
     UNIQUE (issuer_id, document_type, document_number, version_no),
@@ -535,6 +559,7 @@ CREATE TABLE document_parties (
 CREATE TABLE shipment_events (
     event_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tenant_id uuid NOT NULL, shipment_id uuid NOT NULL,
+    recorded_by_user_id uuid NULL,
     event_type text NOT NULL,
     leg_id uuid NULL REFERENCES shipment_legs(leg_id),
     facility_id uuid NULL REFERENCES facilities(facility_id),
@@ -545,6 +570,7 @@ CREATE TABLE shipment_events (
     location geography(Point,4326) NULL, reason_code text NULL,
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
     FOREIGN KEY (tenant_id, shipment_id) REFERENCES shipments(tenant_id, shipment_id),
+    FOREIGN KEY (tenant_id, recorded_by_user_id) REFERENCES users(tenant_id, user_id),
     UNIQUE (source, source_event_id)
 );
 
@@ -671,6 +697,11 @@ CREATE INDEX ix_user_roles_active
     ON user_roles (tenant_id, user_id, expires_at);
 CREATE INDEX ix_users_email_hash
     ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
+CREATE UNIQUE INDEX ux_organization_users_active
+    ON organization_users (organization_id, user_id)
+    WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_organization_users_user
+    ON organization_users (tenant_id, user_id, status);
 
 CREATE INDEX ix_booking_customer_history
     ON bookings (tenant_id, customer_id, created_at DESC);

@@ -33,6 +33,10 @@ Authentication identities are separate from banking customers. One user may repr
 | `permissions` | `permission_id`, `permission_code`, `description` | Global permission catalog such as `accounts.read` or `ledger.post`. |
 | `user_roles` | `user_role_id`, `tenant_id`, `user_id`, `role_id`, optional scope, assignment/expiry fields | Assigns global or resource-scoped roles to users with an auditable grantor. |
 | `role_permissions` | `tenant_id`, `role_id`, `permission_id`, `granted_at` | Normalized many-to-many role permission grants. |
+| `customer_users` | `customer_id`, `user_id`, `relationship_type`, validity/status fields | Links login identities to person or organization customers; supports several users per organization and one user acting for several customers. |
+| `branch_users` | `branch_id`, `user_id`, `job_title`, validity/status fields | Links employee identities to their operating branch; permissions still come from roles. |
+
+The access path is `users → customer_users/branch_users → domain principal`, while authorization is `users → user_roles → roles → role_permissions → permissions`. Money-moving and audit rows point back to the responsible identity through `initiated_by_user_id` or `actor_user_id`.
 
 ## High-level data model
 
@@ -44,6 +48,12 @@ erDiagram
     ROLES ||--o{ USER_ROLES : assigns
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : includes
+    USERS ||--o{ CUSTOMER_USERS : represents
+    CUSTOMERS ||--o{ CUSTOMER_USERS : authorizes
+    USERS ||--o{ BRANCH_USERS : staffs
+    BRANCHES ||--o{ BRANCH_USERS : employs
+    USERS ||--o{ TRANSFERS : initiates
+    USERS ||--o{ AUDIT_EVENTS : acts_in
     TENANTS ||--o{ CUSTOMERS : owns
     TENANTS ||--o{ BRANCHES : owns
     TENANTS ||--o{ PRODUCTS : offers
@@ -139,6 +149,7 @@ CREATE TABLE branches (
     name        text NOT NULL,
     timezone    text NOT NULL,
     status      text NOT NULL CHECK (status IN ('ACTIVE','CLOSED')),
+    UNIQUE (tenant_id, branch_id),
     UNIQUE (tenant_id, branch_code)
 );
 
@@ -258,6 +269,29 @@ CREATE TABLE account_holders (
     CHECK (valid_to IS NULL OR valid_to >= valid_from)
 );
 
+CREATE TABLE customer_users (
+    tenant_id uuid NOT NULL, customer_id uuid NOT NULL, user_id uuid NOT NULL,
+    relationship_type text NOT NULL CHECK
+        (relationship_type IN ('SELF','OWNER','AUTHORIZED_REPRESENTATIVE','EMPLOYEE')),
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (customer_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, customer_id) REFERENCES customers(tenant_id, customer_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
+CREATE TABLE branch_users (
+    tenant_id uuid NOT NULL, branch_id uuid NOT NULL, user_id uuid NOT NULL,
+    job_title text NULL,
+    status text NOT NULL CHECK (status IN ('ACTIVE','SUSPENDED','REVOKED')),
+    valid_from timestamptz NOT NULL DEFAULT clock_timestamp(), valid_to timestamptz NULL,
+    PRIMARY KEY (branch_id, user_id, valid_from),
+    FOREIGN KEY (tenant_id, branch_id) REFERENCES branches(tenant_id, branch_id),
+    FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, user_id),
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+
 CREATE TABLE ledger_accounts (
     ledger_account_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id         uuid NOT NULL REFERENCES tenants(tenant_id),
@@ -315,6 +349,7 @@ CREATE TABLE account_balances (
 CREATE TABLE transfers (
     transfer_id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id             uuid NOT NULL REFERENCES tenants(tenant_id),
+    initiated_by_user_id  uuid NULL,
     source_account_id     uuid NOT NULL REFERENCES accounts(account_id),
     destination_account_id uuid NOT NULL REFERENCES accounts(account_id),
     amount                numeric(19,4) NOT NULL CHECK (amount > 0),
@@ -328,6 +363,7 @@ CREATE TABLE transfers (
     version               bigint NOT NULL DEFAULT 0,
     created_at            timestamptz NOT NULL DEFAULT clock_timestamp(),
     updated_at            timestamptz NOT NULL DEFAULT clock_timestamp(),
+    FOREIGN KEY (tenant_id, initiated_by_user_id) REFERENCES users(tenant_id, user_id),
     CHECK (source_account_id <> destination_account_id),
     CHECK (status <> 'POSTED' OR ledger_transaction_id IS NOT NULL),
     UNIQUE (tenant_id, idempotency_key)
@@ -378,6 +414,7 @@ CREATE TABLE outbox_events (
 CREATE TABLE audit_events (
     audit_event_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tenant_id      uuid NOT NULL REFERENCES tenants(tenant_id),
+    actor_user_id  uuid NULL,
     occurred_at    timestamptz NOT NULL DEFAULT clock_timestamp(),
     actor_type     text NOT NULL,
     actor_id       text NULL,
@@ -388,7 +425,8 @@ CREATE TABLE audit_events (
     source_ip      inet NULL,
     before_hash    bytea NULL,
     after_hash     bytea NULL,
-    details        jsonb NOT NULL DEFAULT '{}'::jsonb
+    details        jsonb NOT NULL DEFAULT '{}'::jsonb,
+    FOREIGN KEY (tenant_id, actor_user_id) REFERENCES users(tenant_id, user_id)
 );
 
 CREATE UNIQUE INDEX ux_user_roles_global
@@ -399,6 +437,12 @@ CREATE INDEX ix_user_roles_active
     ON user_roles (tenant_id, user_id, expires_at);
 CREATE INDEX ix_users_email_hash
     ON users (tenant_id, email_hash) WHERE email_hash IS NOT NULL;
+CREATE UNIQUE INDEX ux_customer_users_active
+    ON customer_users (customer_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_customer_users_user ON customer_users (tenant_id, user_id, status);
+CREATE UNIQUE INDEX ux_branch_users_active
+    ON branch_users (branch_id, user_id) WHERE status = 'ACTIVE' AND valid_to IS NULL;
+CREATE INDEX ix_branch_users_user ON branch_users (tenant_id, user_id, status);
 
 CREATE INDEX ix_entry_account_history
     ON ledger_entries (tenant_id, ledger_account_id, entry_id DESC);
