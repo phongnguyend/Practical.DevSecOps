@@ -580,7 +580,7 @@ sequenceDiagram
 
     User->>Client: Choose master password and optional passkey
     Client->>Client: Generate KDF salt, root key, user key pair, and device key
-    Client->>Client: Derive KEK; encrypt root and private-key envelopes
+    Client->>Client: Derive KEK and encrypt root and private-key envelopes
     Client->>Auth: OPAQUE/passkey record, public keys, encrypted envelopes
     Auth->>DB: Create user, personal tenant, membership, device, vault, and outbox
     DB-->>Auth: Committed account and device identifiers
@@ -628,10 +628,10 @@ sequenceDiagram
     User->>Client: Save login or secure item
     Client->>Client: Encrypt payload with current scope key and bound AAD
     Client->>API: Put ciphertext, base revision, and idempotency key
-    API->>DB: Claim key; authorize device, membership, capability, and key grant
+    API->>DB: Claim key and authorize device, membership, capability, and key grant
     alt Stale base revision
         DB-->>API: Current encrypted revision
-        API-->>Client: 409 conflict; preserve both versions
+        API-->>Client: 409 conflict and both versions preserved
         Client->>Client: Decrypt and merge or ask user
     else Current base revision
         API->>DB: Append revision, update item, sync event, audit, and outbox
@@ -685,7 +685,7 @@ sequenceDiagram
     Admin->>Client: Remove member
     Client->>API: Revoke membership/access with reason and step-up proof
     API->>DB: Mark removed, revoke sessions/grants, set collection ROTATING
-    API-->>Client: Revocation committed; future server access denied
+    API-->>Client: Revocation committed and future server access denied
     Client->>Client: Generate new collection key
     Client->>API: Submit new key metadata and grants for remaining users
     API->>DB: Validate complete recipient set and activate key version
@@ -715,14 +715,14 @@ sequenceDiagram
     Auth->>DB: Lock recovery envelope and verify unused active factor
     alt Valid recovery factor
         DB-->>Client: Encrypted recovery root-key envelope
-        Client->>Client: Unwrap locally; create new auth and device keys
+        Client->>Client: Unwrap locally and create new auth and device keys
         Client->>Auth: Replace auth record/envelopes and revoke old sessions
         Auth->>DB: Mark factor used, audit recovery, write outbox atomically
         Auth-->>Notify: Send security alerts to all known channels
     else No valid recovery factor
         Auth-->>Client: Old vault cannot be decrypted
         User->>Auth: Confirm destructive empty-account reset
-        Auth->>DB: Abandon old ciphertext; create a new key hierarchy marker
+        Auth->>DB: Abandon old ciphertext and create a new key hierarchy marker
     end
 ```
 
