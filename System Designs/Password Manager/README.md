@@ -710,19 +710,19 @@ sequenceDiagram
     participant DB as PostgreSQL
     participant Notify as Notification Service
 
-    User->>Client: Present recovery code/device/admin approval
-    Client->>Auth: Prove recovery factor and new-device challenge
-    Auth->>DB: Lock recovery envelope and verify unused active factor
-    alt Valid recovery factor
-        DB-->>Client: Encrypted recovery root-key envelope
-        Client->>Client: Unwrap locally and create new auth and device keys
-        Client->>Auth: Replace auth record/envelopes and revoke old sessions
-        Auth->>DB: Mark factor used, audit recovery, write outbox atomically
-        Auth-->>Notify: Send security alerts to all known channels
-    else No valid recovery factor
-        Auth-->>Client: Old vault cannot be decrypted
-        User->>Auth: Confirm destructive empty-account reset
-        Auth->>DB: Abandon old ciphertext and create a new key hierarchy marker
+    User->>Client: Present recovery proof
+    Client->>Auth: Submit recovery proof and device challenge
+    Auth->>DB: Lock and validate the active recovery envelope
+    alt Recovery succeeds
+        DB-->>Client: Return encrypted recovery envelope
+        Client->>Client: Unwrap keys and create new device keys
+        Client->>Auth: Replace authentication data and revoke old sessions
+        Auth->>DB: Consume factor and record recovery events
+        Auth->>Notify: Send security alerts
+    else Recovery is unavailable
+        Auth-->>Client: Report that the old vault cannot be decrypted
+        User->>Auth: Confirm an empty account reset
+        Auth->>DB: Abandon old ciphertext and mark the new key hierarchy
     end
 ```
 
