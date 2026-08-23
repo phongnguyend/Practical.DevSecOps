@@ -1,6 +1,6 @@
-# E-Wallet Database Design
+# E-Wallet System Design
 
-This design targets a multi-tenant consumer and merchant wallet built on PostgreSQL. It supports multi-currency wallets, peer-to-peer transfers, merchant payments, cash-in/cash-out, holds, refunds, fees, and reliable event publication. The financial source of truth is an immutable double-entry ledger.
+This document defines a production-oriented, multi-tenant consumer and merchant wallet system, including its domain model, workflows, technology stack, and non-functional requirements. React provides customer, merchant, and operations experiences; .NET services implement wallet, payment, risk, and reconciliation behavior; and Azure provides the managed runtime, messaging, security, and observability services. PostgreSQL remains the financial source of truth through an immutable double-entry ledger supporting multi-currency wallets, peer-to-peer transfers, merchant payments, cash-in/cash-out, holds, refunds, fees, and reliable event publication.
 
 ## Scope and principles
 

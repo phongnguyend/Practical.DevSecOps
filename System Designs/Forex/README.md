@@ -1,6 +1,6 @@
-# Forex Trading Database Design
+# Forex Trading System Design
 
-This design assumes `ForexApp` is a retail foreign-exchange trading platform rather than a simple currency converter. PostgreSQL stores customers, trading accounts, orders, executions, positions, cash ledgers, and compliance history. A dedicated pricing feed and, at very high throughput, a sequenced execution engine can sit in front of the database while PostgreSQL remains the durable system of record.
+This document defines `ForexApp` as a production-oriented retail foreign-exchange trading system rather than a simple currency converter. It covers the trading domain, order and settlement workflows, technology stack, and non-functional requirements. React provides trading and risk interfaces, .NET services implement order, execution, margin, and settlement behavior, and Azure supplies isolated compute, realtime delivery, streaming, security, and observability. PostgreSQL remains the durable system of record for customers, trading accounts, orders, executions, positions, cash ledgers, and compliance history, with dedicated pricing feeds and, at very high throughput, a sequenced execution engine in front of it.
 
 ## Scope and principles
 

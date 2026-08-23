@@ -1,6 +1,6 @@
-# Food Delivery Database Design
+# Food Delivery System Design
 
-This design models a multi-tenant food-delivery marketplace using PostgreSQL with PostGIS. PostgreSQL is the transactional source of truth for restaurants, menus, orders, payments, courier assignments, and state history. Search indexes, caches, routing engines, and event streams are derived systems and must tolerate replay.
+This document defines a production-oriented, multi-tenant food-delivery marketplace, covering its domain model, ordering and delivery workflows, technology stack, and non-functional requirements. React supports customer, restaurant, courier, and operations experiences; .NET services implement marketplace, ordering, dispatch, payment, and settlement behavior; and Azure supplies managed hosting, messaging, search, mapping, security, and observability. PostgreSQL with PostGIS remains the transactional source of truth for restaurants, menus, orders, payments, courier assignments, and state history, while search indexes, caches, routing engines, and event streams are replayable derived systems.
 
 ## Scope and principles
 

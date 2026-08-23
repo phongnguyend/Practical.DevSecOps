@@ -1,6 +1,6 @@
-# Parcel Delivery Database Design
+# Parcel Delivery System Design
 
-This design models a multi-tenant parcel and last-mile delivery network using PostgreSQL with PostGIS. It supports quotes, shipments containing multiple parcels, labels, hub/route planning, courier assignment, custody scans, delivery attempts, proof of delivery, charges, and customer tracking. PostgreSQL is the durable source of truth; scanners and mobile clients synchronize through idempotent event APIs.
+This document defines a production-oriented, multi-tenant parcel and last-mile delivery system, covering the logistics domain, operational workflows, technology stack, and non-functional requirements. React supports customer, courier, depot, and operations experiences; .NET services implement shipment, routing, custody, delivery, and tracking behavior; and Azure supplies managed compute, event ingestion, messaging, mapping, document storage, security, and observability. PostgreSQL with PostGIS remains the durable source of truth for quotes, shipments, parcels, labels, routes, assignments, scans, delivery attempts, proof metadata, charges, and tracking, while scanners and mobile clients synchronize through idempotent event APIs.
 
 ## Scope and principles
 

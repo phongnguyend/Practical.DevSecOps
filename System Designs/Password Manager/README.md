@@ -1,6 +1,6 @@
-# Password Manager Database Design
+# Password Manager System Design
 
-This design models a multi-tenant, zero-knowledge password manager using PostgreSQL. Client applications encrypt and decrypt vault data locally; PostgreSQL is the transactional source of truth for identities, devices, encrypted key envelopes, vault ciphertext, sharing, synchronization, and audit metadata. Object storage holds encrypted attachment chunks, while caches, search indexes, and event streams are derived systems that must tolerate replay.
+This document defines a production-oriented, multi-tenant, zero-knowledge password manager, covering client cryptography, domain and data models, synchronization and sharing workflows, technology choices, and non-functional requirements. React clients encrypt and decrypt vault data locally, .NET services coordinate identities, devices, ciphertext synchronization, sharing, and audit behavior, and Azure provides managed compute, storage, messaging, identity integration, security, and observability. PostgreSQL remains the transactional source of truth for encrypted key envelopes, vault ciphertext, and metadata; Blob Storage holds encrypted attachments, while caches and event streams are replayable derived systems.
 
 ## Scope and principles
 

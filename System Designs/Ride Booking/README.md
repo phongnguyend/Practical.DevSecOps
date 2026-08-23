@@ -1,6 +1,6 @@
-# Ride Booking Database Design
+# Ride Booking System Design
 
-This design models a multi-tenant ride-hailing platform using PostgreSQL with PostGIS. PostgreSQL stores riders, drivers, vehicles, quotes, ride requests, trips, dispatch outcomes, fares, and payments. Low-latency driver discovery and location streaming may use geo caches and event infrastructure, but all accepted assignments and trip transitions are committed to PostgreSQL.
+This document defines a production-oriented, multi-tenant ride-booking system, covering its mobility domain, dispatch and trip workflows, technology stack, and non-functional requirements. React supports rider, driver, support, and safety experiences; .NET services implement quoting, dispatch, trip, payment, and safety behavior; and Azure supplies managed compute, realtime messaging, location ingestion, mapping, security, and observability. PostgreSQL with PostGIS remains the durable source of truth for riders, drivers, vehicles, quotes, requests, trips, dispatch outcomes, fares, and payments, while Redis and event infrastructure provide low-latency driver discovery and location streaming.
 
 ## Scope and principles
 

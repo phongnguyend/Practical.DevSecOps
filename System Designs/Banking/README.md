@@ -1,6 +1,6 @@
-# Banking Database Design
+# Banking System Design
 
-This document defines a production-oriented relational database for a retail banking system. The design uses PostgreSQL, an immutable double-entry ledger, and separate workflow records for money movement. It supports customer and joint accounts, internal transfers, holds, fees, reversals, auditability, and high-volume balance reads.
+This document defines a production-oriented retail banking system, covering domain boundaries, transactional data, primary workflows, technology choices, and non-functional requirements. React provides the customer and operations experiences, .NET services enforce business and ledger rules, and Azure supplies the managed runtime, integration, security, and observability capabilities. PostgreSQL remains the authoritative transactional store, using an immutable double-entry ledger and separate workflow records for customer and joint accounts, transfers, holds, fees, reversals, auditability, and high-volume balance reads.
 
 ## Scope and assumptions
 

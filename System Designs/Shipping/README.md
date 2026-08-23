@@ -1,6 +1,6 @@
-# Freight Shipping Database Design
+# Freight Shipping System Design
 
-This design assumes `ShippingApp` manages business-to-business multimodal freight (ocean, air, rail, and road), not last-mile parcel delivery. PostgreSQL stores parties, rate quotes, bookings, shipments, cargo units, containers, transport legs, capacity reservations, trade documents, milestones, charges, invoices, and settlement references. Carrier APIs, tracking feeds, optimization, and document objects remain integrated bounded contexts.
+This document defines `ShippingApp` as a production-oriented business-to-business multimodal freight system spanning ocean, air, rail, and road rather than last-mile parcel delivery. It covers the freight domain, booking and operational workflows, technology stack, integrations, and non-functional requirements. React supports shipper, carrier, broker, warehouse, finance, and operations experiences; .NET services implement quoting, booking, capacity, tracking, customs, document, and billing behavior; and Azure provides managed compute, orchestration, event ingestion, messaging, storage, mapping, security, and observability. PostgreSQL remains the durable system of record for parties, quotes, bookings, shipments, cargo, transport legs, capacity, document metadata, milestones, charges, invoices, and settlement references.
 
 ## Scope and principles
 
