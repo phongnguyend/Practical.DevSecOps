@@ -779,6 +779,8 @@ The targets below are initial service objectives and should be adjusted by marke
 
 ### Exception Handling
 
+- Use ASP.NET Core `ProblemDetails` for consistent client errors and carry correlation and command IDs through Application Insights, Service Bus, the outbox, and provider callbacks. Apply .NET circuit breakers and bounded retry policies to remote processors while protecting all monetary commands with idempotency.
+
 - Return stable client-safe error codes and correlation IDs; classify failures as terminal, retryable, or requiring manual review.
 - Retry processor, bank, and notification calls with stable command IDs, bounded backoff, circuit breakers, and dead-letter handling.
 - Resolve monetary exceptions through linked compensating postings, refunds, or disputes rather than ledger mutation.
@@ -787,6 +789,8 @@ The targets below are initial service objectives and should be adjusted by marke
 - Expire holds and publish outbox rows in small `FOR UPDATE SKIP LOCKED` batches.
 
 ### Availability
+
+- Distribute .NET services across AKS availability zones behind Azure Front Door and use zone-redundant PostgreSQL, Service Bus Premium, and Azure Managed Redis. Monitor provider and regional dependencies through Azure Monitor and use a tested single-writer recovery process for the ledger.
 
 - Target 99.99% monthly availability for wallet balance and internal transfer APIs and 99.9% for externally funded operations.
 - Use multi-zone database failover, transactional outbox recovery, and idempotent consumer replay; target RPO ≤ 5 minutes and RTO ≤ 30 minutes.
@@ -797,6 +801,8 @@ The targets below are initial service objectives and should be adjusted by marke
 
 ### Scalability
 
+- Scale AKS APIs and workers from CPU, request rate, and Service Bus backlog; partition Event Hubs fraud streams by wallet or merchant while preserving aggregate ordering. Use separate node pools and consumer groups for posting, risk, webhook, and reconciliation workloads.
+
 - Scale APIs and saga workers horizontally; partition ledger entries, payments, audit events, and outbox data by time and tenant.
 - Protect hot wallets and merchants with per-aggregate serialization, sharded queues, rate limits, and deterministic balance locking.
 - Autoscale webhook and settlement consumers while preserving provider sequence and idempotency constraints.
@@ -806,6 +812,8 @@ The targets below are initial service objectives and should be adjusted by marke
 
 ### Performance
 
+- Use asynchronous ASP.NET Core endpoints, Npgsql connection pooling, prepared queries, and Azure Managed Redis for velocity counters and non-authoritative reads. React should lazy-load portal features and consume realtime status events rather than poll payment state.
+
 - Target p95 ≤ 250 ms for P2P and merchant-payment posting after risk approval, and p95 ≤ 150 ms for balance reads.
 - Acknowledge provider webhooks within 500 ms after durable receipt and complete processing asynchronously.
 - Avoid remote calls inside database transactions and use cursor pagination for wallet activity.
@@ -813,6 +821,8 @@ The targets below are initial service objectives and should be adjusted by marke
 - Use `entry_id` keyset pagination and bounded `SKIP LOCKED` worker batches.
 
 ### Security
+
+- Use Microsoft Entra External ID for customer authentication, managed identities for AKS workloads, Key Vault or Managed HSM for signing and tokenization keys, private endpoints for data services, and Azure Front Door WAF for internet-facing APIs.
 
 - Require MFA or device-bound step-up authentication for risky transfers, new payout destinations, recovery, and administrative actions.
 - Enforce least-privilege tenant/wallet authorization, TLS, secret rotation, signed webhook validation, rate limiting, and replay protection.
@@ -822,6 +832,8 @@ The targets below are initial service objectives and should be adjusted by marke
 
 ### Data Protection
 
+- Apply encryption and private endpoints to Azure Database for PostgreSQL, Blob Storage, Redis, and Service Bus; use customer-managed keys where regulation requires them. Land only minimized, pseudonymized fraud events in Event Hubs and Data Lake Storage.
+
 - Encrypt wallet PII, payment references, databases, backups, and object storage with versioned keys.
 - Minimize stored identity and device data, enforce regional residency and retention rules, and support lawful deletion without altering ledger evidence.
 - Mask balances and identifiers in support tools unless the operator has an approved purpose and scoped role.
@@ -830,11 +842,15 @@ The targets below are initial service objectives and should be adjusted by marke
 
 ### Logging
 
+- Instrument React, ASP.NET Core, Service Bus consumers, and Event Hubs processors with OpenTelemetry and export sanitized telemetry to Application Insights and Log Analytics. Use Azure Monitor alerts for posting latency, fraud-pipeline lag, webhook backlog, and reconciliation failure.
+
 - Produce structured logs containing trace ID, wallet/payment pseudonymous IDs, operation, state transition, dependency latency, and stable error code.
 - Never log access tokens, PINs, OTPs, raw cards, bank details, identity documents, or full webhook payloads.
 - Centralize logs, synchronize clocks, monitor error/latency trends, and alert on webhook backlog or repeated retry exhaustion.
 
 ### Audit Logging
+
+- Write audit rows in the PostgreSQL business transaction, publish immutable copies through the outbox to retention-locked Azure Blob Storage, and route security alerts to Microsoft Sentinel. Protect integrity checkpoints with Managed HSM-backed keys.
 
 - Immutably record wallet freezes, role changes, limit overrides, recovery, manual refunds, dispute actions, and every ledger-affecting command.
 - Include actor, authority, reason, request/command ID, previous/new state hashes, and outcome.

@@ -770,6 +770,8 @@ The targets below are initial objectives for normal regional operation and must 
 
 ### Exception Handling
 
+- Return ASP.NET Core `ProblemDetails` without cryptographic detail and propagate opaque correlation IDs through Application Insights and Service Bus. React clients handle ciphertext revision conflicts explicitly; .NET workers use bounded retries and dead-letter queues without retrying invalid envelopes.
+
 - Return stable client-safe error codes and correlation IDs; distinguish validation, authentication, authorization, conflict, retryable dependency, quota, and terminal cryptographic-envelope failures.
 - Preserve conflicting encrypted revisions rather than silently overwriting them; clients decrypt and merge or ask the user.
 - Retry notifications, attachment finalization, rotation jobs, and outbox delivery with bounded backoff, stable command IDs, and dead-letter handling.
@@ -778,6 +780,8 @@ The targets below are initial objectives for normal regional operation and must 
 - Workers claim small batches with `FOR UPDATE SKIP LOCKED`; exhausted or inconsistent rotations go to a security operations queue.
 
 ### Availability
+
+- Distribute Container Apps revisions across availability zones behind Azure Front Door and use zone-redundant PostgreSQL, Blob Storage redundancy, Service Bus Premium, and redundant Web PubSub units. The React client preserves encrypted offline access and resynchronizes after recovery.
 
 - Target 99.99% monthly availability for authentication and encrypted synchronization and 99.9% for attachment upload, notification, and breach-monitoring features.
 - Preserve read access through the encrypted offline cache when the service is unavailable; queue local mutations with base revisions for later conflict resolution.
@@ -788,6 +792,8 @@ The targets below are initial objectives for normal regional operation and must 
 
 ### Scalability
 
+- Configure independent Container Apps scaling rules for HTTP concurrency, Service Bus backlog, and synchronization workers. Upload encrypted attachments directly to Blob Storage with narrowly scoped short-lived authorization so API replicas do not proxy large files.
+
 - Horizontally scale stateless identity, sync, sharing, and attachment APIs; isolate notification, audit-export, breach-monitoring, and rotation workers.
 - Partition sync, item-revision, session, security-event, audit, and outbox history by time and high-volume tenant when measurements justify it.
 - Apply per-tenant storage, bandwidth, request, concurrent-sync, and worker quotas so a large tenant cannot starve others.
@@ -797,6 +803,8 @@ The targets below are initial objectives for normal regional operation and must 
 
 ### Performance
 
+- Use asynchronous ASP.NET Core APIs, Npgsql pooling, compact versioned ciphertext envelopes, and Web PubSub change notifications to avoid polling. React performs Web Crypto work in Web Workers so key derivation and decryption do not block the interface.
+
 - Target p95 <= 200 ms for bounded incremental sync and encrypted item writes, excluding client cryptography and attachment transfer; target p95 <= 100 ms for an in-region no-change poll.
 - Tune Argon2id per client class against a measured unlock latency and memory budget; store versioned parameters and raise them over time.
 - Use opaque keyset cursors and bounded batch sizes; never use deep `OFFSET` pagination for sync, revision, or audit history.
@@ -804,6 +812,8 @@ The targets below are initial objectives for normal regional operation and must 
 - Acknowledge uploaded chunks only after object durability and finalize manifests asynchronously without holding a database transaction across object-store calls.
 
 ### Security
+
+- Enforce a strict Front Door content security policy and WAF rules, Microsoft Entra External ID controls, Container Apps managed identities, private endpoints, and Key Vault or Managed HSM for server-owned keys. User-derived vault keys exist only in the client and never in Azure identity, logs, or server key stores.
 
 - Prefer passkeys and OPAQUE, require step-up authentication for recovery, exports, device enrollment, member removal, key rotation, and organization-administrator changes.
 - Enforce least-privilege tenant/vault/collection authorization, signed key grants, TLS, HSTS, refresh-token rotation/reuse detection, rate limits, and anti-enumeration responses.
@@ -814,6 +824,8 @@ The targets below are initial objectives for normal regional operation and must 
 
 ### Data Protection
 
+- Store ciphertext and cryptographic metadata in PostgreSQL and encrypted attachments in private Blob Storage with versioning and retention rules. Use separate Key Vault keys for server data protection, customer-managed keys where required, and client-side envelope keys for vault content.
+
 - Encrypt item fields, collection/vault names, attachment names/metadata, user contact data, databases, backups, local caches, and object storage with versioned keys.
 - Minimize server-visible metadata and retain IP/device, deleted ciphertext, revisions, security events, and attachment uploads only for documented security/legal windows.
 - Support deletion by purging eligible ciphertext and wrapped keys after retention while preserving anonymized compliance/audit evidence where required.
@@ -823,11 +835,15 @@ The targets below are initial objectives for normal regional operation and must 
 
 ### Logging
 
+- Instrument React, ASP.NET Core, Container Apps, PostgreSQL calls, and Service Bus consumers with OpenTelemetry, then apply allow-list redaction before exporting to Application Insights and Log Analytics. Alert through Azure Monitor without collecting ciphertext bodies or cryptographic parameters that aid attack.
+
 - Emit structured logs with request ID, pseudonymous user/device/vault IDs, operation, revision, outcome, latency, dependency, and stable error code.
 - Never log master passwords, recovery codes, derived or plaintext keys, MFA secrets, access/refresh tokens, authentication transcripts, decrypted fields, item ciphertext bodies, or full attachment manifests.
 - Alert on credential stuffing, unusual device enrollment, mass export, sharing spikes, rotation failure, sync/outbox backlog, backup failure, and error-budget burn.
 
 ### Audit Logging
+
+- Commit audit metadata with PostgreSQL state changes, export hash-chained copies to immutable Blob Storage, and send security detections to Microsoft Sentinel. Sign audit checkpoints using a Managed HSM key that is strictly separate from all vault encryption material.
 
 - Record sign-in outcomes, device approvals/revocations, recovery, export, invitations, role/policy changes, membership removal, key rotation, administrative access, and destructive actions.
 - Include actor, device, authority, reason, request ID, resource, result, prior event hash, and event hash without vault plaintext.

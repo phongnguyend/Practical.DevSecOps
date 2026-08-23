@@ -838,6 +838,8 @@ The targets below are initial objectives and should be tested by city, peak peri
 
 ### Exception Handling
 
+- Return standardized ASP.NET Core `ProblemDetails` and propagate trip, offer, and correlation IDs through Application Insights, Service Bus, Event Hubs, Azure Maps, and payment adapters. Apply .NET bounded retries and circuit breakers only to idempotent remote calls; resolve dispatch races through transactional state checks.
+
 - Return stable error codes and correlation IDs; distinguish invalid state, lost dispatch race, retryable dependency failure, and terminal rejection.
 - Retry payment, push, and mapping commands idempotently with bounded backoff; compensate authorizations, driver reservations, and fees through explicit saga actions.
 - Escalate stale trips, payment/trip mismatches, dispatch exhaustion, and safety events to owned operational queues with SLAs.
@@ -847,6 +849,8 @@ The targets below are initial objectives and should be tested by city, peak peri
 
 ### Availability
 
+- Run .NET services across AKS availability zones behind Azure Front Door, with zone-redundant PostgreSQL, Service Bus Premium, redundant Event Hubs consumers, and Web PubSub units. Treat Redis location state as rebuildable and keep safety and active-trip paths independent of search and analytics.
+
 - Target 99.99% monthly availability for active-trip, dispatch-acceptance, and safety APIs and 99.95% for quote/history features.
 - Keep trip status, cancellation, and safety contact paths usable when recommendations, ratings, or receipts are degraded.
 - Deploy transactional services across failure domains with RPO ≤ 5 minutes and RTO ≤ 30 minutes; location caches may rebuild from fresh devices.
@@ -855,6 +859,8 @@ The targets below are initial objectives and should be tested by city, peak peri
 - Route state-changing and read-your-writes requests to the primary; privacy-aggregated historical analytics may use replicas or a warehouse.
 
 ### Scalability
+
+- Autoscale AKS location and dispatch workloads using Event Hubs lag, Service Bus depth, CPU, and request rate. Partition Event Hubs and Redis geospatial state by city or service area, with separate node pools and quotas protecting booking and safety services.
 
 - Scale quote, dispatch, location ingestion, trip, payment, and notification services independently.
 - Shard dispatch and geospatial indexes by city/service area while preserving one authoritative trip/driver assignment.
@@ -866,6 +872,8 @@ The targets below are initial objectives and should be tested by city, peak peri
 
 ### Performance
 
+- Use asynchronous ASP.NET Core APIs, pooled Npgsql connections, PostGIS indexes, and Azure Managed Redis for expiring nearby-driver state. React consumes Web PubSub events for active trips, while Azure Maps calls are cached briefly and remain outside booking transactions.
+
 - Target p95 ≤ 300 ms for quote/trip commands excluding map and payment providers.
 - Generate the first dispatch candidate set within 2 seconds and deliver assignment updates within 1 second at normal load.
 - Ingest active-driver locations at the configured cadence with p95 ≤ 500 ms to the dispatch index.
@@ -873,6 +881,8 @@ The targets below are initial objectives and should be tested by city, peak peri
 - Use small `FOR UPDATE SKIP LOCKED` worker batches and short TTLs for raw location data.
 
 ### Security
+
+- Authenticate riders and drivers with Microsoft Entra External ID and staff with Microsoft Entra ID; use AKS workload identity, Key Vault, private endpoints, Azure Front Door WAF, and scoped Web PubSub access tokens. Apply conditional access and managed-device controls to privileged safety roles.
 
 - Require MFA and step-up verification for payout, account recovery, vehicle/driver approval, overrides, and administrative access.
 - Enforce rider, driver, support, safety, finance, and admin scopes with TLS, secret rotation, signed callbacks, rate limits, and device controls.
@@ -882,6 +892,8 @@ The targets below are initial objectives and should be tested by city, peak peri
 
 ### Data Protection
 
+- Encrypt PostgreSQL, Redis, Event Hubs, backups, and any Blob Storage evidence; use private endpoints and customer-managed keys where policy requires them. Separate precise-location streams from general analytics and apply short Azure lifecycle policies to raw coordinates.
+
 - Encrypt identity, driver documents, locations, trip routes, contact data, payment references, safety cases, databases, and backups.
 - Apply short, policy-driven retention for precise location; tightly restrict safety evidence and support legal hold where required.
 - Tokenize payment instruments, mask identities in analytics, and prevent production PII from entering nonproduction environments.
@@ -890,11 +902,15 @@ The targets below are initial objectives and should be tested by city, peak peri
 
 ### Logging
 
+- Instrument React, ASP.NET Core, AKS, Event Hubs consumers, Service Bus handlers, Web PubSub, and Azure Maps dependencies with OpenTelemetry. Export redacted data to Application Insights and Log Analytics and alert through Azure Monitor on dispatch, location, payment, and safety-path degradation.
+
 - Emit structured logs with trace, trip/offer pseudonymous IDs, city, state transition, dependency latency, and stable result code.
 - Exclude exact coordinates, phone numbers, messages, payment data, identity documents, and safety-case content from general logs.
 - Alert on dispatch latency, stale drivers, assignment conflicts, payment failures, trip-state stalls, and safety-channel degradation.
 
 ### Audit Logging
+
+- Commit sensitive audit events with PostgreSQL state transitions, export immutable copies through the outbox to retention-locked Blob Storage, and forward safety/security detections to Microsoft Sentinel. Apply separate workspaces and access policies for safety evidence.
 
 - Record driver approval/status changes, fare adjustments, refunds, assignment overrides, safety-case access/actions, and privileged location access.
 - Include actor, role, reason, request ID, before/after hashes, trip context, and outcome in append-only events.

@@ -987,6 +987,8 @@ The targets below are initial objectives and must be aligned with carrier, custo
 
 ### Exception Handling
 
+- Use ASP.NET Core `ProblemDetails` and propagate booking, shipment, partner-command, and correlation IDs through Application Insights, Service Bus, Event Hubs, Durable Functions, and partner adapters. Configure bounded .NET retries and circuit breakers only where stable external identifiers make replay safe.
+
 - Return stable error codes and correlation IDs while keeping carrier, customs, sanctions, and pricing internals private.
 - Retry carrier/customs/document/payment commands with stable IDs, bounded backoff, circuit breakers, and durable dead-letter workflows.
 - Preserve contradictory or late operational events, open owned exception cases, and use amendments or compensating charges instead of rewriting history.
@@ -995,6 +997,8 @@ The targets below are initial objectives and must be aligned with carrier, custo
 - Reconcile capacity to reservations, shipment projections to events, cargo/equipment totals, charges to invoice lines, and invoices to payment allocations.
 
 ### Availability
+
+- Run .NET services across AKS availability zones behind Azure Front Door and use zone-redundant PostgreSQL, Service Bus Premium, redundant Event Hubs consumers, and appropriately redundant Blob Storage. Durable Functions resumes timed workflows, but authoritative business recovery comes from PostgreSQL and the outbox.
 
 - Target 99.95% monthly availability for booking, tracking, and document APIs and 99.9% for optimization/reporting.
 - Keep tracking ingestion and exception recording available when optimization, notifications, or document rendering is degraded.
@@ -1005,6 +1009,8 @@ The targets below are initial objectives and must be aligned with carrier, custo
 
 ### Scalability
 
+- Autoscale AKS partner-ingestion, tracking, document, and billing workers from Event Hubs lag, Service Bus depth, CPU, and request rate. Use dedicated pools for optimization and document rendering and partition streams by shipment, carrier, or tenant to preserve useful ordering.
+
 - Scale quote/rating, booking, tracking ingestion, document, optimization, and billing workers independently.
 - Partition shipment/equipment events, audit data, and outbox history by time and tenant; distribute processing by shipment or carrier key.
 - Isolate high-volume tenants/carriers with quotas, dedicated consumers, read replicas, and backpressure during feed bursts.
@@ -1014,6 +1020,8 @@ The targets below are initial objectives and must be aligned with carrier, custo
 
 ### Performance
 
+- Use asynchronous ASP.NET Core APIs, pooled Npgsql connections, PostGIS indexes, Redis reference caches, and direct Blob document transfer. React consumes Web PubSub operational updates; Azure Maps, carrier, customs, and document calls remain outside short booking and capacity transactions.
+
 - Target p95 ≤ 500 ms for booking-state commands excluding carrier/compliance calls and p95 ≤ 200 ms for current tracking reads.
 - Durably acknowledge carrier events within 250 ms and update public projections within 5 seconds at normal load.
 - Run route optimization, document rendering, invoice generation, and large reconciliation asynchronously with observable deadlines.
@@ -1021,6 +1029,8 @@ The targets below are initial objectives and must be aligned with carrier, custo
 - Use geospatial indexes for facilities/service areas, keyset pagination for operational histories, and bounded `FOR UPDATE SKIP LOCKED` worker batches.
 
 ### Security
+
+- Authenticate workforce and partners with Microsoft Entra ID/External ID, use AKS workload identity, Key Vault, private endpoints, Front Door WAF, and mutual TLS or signed credentials for carrier/customs connections. Issue narrowly scoped, short-lived Blob and Web PubSub access tokens.
 
 - Enforce scoped shipper, carrier, broker, customs, finance, operations, and audit roles with MFA for privileged actions.
 - Use TLS or mutual TLS for partner connections, signed webhook/file validation, secret rotation, rate limits, and tenant isolation.
@@ -1030,6 +1040,8 @@ The targets below are initial objectives and must be aligned with carrier, custo
 
 ### Data Protection
 
+- Encrypt PostgreSQL, Blob Storage, Redis, Service Bus, Event Hubs, backups, and analytics copies with platform or customer-managed keys according to policy. Apply immutable Blob retention and legal holds to regulated documents while minimizing customs and cargo data in downstream services.
+
 - Encrypt party/contact data, cargo descriptions, trade documents, customs references, databases, backups, and object storage.
 - Apply country-specific residency, trade-record retention, legal hold, and purpose-limited access; minimize customs payloads stored locally.
 - Store document objects by opaque reference with checksum/signature verification and test encrypted backup/key recovery.
@@ -1038,11 +1050,15 @@ The targets below are initial objectives and must be aligned with carrier, custo
 
 ### Logging
 
+- Instrument React, ASP.NET Core, AKS, Service Bus, Event Hubs, Durable Functions, Web PubSub, Blob Storage, Azure Maps, and partner dependencies with OpenTelemetry. Export redacted telemetry to Application Insights and Log Analytics and alert on feed gaps, orchestration delays, document backlog, and reconciliation failure.
+
 - Emit structured logs with trace, tenant, shipment/booking pseudonymous IDs, carrier source ID, operation, latency, and stable error code.
 - Exclude raw trade-document contents, addresses, contact data, dangerous-goods emergency details, credentials, and payment data.
 - Monitor carrier feed gaps, capacity contention, document backlog, customs deadlines, exception SLA breaches, and reconciliation failures.
 
 ### Audit Logging
+
+- Commit audit records with PostgreSQL business transitions, export hash-chained copies through the outbox to immutable Blob Storage, and forward security detections to Microsoft Sentinel. Protect document-integrity and audit checkpoints with Key Vault or Managed HSM keys.
 
 - Append booking/capacity decisions, itinerary activation, custody events, customs status, document issuance/amendment, charge changes, and payment allocation.
 - Include actor/partner identity, authority, reason, source sequence/time, request ID, before/after hashes, and outcome.

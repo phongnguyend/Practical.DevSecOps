@@ -767,6 +767,8 @@ The targets below are initial objectives; instrument, venue, and regulatory obli
 
 ### Exception Handling
 
+- Map protocol and business failures to stable ASP.NET Core error contracts and carry order, execution, and correlation identifiers through Application Insights, Event Hubs, Service Bus, and venue adapters. Retry remote I/O only when the venue protocol and original identifier make the outcome unambiguous.
+
 - Reject invalid orders with stable protocol/business codes and correlation IDs without leaking risk models or counterparty data.
 - Retry ambiguous submissions and executions only with the same client/venue identifiers; quarantine sequence gaps instead of applying them out of order.
 - Escalate reconciliation breaks, stale prices, negative-margin anomalies, and exhausted settlement retries to operations with trading safeguards.
@@ -775,6 +777,8 @@ The targets below are initial objectives; instrument, venue, and regulatory obli
 - Reconcile orders to executions, positions to ordered executions/lots, and cash projections to ledger entries as three independent controls.
 
 ### Availability
+
+- Run latency-sensitive .NET services on dedicated multi-zone AKS node pools, use zone-redundant PostgreSQL and Service Bus Premium, and deploy redundant Event Hubs consumers. Azure Front Door and Web PubSub may fail over read/realtime delivery, while accepted-order recovery follows the authoritative single-writer runbook.
 
 - Target 99.99% monthly availability during configured trading sessions for order entry, execution ingestion, and risk controls.
 - Use multi-zone failover and replicated event recovery; target RPO near zero for accepted orders/executions and RTO ≤ 15 minutes.
@@ -785,6 +789,8 @@ The targets below are initial objectives; instrument, venue, and regulatory obli
 
 ### Scalability
 
+- Autoscale AKS feed and valuation workers from Event Hubs lag and isolate order entry from analytical workloads with node pools, quotas, and consumer groups. Scale Data Explorer independently and never let historical queries share the transactional connection pool.
+
 - Partition orders, executions, market data, and audit history by venue/instrument and time while preserving account-level ordering.
 - Scale feed handlers, read APIs, valuation workers, and settlement workers independently; isolate hot instruments and accounts.
 - Use bounded queues, gap detection, snapshots, and backpressure to survive market-data and execution bursts.
@@ -794,6 +800,8 @@ The targets below are initial objectives; instrument, venue, and regulatory obli
 
 ### Performance
 
+- Use .NET low-allocation serialization, pooled Npgsql connections, prepared statements, bounded channels, and precomputed in-memory reference data on the order path. Redis and Web PubSub distribute ephemeral price views; neither participates in order acceptance or official position calculation.
+
 - Target p99 ≤ 20 ms for internal order validation/persistence and p99 ≤ 10 ms for execution application, excluding venue transit, when deployed near the venue.
 - Publish accepted orders and fills from the outbox within 100 ms at normal load.
 - Measure end-to-end percentiles by instrument and session; prevent analytics and reconciliation queries from contending with trading writes.
@@ -801,6 +809,8 @@ The targets below are initial objectives; instrument, venue, and regulatory obli
 - Use keyset pagination for execution history and keep operational queries away from raw tick partitions.
 
 ### Security
+
+- Use Microsoft Entra ID/External ID for users, AKS workload identity for services, Key Vault or Managed HSM for venue and signing keys, private endpoints for Azure data services, and Front Door WAF for public APIs. Restrict dedicated trading namespaces and node pools through network policies.
 
 - Require strong MFA and scoped entitlements for traders, risk staff, operations, and administrators; enforce account, instrument, and notional limits.
 - Use mutual TLS or signed authenticated sessions for venue connectivity, managed secret/key rotation, and network segmentation.
@@ -810,6 +820,8 @@ The targets below are initial objectives; instrument, venue, and regulatory obli
 
 ### Data Protection
 
+- Encrypt PostgreSQL, Event Hubs, Data Lake Storage, Data Explorer, backups, and telemetry with platform or customer-managed keys according to policy. Use private endpoints and separate raw, curated, and pseudonymized analytics zones with explicit retention controls.
+
 - Encrypt customer, account, order, execution, and settlement data in transit and at rest with controlled key rotation.
 - Enforce jurisdictional residency, market-record retention, legal hold, and purpose-limited access.
 - Mask client identities in analytics and nonproduction datasets while preserving deterministic references required for reconciliation.
@@ -818,11 +830,15 @@ The targets below are initial objectives; instrument, venue, and regulatory obli
 
 ### Logging
 
+- Use OpenTelemetry in ASP.NET Core and .NET workers, exporting low-allocation sanitized traces and metrics to Application Insights, Managed Prometheus/Grafana, and Log Analytics. Keep raw tick diagnostics out of general logs and alert on Event Hubs lag, clock drift, and order-path percentile breaches.
+
 - Emit low-allocation structured logs with trace, client-order, venue-order, execution, instrument, sequence, latency, and stable result code.
 - Never log credentials, session keys, full client identity, or proprietary risk parameters; sample only noncritical high-volume diagnostics.
 - Synchronize clocks to an approved source and monitor feed gaps, latency outliers, rejected orders, queue depth, and settlement failures.
 
 ### Audit Logging
+
+- Persist audit decisions with order and risk state in PostgreSQL, stream immutable regulatory copies to retention-locked Blob Storage or Data Lake Storage, and surface integrity failures in Microsoft Sentinel. Use Managed HSM-backed signing for audit checkpoints.
 
 - Immutably record order lifecycle events, executions, cancels/replaces, risk decisions, limit changes, manual interventions, and data exports.
 - Preserve actor/algorithm identity, timestamps, source sequence, request hashes, before/after state, reason, and outcome.

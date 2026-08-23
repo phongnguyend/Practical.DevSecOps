@@ -843,6 +843,8 @@ The targets below are initial service objectives for normal network operation an
 
 ### Exception Handling
 
+- Return ASP.NET Core `ProblemDetails` and propagate parcel, scan-source, and correlation IDs through Application Insights, Event Hubs, Service Bus, Azure Maps, and partner adapters. Use bounded .NET retries for idempotent dependencies and preserve failed messages in owned dead-letter workflows.
+
 - Return stable error codes and correlation IDs to customer, courier, facility, and device clients.
 - Accept offline or delayed scans idempotently, retain event/receive times, and flag impossible custody or route transitions instead of discarding evidence.
 - Move exhausted label, routing, notification, and carrier retries to controlled dead-letter workflows with an owner and SLA.
@@ -851,6 +853,8 @@ The targets below are initial service objectives for normal network operation an
 - Workers claim bounded batches with `FOR UPDATE SKIP LOCKED`.
 
 ### Availability
+
+- Run .NET services across AKS availability zones behind Azure Front Door and use zone-redundant PostgreSQL, geo-redundant Blob Storage as required, Service Bus Premium, and redundant Event Hubs/Web PubSub capacity. Device-side buffering preserves scan capture during Azure or network outages.
 
 - Target 99.95% monthly availability for shipment creation/tracking and 99.99% for custody-scan ingestion.
 - Buffer scans on devices or gateways during outages and replay them in source order after durable connectivity returns.
@@ -861,6 +865,8 @@ The targets below are initial service objectives for normal network operation an
 
 ### Scalability
 
+- Autoscale AKS scan, projection, and notification workers using Event Hubs lag and Service Bus depth. Partition event streams by parcel or network region, isolate peak-season workers with dedicated node pools, and scale Blob-based label/proof processing independently.
+
 - Scale shipment, label, tracking, routing, and notification components independently.
 - Partition tracking/custody events by time and network region; distribute consumers by parcel or route key to preserve ordering.
 - Support peak-season bursts with queue backpressure, batch manifest processing, and horizontal scan-ingestion capacity.
@@ -870,6 +876,8 @@ The targets below are initial service objectives for normal network operation an
 
 ### Performance
 
+- Use asynchronous ASP.NET Core ingestion, pooled Npgsql connections, PostGIS indexes, Redis tracking projections, and direct-to-Blob proof uploads. React consumes Web PubSub tracking changes, and Azure Maps calls stay outside custody database transactions.
+
 - Target p95 ≤ 300 ms for shipment creation excluding asynchronous label rendering and p95 ≤ 150 ms for current tracking projection reads.
 - Durably acknowledge scans within 200 ms at normal load and publish public tracking updates within 2 seconds.
 - Use keyset pagination for history, small locked batches for routing work, and asynchronous proof/label processing.
@@ -877,6 +885,8 @@ The targets below are initial service objectives for normal network operation an
 - Use event/parcel keyset pagination and bounded worker batches.
 
 ### Security
+
+- Authenticate customers through Microsoft Entra External ID and workforce/device operators through Microsoft Entra ID or scoped device credentials; use AKS workload identity, Key Vault, private endpoints, Front Door WAF, and short-lived Blob and Web PubSub tokens.
 
 - Authenticate facility devices and courier apps with rotatable device credentials; enforce scoped customer, courier, operator, and support permissions.
 - Use TLS, signed events, replay protection, secret rotation, rate limits, and network segmentation for facility integrations.
@@ -886,6 +896,8 @@ The targets below are initial service objectives for normal network operation an
 
 ### Data Protection
 
+- Encrypt PostgreSQL, Event Hubs, Redis, Blob Storage, and backups with platform or customer-managed keys according to policy. Apply immutable retention to required custody evidence and lifecycle deletion to delivery proofs, recipient details, and precise location data.
+
 - Encrypt addresses, contacts, location data, customs/restricted-goods references, proofs, databases, backups, and object storage.
 - Minimize precise location and proof retention, apply regional residency, and mask recipient data after the fulfillment window.
 - Use opaque references and checksums for proof/label objects and test encrypted restore plus key recovery.
@@ -894,11 +906,15 @@ The targets below are initial service objectives for normal network operation an
 
 ### Logging
 
+- Instrument React, ASP.NET Core, AKS, Event Hubs, Service Bus, Web PubSub, Blob Storage, and Azure Maps dependencies with OpenTelemetry. Export redacted telemetry to Application Insights and Log Analytics and alert on scan lag, dead-letter growth, projection delay, and device failure.
+
 - Emit structured logs with trace, shipment/parcel pseudonymous IDs, device/source event ID, facility, operation, latency, and error code.
 - Do not log raw addresses, phone numbers, signatures, images, restricted-goods details, or authentication material.
 - Monitor scan gaps, stale manifests, route backlog, duplicate rates, label failures, and delayed public-event publication.
 
 ### Audit Logging
+
+- Commit audit and custody metadata with PostgreSQL transitions, export integrity-protected copies to immutable Blob Storage, and send suspicious proof/address access to Microsoft Sentinel. Reconcile audit checkpoints against Event Hubs ingestion and parcel event sequences.
 
 - Append custody transfers, manual tracking corrections, manifest sealing, route changes, delivery overrides, proof access, and return decisions.
 - Record actor/device, authority, reason, event and receive timestamps, request/source ID, before/after state hashes, and outcome.

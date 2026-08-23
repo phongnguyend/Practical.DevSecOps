@@ -823,6 +823,8 @@ The targets below are initial objectives for normal regional operation; peak-eve
 
 ### Exception Handling
 
+- Use ASP.NET Core `ProblemDetails` and propagate order, delivery, and correlation IDs through Application Insights, Service Bus, Event Hubs, Azure Maps, and payment adapters. Configure .NET retries and circuit breakers for idempotent provider calls and route exhausted workflows to Service Bus dead-letter queues.
+
 - Use stable error codes and correlation IDs for customer, restaurant, and courier clients; distinguish validation, conflict, retryable, and terminal failures.
 - Persist saga commands before remote calls, retry with bounded backoff, and compensate inventory, promotions, payments, and assignments idempotently.
 - Route exhausted retries and inconsistent order/payment/delivery states to a dead-letter queue and operations dashboard.
@@ -832,6 +834,8 @@ The targets below are initial objectives for normal regional operation; peak-eve
 
 ### Availability
 
+- Distribute Container Apps revisions across availability zones behind Azure Front Door and use zone-redundant PostgreSQL, Service Bus Premium, redundant Event Hubs consumers, and Web PubSub units. Keep checkout and active-delivery APIs independent of AI Search, recommendations, and reviews.
+
 - Target 99.95% monthly availability for ordering and active-delivery APIs and 99.9% for catalog/review features.
 - Keep active-order state, courier assignment, and delivery confirmation available when search, recommendations, or reviews are degraded.
 - Deploy across failure domains with tested failover; target RPO ≤ 5 minutes and RTO ≤ 30 minutes for transactional data.
@@ -840,6 +844,8 @@ The targets below are initial objectives for normal regional operation; peak-eve
 - Route checkout and state-changing reads to the primary; reporting uses replicas or the analytics warehouse.
 
 ### Scalability
+
+- Scale Container Apps independently using HTTP concurrency, Service Bus queue depth, and Event Hubs lag. Partition courier streams and dispatch caches by service area, and scale Azure AI Search replicas separately from transactional workloads during meal peaks.
 
 - Horizontally scale marketplace, ordering, dispatch, location-ingestion, and notification services independently.
 - Partition orders and delivery events by region/time; shard dispatch and location workloads by service area.
@@ -851,6 +857,8 @@ The targets below are initial objectives for normal regional operation; peak-eve
 
 ### Performance
 
+- Use asynchronous ASP.NET Core APIs, Npgsql pooling, PostGIS indexes, Azure Managed Redis for menu and dispatch caches, and Azure AI Search for discovery. React lazy-loads portal features and consumes Web PubSub events; checkout always revalidates authoritative prices and availability in PostgreSQL.
+
 - Target p95 ≤ 300 ms for basket pricing and order-state commands, excluding payment-provider time.
 - Target p95 ≤ 1 second from accepted courier location update to customer-visible position, with throttling and stale-location detection.
 - Target dispatch candidate generation within 2 seconds for the normal search radius and use asynchronous notifications.
@@ -858,6 +866,8 @@ The targets below are initial objectives for normal regional operation; peak-eve
 - Use keyset pagination for order/event history; derived search indexes may serve discovery, but checkout must revalidate PostgreSQL state.
 
 ### Security
+
+- Use Microsoft Entra External ID for customers, couriers, and restaurant users and Microsoft Entra ID for staff; use Container Apps managed identity, Key Vault, private endpoints, short-lived Web PubSub tokens, and Azure Front Door WAF for service protection.
 
 - Enforce scoped roles for customers, restaurant staff, couriers, support, finance, and administrators with step-up authentication for sensitive actions.
 - Validate signed provider callbacks, protect APIs with TLS, rate limits, bot defenses, secret rotation, and device/session controls.
@@ -867,6 +877,8 @@ The targets below are initial objectives for normal regional operation; peak-eve
 
 ### Data Protection
 
+- Encrypt PostgreSQL, Redis, Event Hubs, Blob Storage, AI Search indexes, and backups; use private endpoints and customer-managed keys where required. Index only minimized restaurant/menu data in AI Search and apply lifecycle deletion to precise courier locations and proof objects.
+
 - Encrypt addresses, contact details, location history, proof artifacts, databases, and backups; tokenize payment instruments.
 - Apply strict retention to precise location and delivery proof, retaining only what fraud, safety, tax, and legal requirements justify.
 - Separate analytics identifiers from direct identity and honor deletion/consent requirements without corrupting financial records.
@@ -875,11 +887,15 @@ The targets below are initial objectives for normal regional operation; peak-eve
 
 ### Logging
 
+- Instrument React, ASP.NET Core, Container Apps, Service Bus, Event Hubs, Web PubSub, Azure Maps, and payment dependencies with OpenTelemetry. Export redacted telemetry to Application Insights and Log Analytics and alert through Azure Monitor on checkout, dispatch, location, and settlement signals.
+
 - Emit structured logs with trace/order/delivery IDs, service area, state transition, dependency outcome, latency, and error code.
 - Exclude raw addresses, phone numbers, messages, payment data, proof images, and precise coordinates from general logs.
 - Alert on saga backlog, dispatch saturation, stale courier locations, payment callback failures, and elevated cancellation rates.
 
 ### Audit Logging
+
+- Persist audit rows with PostgreSQL business transitions, copy them through the outbox to immutable Blob Storage, and send suspicious privileged activity to Microsoft Sentinel. Keep finance, safety, and marketplace audit views under separate role-based access policies.
 
 - Record menu/price changes, promotion overrides, manual order transitions, refunds, courier reassignment, proof access, and privileged data access.
 - Include actor, role, reason, request ID, before/after state hashes, and outcome in append-only audit events.

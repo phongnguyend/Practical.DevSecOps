@@ -745,6 +745,8 @@ The targets below are initial service objectives and must be reconciled with reg
 
 ### Exception Handling
 
+- Standardize ASP.NET Core `ProblemDetails` responses and propagate the same correlation ID through Application Insights, Service Bus messages, outbox records, and partner calls. Configure .NET resilience policies with bounded retries and circuit breakers only for transient remote failures; ledger commands rely on idempotency rather than blind retries.
+
 - Return stable error codes with a correlation ID; do not expose account, ledger, or policy internals.
 - Treat validation failures as terminal, dependency timeouts as retryable with bounded exponential backoff, and ambiguous commits as retries using the original idempotency key.
 - Never repair financial errors by editing posted entries. Create linked reversals or adjustments and route reconciliation breaks to operations.
@@ -754,6 +756,8 @@ The targets below are initial service objectives and must be reconciled with reg
 - Continuously reconcile immutable entries to `account_balances`; any mismatch creates an operational exception.
 
 ### Availability
+
+- Run ASP.NET Core services across AKS availability zones behind Azure Front Door, use zone-redundant Azure Database for PostgreSQL, Service Bus Premium, and Azure Managed Redis, and monitor regional health through Azure Monitor. Front Door may fail over stateless traffic, but ledger recovery follows the tested single-writer regional runbook.
 
 - Target 99.99% monthly availability for posting and balance APIs, excluding approved maintenance.
 - Run the primary database across failure domains with automated failover; target RPO ≤ 5 minutes and RTO ≤ 30 minutes.
@@ -765,6 +769,8 @@ The targets below are initial service objectives and must be reconciled with reg
 
 ### Scalability
 
+- Use AKS horizontal pod autoscaling for stateless .NET APIs and workers, Service Bus queue depth for worker scaling, and Event Hubs partitions for fraud and audit streams. Scale read models and reporting independently without adding alternate ledger writers.
+
 - Scale stateless API and worker tiers horizontally; partition ledger, audit, and outbox history by business date when volume requires it.
 - Isolate heavy tenants and reporting workloads with quotas, read replicas, and workload-specific pools.
 - Apply backpressure to event consumers and process retry/dead-letter queues in bounded batches.
@@ -774,6 +780,8 @@ The targets below are initial service objectives and must be reconciled with reg
 
 ### Performance
 
+- Use compiled ASP.NET Core endpoints, asynchronous I/O, Npgsql connection pooling, and Azure Managed Redis only for non-authoritative reference data. React should lazy-load staff/customer feature bundles and avoid polling by consuming server-driven status updates where appropriate.
+
 - Target p95 ≤ 300 ms and p99 ≤ 750 ms for internal posting, excluding step-up authentication and external networks.
 - Target p95 ≤ 150 ms for current-balance reads from the authoritative projection.
 - Use keyset pagination for statements and keep posting transactions short with deterministic lock ordering.
@@ -781,6 +789,8 @@ The targets below are initial service objectives and must be reconciled with reg
 - Use monotonic `entry_id` keyset pagination for statements and keep sanctions or other remote calls outside short posting transactions.
 
 ### Security
+
+- Authenticate customers through Microsoft Entra External ID and staff through Microsoft Entra ID with conditional access; use AKS workload identity, Key Vault or Managed HSM, private endpoints, and Front Door WAF so applications contain no long-lived Azure credentials.
 
 - Require phishing-resistant MFA for staff and high-risk customer actions; enforce RBAC/ABAC with tenant and account scope.
 - Use TLS for every network hop, managed secret rotation, least-privilege database roles, and a privileged posting procedure for ledger writes.
@@ -791,6 +801,8 @@ The targets below are initial service objectives and must be reconciled with reg
 
 ### Data Protection
 
+- Enable customer-managed keys where policy requires them for PostgreSQL, Blob Storage, backups, and Log Analytics; keep services on private endpoints and keys in Key Vault or Managed HSM. Use immutable Blob Storage policies for regulatory archives and Data Lake zones containing governed analytics copies.
+
 - Encrypt databases, backups, and object storage; use envelope encryption or tokenization for account numbers and regulated PII.
 - Apply data classification, jurisdiction-aware residency, purpose-limited access, and documented retention/deletion schedules.
 - Test encrypted backup restoration and cryptographic key recovery; preserve legally required ledger records when PII is anonymized.
@@ -800,11 +812,15 @@ The targets below are initial service objectives and must be reconciled with reg
 
 ### Logging
 
+- Instrument React and ASP.NET Core with OpenTelemetry and export approved telemetry to Application Insights and Log Analytics. Apply centralized .NET redaction processors before export and alert through Azure Monitor on ledger, outbox, Service Bus, PostgreSQL, and AKS health signals.
+
 - Emit structured operational logs with timestamp, service, environment, trace/request ID, severity, outcome, latency, and stable error code.
 - Redact credentials, tokens, raw account identifiers, PII, and transaction payloads; use sampling only for non-error diagnostic events.
 - Centralize logs with access controls, alerting, clock synchronization, and retention appropriate to incident investigation.
 
 ### Audit Logging
+
+- Commit audit events with the PostgreSQL business transaction, export them through the outbox to immutable Azure Blob Storage, and forward security-relevant detections to Microsoft Sentinel. Use Managed HSM-backed signatures or hash-chain checkpoints to make alteration detectable.
 
 - Record actor, delegated authority, action, resource, reason, request ID, source, before/after hashes, and outcome for privileged and financial actions.
 - Commit audit records atomically with the business transition, then copy them to tamper-evident or write-once storage.
