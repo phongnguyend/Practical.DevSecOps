@@ -944,6 +944,43 @@ sequenceDiagram
 
 
 
+## Technology Suggestion
+
+### Frontend and partner experience
+
+- **React with TypeScript:** Supports shipper, carrier, broker, warehouse, finance, and operations portals through reusable, strongly typed workflows.
+- **Azure Static Web Apps with Azure Front Door:** Provides global delivery, TLS, WAF protection, and controlled routing for public and partner-facing applications.
+- **Azure Web PubSub:** Pushes booking, milestone, customs, exception, and document-status changes to operational screens without frequent polling.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core:** Provides secure APIs and workers for quoting, booking, capacity, itineraries, tracking, customs, documents, and billing. Strong domain modeling helps enforce complex lifecycle rules and immutable history.
+- **Azure Kubernetes Service (AKS):** Supports independent scaling and isolation for partner ingestion, optimization, document generation, billing, and core shipment services. Dedicated worker pools keep bursty feeds and compute-heavy optimization away from booking traffic.
+
+### Data, documents, and geospatial services
+
+- **Azure Database for PostgreSQL Flexible Server with PostGIS:** Preserves the documented booking, capacity, itinerary, document, charge, and invoice transactions while supporting facility and route geospatial queries.
+- **Azure Blob Storage:** Stores encrypted trade documents, manifests, labels, and generated files using versioning, immutable retention where required, checksums, and private access.
+- **Azure Managed Redis:** Caches reference data, schedules, rate inputs, and non-authoritative tracking views. Capacity, booking, customs, and billing truth remains in PostgreSQL.
+- **Azure Maps:** Supplies geocoding, route visualization, distance calculations, and ETA inputs for operational planning.
+
+### Integration, events, and orchestration
+
+- **Azure Service Bus with the transactional outbox pattern:** Coordinates carrier confirmation, customs, documentation, billing, payment, exception, and notification workflows with sessions, retries, and dead-letter queues.
+- **Azure Event Hubs:** Ingests high-volume carrier and equipment telemetry while allowing independent normalization, tracking, ETA, and analytics consumers.
+- **Azure Durable Functions:** Orchestrates long-running, timer-driven partner workflows such as booking confirmation, customs deadlines, document generation, and compensating actions. Business state remains in the domain database rather than only in orchestration history.
+
+### Identity, security, and observability
+
+- **Microsoft Entra ID/External ID with managed identities and Azure Key Vault:** Supports workforce and partner identity, removes embedded service credentials, and protects integration, encryption, and signing keys.
+- **Azure Monitor, Application Insights, Log Analytics, Defender for Cloud, and Microsoft Sentinel:** Tracks partner latency, feed gaps, capacity contention, customs deadlines, document backlog, billing reconciliation, and security events without logging protected trade data.
+
+### Delivery and deployment guidance
+
+- **GitHub Actions or Azure DevOps with Bicep:** Automates contract, migration, replay, and security tests; signs artifacts; applies policy gates; and creates repeatable environments.
+- Keep booking and capacity reservation transactional. Run carrier confirmation, tracking projection, document generation, notification, and billing integration asynchronously with stable command identifiers.
+- Use private endpoints and availability zones, and test partner outages, delayed or contradictory events, database failover, document recovery, and cross-region restoration.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives and must be aligned with carrier, customs, finance, and trade-lane agreements.

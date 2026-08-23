@@ -797,6 +797,41 @@ sequenceDiagram
 
 
 
+## Technology Suggestion
+
+### Frontend and realtime experience
+
+- **React with TypeScript:** Supports customer booking, driver operations, and support dashboards with shared, strongly typed components. A React-based progressive web app can cover the initial mobile experience; native shells can be added when deeper device integration is required.
+- **Azure Static Web Apps with Azure Front Door:** Provides managed frontend hosting, edge delivery, TLS, and WAF protection.
+- **Azure Web PubSub:** Pushes driver offers, trip-state changes, ETAs, and location updates without aggressive client polling.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core:** Provides high-throughput asynchronous APIs and background workers for quotes, booking, dispatch, trip state, pricing, and payments.
+- **Azure Kubernetes Service (AKS):** Allows dispatch and location ingestion to scale separately from trip, payment, and support services. Workload isolation prevents a location spike from exhausting the transactional booking path.
+
+### Data, geospatial search, and caching
+
+- **Azure Database for PostgreSQL Flexible Server with PostGIS:** Keeps trips, offers, fares, payments, and audit state transactional while supporting durable geospatial queries and indexes.
+- **Azure Managed Redis:** Maintains expiring driver-availability and nearby-driver indexes for low-latency matching. PostgreSQL remains authoritative for accepted offers and trip state.
+- **Azure Maps:** Supplies geocoding, routing, distance matrices, and ETA inputs without building a global road-network platform.
+
+### Events and workflows
+
+- **Azure Event Hubs:** Ingests high-volume driver-location telemetry partitioned by driver or geography, enabling backpressure and independent consumers.
+- **Azure Service Bus with the transactional outbox pattern:** Coordinates ride offers, timeouts, payment, notification, and safety workflows with retries, dead-lettering, and duplicate protection.
+
+### Identity, security, and observability
+
+- **Microsoft Entra External ID with managed identities and Azure Key Vault:** Supports customer and driver authentication, removes embedded service credentials, and protects provider and signing secrets.
+- **Azure Monitor, Application Insights, Log Analytics, Defender for Cloud, and Microsoft Sentinel:** Tracks dispatch latency, location lag, failed payments, safety signals, and security incidents while keeping precise location and PII out of general logs.
+
+### Delivery and deployment guidance
+
+- **GitHub Actions or Azure DevOps with Bicep:** Provides automated tests, load and replay tests, signed images, policy gates, and reproducible environments.
+- Keep driver matching fast and ephemeral, but commit offer acceptance and trip transitions transactionally. Design all mobile commands for retries and intermittent connectivity.
+- Deploy ingestion and dispatch across availability zones and test regional failover, stale-location handling, duplicate acceptance, and provider outages.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives and should be tested by city, peak period, and safety tier.

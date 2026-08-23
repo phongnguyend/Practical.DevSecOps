@@ -801,6 +801,42 @@ sequenceDiagram
 
 
 
+## Technology Suggestion
+
+### Frontend and operational applications
+
+- **React with TypeScript:** Supports customer tracking, depot operations, courier workflows, and support portals with reusable, strongly typed components. Package scanning can be exposed as a progressive web app initially and wrapped or replaced with a native client when specialized scanner integration requires it.
+- **Azure Static Web Apps with Azure Front Door:** Provides managed hosting, global delivery, TLS, and WAF protection for public and internal web entry points.
+- **Azure Web PubSub:** Pushes tracking milestones and route or assignment changes to customer and operations screens without frequent polling.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core:** Provides efficient APIs and background workers for shipment creation, labeling, pickup, scanning, routing, delivery, returns, and exception handling.
+- **Azure Kubernetes Service (AKS):** Allows scan ingestion, tracking projection, routing, notification, and core shipment services to scale and isolate independently during depot and carrier bursts.
+
+### Data, storage, and geospatial services
+
+- **Azure Database for PostgreSQL Flexible Server with PostGIS:** Preserves shipment, parcel, manifest, custody, and delivery transactions and supports facility, service-area, and route-related geospatial queries.
+- **Azure Blob Storage:** Stores labels, proof-of-delivery images, signatures, and generated documents using opaque references, encryption, retention policies, and malware scanning.
+- **Azure Managed Redis:** Caches routing reference data, tracking projections, rate limits, and short-lived operational lookups without replacing the authoritative custody history.
+- **Azure Maps:** Supplies address validation, geocoding, routing, and ETA calculation for pickup and last-mile delivery.
+
+### Event ingestion and workflows
+
+- **Azure Event Hubs:** Accepts high-volume handheld, depot, vehicle, and partner scan feeds with partitioning and backpressure.
+- **Azure Service Bus with the transactional outbox pattern:** Coordinates pickup, manifest, dispatch, notification, return, and exception workflows with retries, duplicate handling, and dead-letter queues.
+
+### Identity, security, and observability
+
+- **Microsoft Entra ID/External ID with managed identities and Azure Key Vault:** Supports workforce, courier, customer, and partner access while removing embedded credentials and protecting signing and integration secrets.
+- **Azure Monitor, Application Insights, Log Analytics, Defender for Cloud, and Microsoft Sentinel:** Reveals scan lag, missing custody events, delivery failures, partner-feed gaps, and security incidents. General logs must omit addresses, signatures, and proof-of-delivery content.
+
+### Delivery and deployment guidance
+
+- **GitHub Actions or Azure DevOps with Bicep:** Automates API and schema tests, event replay tests, signed images, policy gates, and repeatable infrastructure.
+- Acknowledge device scans quickly after durable ingestion, then update projections and notifications asynchronously. Preserve event time, receive time, source, and deduplication identifiers.
+- Design handheld workflows for offline buffering and safe replay, and test depot spikes, out-of-order scans, duplicate delivery attempts, and regional outages.
+
 ## Non-functional Requirements
 
 The targets below are initial service objectives for normal network operation and require peak-season validation.

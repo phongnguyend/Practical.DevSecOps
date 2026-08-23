@@ -726,6 +726,41 @@ sequenceDiagram
 
 
 
+## Technology Suggestion
+
+### Frontend and realtime delivery
+
+- **React with TypeScript:** Suits data-dense order tickets, positions, and risk dashboards while providing compile-time API contract checks.
+- **Azure Static Web Apps with Azure Front Door and Azure Web PubSub:** Provides secure global delivery and pushes prices, fills, margin changes, and order status without browser polling.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core and background workers:** Provides efficient asynchronous I/O, strong numeric and domain modeling, and mature concurrency primitives for order, execution, margin, and settlement services.
+- **Azure Kubernetes Service (AKS):** Isolates order entry, market data, risk, settlement, and reporting. Dedicated node pools prevent analytical or batch work from competing with latency-sensitive trading paths.
+
+### Data and caching
+
+- **Azure Database for PostgreSQL Flexible Server:** Matches the documented order, execution, position, cash-ledger, and settlement schema with ACID transactions, exact numerics, locking, rich indexing, high availability, and point-in-time recovery.
+- **Azure Managed Redis:** Holds ephemeral price snapshots, instrument metadata, sessions, and non-authoritative risk read models. Orders, executions, cash, and official positions remain authoritative in PostgreSQL.
+
+### Streaming, workflows, and analytics
+
+- **Azure Event Hubs:** Provides partitioned, high-throughput ingestion for price ticks and provider feeds. Partition by instrument or venue, then use .NET consumers for normalization, validation, and backpressure.
+- **Azure Service Bus with the transactional outbox pattern:** Supports recoverable execution-report, settlement, reconciliation, and notification workflows with sessions, dead-lettering, and duplicate detection.
+- **Azure Data Lake Storage with Azure Data Explorer:** Retains market and trading history and supports time-series analysis without burdening the transactional database.
+
+### Identity, security, and observability
+
+- **Microsoft Entra ID/External ID with managed identities:** Supports customer and privileged-operator access with MFA and conditional access while removing embedded service credentials.
+- **Azure Key Vault or Managed HSM:** Protects provider credentials, encryption keys, and signing material.
+- **Azure Monitor, Application Insights, Managed Prometheus/Grafana, Defender for Cloud, and Microsoft Sentinel:** Reveals feed lag, reject rates, order latency, margin-processing delays, reconciliation gaps, and security events.
+
+### Delivery and deployment guidance
+
+- **Azure DevOps or GitHub Actions with Bicep:** Automates performance tests, schema checks, signed images, policy gates, immutable artifacts, and repeatable environments.
+- Keep the order and risk acceptance path short and deterministic, then publish durable downstream work.
+- Treat market-data streams as transient inputs, not substitutes for the authoritative execution and cash ledgers. Test feed gaps, duplicate executions, venue outages, database failover, and clock drift before production launch.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives; instrument, venue, and regulatory obligations may require stricter values.

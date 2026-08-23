@@ -728,6 +728,42 @@ sequenceDiagram
 
 Support personnel cannot bypass the cryptographic recovery model. Changing a known master password only re-wraps the random root key; it does not re-encrypt every vault item.
 
+## Technology Suggestion
+
+### Frontend and client cryptography
+
+- **React with TypeScript:** Provides a shared, strongly typed UI foundation for the web vault, account settings, sharing, and security administration.
+- **Web Crypto API with a reviewed cryptographic library:** Performs key derivation, encryption, decryption, and signing in the client so plaintext vault data and user-derived master keys never reach the backend. Cryptographic formats must be versioned and independently security-reviewed.
+- **Azure Static Web Apps with Azure Front Door:** Hosts immutable frontend assets and adds TLS, WAF protection, global routing, and security-header enforcement. Use a strict Content Security Policy to reduce script-injection risk.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core:** Supplies strongly typed APIs, mature security middleware, rate limiting, and dependable background processing for synchronization, sharing, device management, and notification workflows.
+- **Azure Container Apps:** Runs the API and workers with managed scaling, private networking, revision-based deployments, and less operational overhead than a full Kubernetes platform. Separate the synchronization API from email, cleanup, and audit workers as load grows.
+
+### Data and storage
+
+- **Azure Database for PostgreSQL Flexible Server:** Preserves the documented relationships, optimistic concurrency, constraints, and synchronization indexes while adding high availability, encrypted backups, and point-in-time restore. Store only ciphertext and cryptographic metadata for vault content.
+- **Azure Blob Storage:** Holds encrypted attachments and immutable export artifacts using opaque object names, short-lived access, versioning, and malware scanning. Attachment keys remain wrapped by client-controlled vault keys.
+- **Azure Managed Redis:** Supports short-lived rate limits, session metadata, and synchronization hints; it must not contain plaintext secrets or become the source of truth.
+
+### Messaging and realtime synchronization
+
+- **Azure Service Bus:** Delivers durable email, security alert, cleanup, key-rotation, and audit work with retries and dead-letter handling.
+- **Azure Web PubSub:** Notifies active clients that encrypted vault state changed. Clients then retrieve authorized ciphertext through the API instead of placing vault content in realtime messages.
+
+### Identity, keys, and observability
+
+- **Microsoft Entra External ID:** Supports account authentication, MFA, and federation. The vault master password and vault encryption keys remain separate from the identity provider so server-side account access cannot decrypt vault contents.
+- **Managed identities with Azure Key Vault or Managed HSM:** Protects server-owned signing, wrapping, and transport keys without storing credentials in code. Do not place user-derived vault master keys in Key Vault.
+- **Azure Monitor, Application Insights, Defender for Cloud, and Microsoft Sentinel:** Detects authentication abuse, unusual device activity, sync failures, and infrastructure threats. Telemetry must exclude URLs, item names, ciphertext payloads, derived keys, and recovery material.
+
+### Delivery and deployment guidance
+
+- **GitHub Actions or Azure DevOps with Bicep:** Automates dependency scanning, secret scanning, SAST, cryptographic compatibility tests, signed artifacts, and repeatable infrastructure.
+- Treat cryptographic format changes as migrations that must remain backward compatible until every supported client can rotate data safely.
+- Use private endpoints, availability-zone deployment, tested restore procedures, and an independent penetration test before production release.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives for normal regional operation and must be validated on representative client devices, including KDF latency and offline synchronization.

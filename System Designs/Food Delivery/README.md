@@ -781,6 +781,42 @@ sequenceDiagram
 
 
 
+## Technology Suggestion
+
+### Frontend and realtime experience
+
+- **React with TypeScript:** Supports customer ordering, restaurant operations, courier workflows, and support dashboards through reusable, strongly typed components.
+- **Azure Static Web Apps with Azure Front Door:** Delivers the web applications globally with TLS, edge caching, and WAF protection.
+- **Azure Web PubSub:** Pushes restaurant acceptance, preparation, courier assignment, order status, and location updates without frequent polling.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core:** Provides high-throughput APIs and workers for catalog, pricing, orders, dispatch, delivery, payment, and settlement. Strong typing helps keep state transitions and money calculations explicit.
+- **Azure Container Apps:** Scales APIs and workers independently with revision-based deployment and lower operational overhead. Move only proven high-scale or isolation-sensitive components to AKS if needed.
+
+### Data, search, and caching
+
+- **Azure Database for PostgreSQL Flexible Server with PostGIS:** Preserves transactional orders, prices, payments, assignments, and settlements while supporting service-area and distance queries.
+- **Azure Managed Redis:** Caches menus, availability, delivery quotes, rate limits, and nearby-courier candidates. Order, price, and payment truth remains in PostgreSQL.
+- **Azure AI Search:** Provides typo-tolerant restaurant and menu discovery, faceting, and ranking without adding search load to the transactional database.
+- **Azure Maps:** Supplies address validation, routing, distance matrices, and ETA inputs for delivery pricing and dispatch.
+
+### Messaging and workflows
+
+- **Azure Service Bus with the transactional outbox pattern:** Coordinates restaurant acceptance, courier offers, payment callbacks, compensation, notification, and settlement with retries and dead-letter handling.
+- **Azure Event Hubs:** Handles high-volume courier-location events and feeds operational analytics independently of transactional order processing.
+
+### Identity, security, and observability
+
+- **Microsoft Entra External ID with managed identities and Azure Key Vault:** Supports customer, courier, restaurant, and operator identities while protecting payment-provider and signing secrets.
+- **Azure Monitor, Application Insights, Defender for Cloud, and Microsoft Sentinel:** Exposes checkout, acceptance, dispatch, delivery, and settlement latency and centralizes security monitoring. Redact payment, address, and contact data from telemetry.
+
+### Delivery and deployment guidance
+
+- **GitHub Actions or Azure DevOps with Bicep:** Automates tests, migration validation, artifact signing, policy checks, and repeatable Azure environments.
+- Keep checkout and order-state transitions transactional; run dispatch, notifications, search indexing, and settlement asynchronously.
+- Test meal-time traffic spikes, duplicate callbacks, restaurant or courier timeouts, cache loss, and map/payment-provider degradation.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives for normal regional operation; peak-event capacity must be tested separately.

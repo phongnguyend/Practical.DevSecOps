@@ -739,6 +739,40 @@ All services call one privileged database procedure or a tightly controlled post
 Application roles receive `EXECUTE` on this path, not direct ledger update/delete privileges. Immutability triggers reject updates and deletes on posting tables.
 
 
+## Technology Suggestion
+
+### Frontend
+
+- **React with TypeScript:** Supports responsive customer, merchant, and operations portals from a shared component system. TypeScript improves API contract safety for money movement.
+- **Azure Static Web Apps with Azure Front Door:** Provides managed hosting, global routing, WAF protection, and edge caching for static content.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core:** Offers high-throughput APIs, strong typing, mature security middleware, and reliable transaction handling. This keeps idempotency, authorization, wallet limits, and double-entry posting rules explicit and testable.
+- **Azure Kubernetes Service (AKS):** Lets wallet, payment, ledger, risk, and reconciliation workloads scale independently with private networking, workload identity, and controlled deployments.
+
+### Data and caching
+
+- **Azure Database for PostgreSQL Flexible Server:** Preserves ledger constraints, atomic balance updates, row locks, and exact numeric values while supplying high availability, backups, point-in-time restore, encryption, and monitoring.
+- **Azure Managed Redis:** Supports short-lived sessions, velocity counters, rate limits, and non-authoritative read caching. Wallet balances and financial limits must still be validated against PostgreSQL.
+
+### Messaging and fraud processing
+
+- **Azure Service Bus with the transactional outbox pattern:** Decouples card processors, banks, merchants, notifications, and reconciliation using durable queues, duplicate detection, sessions, retries, and dead-letter queues.
+- **Azure Event Hubs with Azure Stream Analytics or .NET stream processors:** Evaluates transaction velocity and behavioral signals quickly without placing analytical load on posting transactions. Persist decisions and rule versions as auditable references.
+
+### Identity, security, and observability
+
+- **Microsoft Entra External ID with managed identities:** Supplies customer authentication and MFA while eliminating embedded service credentials.
+- **Azure Key Vault or Managed HSM:** Protects tokenization, signing, and encryption keys with rotation and audited access.
+- **Azure Monitor, Application Insights, Log Analytics, Defender for Cloud, and Microsoft Sentinel:** Connects API requests to postings and callbacks and supports fraud investigation, alerting, and regulated audit retention. Redact sensitive values before telemetry leaves the application.
+
+### Delivery and deployment guidance
+
+- **Azure DevOps or GitHub Actions with Bicep:** Provides repeatable infrastructure, automated tests, migration validation, artifact signing, and gated production promotion.
+- Keep balance-changing commands synchronous through the ledger boundary; make processor callbacks, notifications, fraud enrichment, and reconciliation asynchronous.
+- Use private endpoints, availability-zone deployment, and a tested cross-region recovery plan. Cache and event-stream projections are never the financial source of truth.
+
 ## Non-functional Requirements
 
 The targets below are initial service objectives and should be adjusted by market, payment rail, and product tier.

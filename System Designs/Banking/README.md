@@ -705,6 +705,40 @@ A reversal inserts a new `ledger_transactions` row whose `reversal_of` points to
 
 
 
+## Technology Suggestion
+
+### Frontend
+
+- **React with TypeScript:** Supports reusable customer, teller, and operations experiences. TypeScript reduces UI contract errors in sensitive financial workflows.
+- **Azure Static Web Apps with Azure Front Door:** Provides managed hosting, global routing, TLS termination, WAF protection, and controlled rollout paths.
+
+### Backend and runtime
+
+- **.NET with ASP.NET Core:** Provides strong typing, mature authentication and authorization middleware, high throughput, and reliable transaction handling. It is well suited to enforcing ledger invariants in a clear domain model.
+- **Azure Kubernetes Service (AKS):** Allows account, transfer, ledger, settlement, and reporting workloads to scale independently with private networking and predictable isolation. Begin with a modular deployment and split services only where scale or ownership requires it.
+
+### Data and caching
+
+- **Azure Database for PostgreSQL Flexible Server:** Preserves the documented PostgreSQL transactions, constraints, numeric precision, indexes, and row-locking semantics while adding high availability, backups, point-in-time restore, and encryption.
+- **Azure Managed Redis:** Caches product configuration, authorization metadata, and short-lived read models to reduce database load. Balances and ledger entries remain authoritative in PostgreSQL.
+
+### Messaging and analytics
+
+- **Azure Service Bus with the transactional outbox pattern:** Durable queues, topics, duplicate detection, dead-lettering, and ordered sessions fit transfers, settlement, notifications, and integration commands without requiring distributed transactions.
+- **Azure Event Hubs with Azure Data Lake Storage:** Handles high-volume audit and transaction-event feeds and supports fraud, regulatory, and historical analysis away from the primary ledger database.
+
+### Identity, security, and observability
+
+- **Microsoft Entra ID/External ID with managed identities:** Supplies workforce and customer identity controls such as MFA and conditional access while removing stored service credentials.
+- **Azure Key Vault or Managed HSM:** Protects signing and encryption keys with rotation and auditable access.
+- **Azure Monitor, Application Insights, Log Analytics, Defender for Cloud, and Microsoft Sentinel:** Exposes posting latency and reconciliation failures while centralizing security posture, threat detection, and investigation.
+
+### Delivery and deployment guidance
+
+- **Azure DevOps or GitHub Actions with Bicep:** Automates builds, tests, database migration checks, signed artifacts, policy gates, and repeatable infrastructure with an auditable change history.
+- Keep strongly consistent operations, such as transfer posting, synchronous. Publish notifications, analytics, fraud signals, and external settlement work asynchronously after the database transaction.
+- Deploy across availability zones, use private endpoints for data services, and maintain a tested cross-region recovery design rather than stretching a single PostgreSQL writer across regions.
+
 ## Non-functional Requirements
 
 The targets below are initial service objectives and must be reconciled with regulatory, product-tier, and regional commitments.
