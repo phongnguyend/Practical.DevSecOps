@@ -12,7 +12,7 @@
   ```
 - Installing WSL on another drive in Windows
   ```ps1
-  wsl --shutdown Ubuntu-22.04
+  wsl --shutdown
   wsl --export Ubuntu-22.04 "E:\WSL\Export\Ubuntu-22.04.tar"
   wsl --unregister Ubuntu-22.04
   wsl --import Ubuntu-22.04 "E:\WSL\Ubuntu-22.04" "E:\WSL\Export\Ubuntu-22.04.tar"
