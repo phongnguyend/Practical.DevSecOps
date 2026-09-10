@@ -223,6 +223,17 @@ git commit --amend --reset-author --no-edit
 git push --force-with-lease
 ```
 
+### Configure DiffTool
+- Open ```code %USERPROFILE%\.gitconfig```
+```
+[diff]
+	tool = vscode
+[difftool "vscode"]
+	cmd = code --diff \"$LOCAL\" \"$REMOTE\"
+[difftool]
+	prompt = false
+```
+
 ### GitHub:
 - Reference Issue/Pull Request in comment/ commit message: #Id
 
