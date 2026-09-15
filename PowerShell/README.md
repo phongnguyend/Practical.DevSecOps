@@ -183,3 +183,19 @@ $path = "C:\text.txt"
 (Get-Content $path) -Replace 'ABC', 'XYZ' | Set-Content $path
 (Get-Content $path) -Replace '123', '456' | Set-Content $path
 ```
+
+### Get The Monitors Positions
+```ps1
+Add-Type -AssemblyName System.Windows.Forms
+
+[System.Windows.Forms.Screen]::AllScreens |
+ForEach-Object {
+    [PSCustomObject]@{
+        x       = $_.Bounds.X
+        y       = $_.Bounds.Y
+        width   = $_.Bounds.Width
+        height  = $_.Bounds.Height
+        primary = $_.Primary
+    }
+} | ConvertTo-Json -Compress
+```
