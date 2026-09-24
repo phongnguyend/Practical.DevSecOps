@@ -819,16 +819,22 @@ sequenceDiagram
 
 ## Recommended repository folder structure
 
-Keep each application in a repository with these top-level folders:
+Keep each application in a repository with these folders and GitHub Actions workflows:
 
 ```text
 .
+|-- .github/
+|   `-- workflows/
+|       |-- backend-ci.yml
+|       |-- frontend-ci.yml
+|       `-- release.yml
 |-- backend/
 |-- e2e/
 |-- frontend/
 `-- infra/
 ```
 
+- `.github/workflows/`: GitHub Actions workflow definitions. Use `backend-ci.yml` to build and test the backend, `frontend-ci.yml` to lint, build, and test the frontend, and `release.yml` to run end-to-end checks, publish versioned artifacts, and deploy releases.
 - `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
 - `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
 - `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
