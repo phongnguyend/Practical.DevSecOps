@@ -995,13 +995,16 @@ Keep each application in a repository with these folders and GitHub Actions work
 |-- backend/
 |-- e2e/
 |-- frontend/
+|   `-- src/
+|       |-- components/
+|       `-- pages/
 `-- infra/
 ```
 
 - `.github/workflows/`: GitHub Actions workflow definitions. Use `backend-ci.yml` to build and test the backend, `frontend-ci.yml` to lint, build, and test the frontend, and `release.yml` to run end-to-end checks, publish versioned artifacts, and deploy releases.
 - `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
 - `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
-- `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
+- `frontend/`: User-facing applications, client-side state and API clients, and frontend unit and component tests. Keep reusable UI components in `src/components/` and route-level page views in `src/pages/`.
 - `infra/`: Infrastructure as code, deployment manifests, environment configuration templates, and provisioning scripts.
 
 ## Non-functional Requirements
