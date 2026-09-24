@@ -761,6 +761,23 @@ sequenceDiagram
 - Keep the order and risk acceptance path short and deterministic, then publish durable downstream work.
 - Treat market-data streams as transient inputs, not substitutes for the authoritative execution and cash ledgers. Test feed gaps, duplicate executions, venue outages, database failover, and clock drift before production launch.
 
+## Recommended repository folder structure
+
+Keep each application in a repository with these top-level folders:
+
+```text
+.
+|-- backend/
+|-- e2e/
+|-- frontend/
+`-- infra/
+```
+
+- `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
+- `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
+- `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
+- `infra/`: Infrastructure as code, deployment manifests, environment configuration templates, and provisioning scripts.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives; instrument, venue, and regulatory obligations may require stricter values.

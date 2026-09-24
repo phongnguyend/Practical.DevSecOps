@@ -739,6 +739,23 @@ A reversal inserts a new `ledger_transactions` row whose `reversal_of` points to
 - Keep strongly consistent operations, such as transfer posting, synchronous. Publish notifications, analytics, fraud signals, and external settlement work asynchronously after the database transaction.
 - Deploy across availability zones, use private endpoints for data services, and maintain a tested cross-region recovery design rather than stretching a single PostgreSQL writer across regions.
 
+## Recommended repository folder structure
+
+Keep each application in a repository with these top-level folders:
+
+```text
+.
+|-- backend/
+|-- e2e/
+|-- frontend/
+`-- infra/
+```
+
+- `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
+- `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
+- `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
+- `infra/`: Infrastructure as code, deployment manifests, environment configuration templates, and provisioning scripts.
+
 ## Non-functional Requirements
 
 The targets below are initial service objectives and must be reconciled with regulatory, product-tier, and regional commitments.

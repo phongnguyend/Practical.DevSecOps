@@ -837,6 +837,23 @@ sequenceDiagram
 - Acknowledge device scans quickly after durable ingestion, then update projections and notifications asynchronously. Preserve event time, receive time, source, and deduplication identifiers.
 - Design handheld workflows for offline buffering and safe replay, and test depot spikes, out-of-order scans, duplicate delivery attempts, and regional outages.
 
+## Recommended repository folder structure
+
+Keep each application in a repository with these top-level folders:
+
+```text
+.
+|-- backend/
+|-- e2e/
+|-- frontend/
+`-- infra/
+```
+
+- `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
+- `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
+- `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
+- `infra/`: Infrastructure as code, deployment manifests, environment configuration templates, and provisioning scripts.
+
 ## Non-functional Requirements
 
 The targets below are initial service objectives for normal network operation and require peak-season validation.

@@ -764,6 +764,23 @@ Support personnel cannot bypass the cryptographic recovery model. Changing a kno
 - Treat cryptographic format changes as migrations that must remain backward compatible until every supported client can rotate data safely.
 - Use private endpoints, availability-zone deployment, tested restore procedures, and an independent penetration test before production release.
 
+## Recommended repository folder structure
+
+Keep each application in a repository with these top-level folders:
+
+```text
+.
+|-- backend/
+|-- e2e/
+|-- frontend/
+`-- infra/
+```
+
+- `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
+- `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
+- `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
+- `infra/`: Infrastructure as code, deployment manifests, environment configuration templates, and provisioning scripts.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives for normal regional operation and must be validated on representative client devices, including KDF latency and offline synchronization.

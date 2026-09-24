@@ -832,6 +832,23 @@ sequenceDiagram
 - Keep driver matching fast and ephemeral, but commit offer acceptance and trip transitions transactionally. Design all mobile commands for retries and intermittent connectivity.
 - Deploy ingestion and dispatch across availability zones and test regional failover, stale-location handling, duplicate acceptance, and provider outages.
 
+## Recommended repository folder structure
+
+Keep each application in a repository with these top-level folders:
+
+```text
+.
+|-- backend/
+|-- e2e/
+|-- frontend/
+`-- infra/
+```
+
+- `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
+- `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
+- `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
+- `infra/`: Infrastructure as code, deployment manifests, environment configuration templates, and provisioning scripts.
+
 ## Non-functional Requirements
 
 The targets below are initial objectives and should be tested by city, peak period, and safety tier.

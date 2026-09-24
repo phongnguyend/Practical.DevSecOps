@@ -773,6 +773,23 @@ Application roles receive `EXECUTE` on this path, not direct ledger update/delet
 - Keep balance-changing commands synchronous through the ledger boundary; make processor callbacks, notifications, fraud enrichment, and reconciliation asynchronous.
 - Use private endpoints, availability-zone deployment, and a tested cross-region recovery plan. Cache and event-stream projections are never the financial source of truth.
 
+## Recommended repository folder structure
+
+Keep each application in a repository with these top-level folders:
+
+```text
+.
+|-- backend/
+|-- e2e/
+|-- frontend/
+`-- infra/
+```
+
+- `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
+- `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
+- `frontend/`: User-facing applications, UI components, client-side state and API clients, and frontend unit and component tests.
+- `infra/`: Infrastructure as code, deployment manifests, environment configuration templates, and provisioning scripts.
+
 ## Non-functional Requirements
 
 The targets below are initial service objectives and should be adjusted by market, payment rail, and product tier.
