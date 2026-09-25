@@ -841,9 +841,17 @@ Keep each application in a repository with these folders and GitHub Actions work
 |-- .github/
 |   `-- workflows/
 |       |-- backend-ci.yml
+|       |-- e2e.yml
 |       |-- frontend-ci.yml
 |       `-- release.yml
 |-- backend/
+|   |-- ProjectName.Api/
+|   |-- ProjectName.Application/
+|   |-- ProjectName.Background/
+|   |-- ProjectName.Domain/
+|   |-- ProjectName.Infrastructure/
+|   |-- ProjectName.Persistence/
+|   `-- ProjectName.slnx
 |-- e2e/
 |-- frontend/
 |   `-- src/
@@ -857,8 +865,8 @@ Keep each application in a repository with these folders and GitHub Actions work
     `-- README.md
 ```
 
-- `.github/workflows/`: GitHub Actions workflow definitions. Use `backend-ci.yml` to build and test the backend, `frontend-ci.yml` to lint, build, and test the frontend, and `release.yml` to run end-to-end checks, publish versioned artifacts, and deploy releases.
-- `backend/`: APIs, domain and application logic, background workers, data access, database migrations, and backend unit and integration tests.
+- `.github/workflows/`: GitHub Actions workflow definitions. Use `backend-ci.yml` to build and test the backend, `e2e.yml` to run end-to-end tests from `e2e/`, `frontend-ci.yml` to lint, build, and test the frontend, and `release.yml` to publish versioned artifacts and deploy releases after the required checks pass.
+- `backend/`: Replace `ProjectName` with the application's project name. Keep HTTP endpoints, middleware, and application startup in `ProjectName.Api/`, use cases and application interfaces in `ProjectName.Application/`, background workers and scheduled jobs in `ProjectName.Background/`, domain entities and business rules in `ProjectName.Domain/`, external service integrations in `ProjectName.Infrastructure/`, and database access and migrations in `ProjectName.Persistence/`. Group the projects in `ProjectName.slnx`.
 - `e2e/`: End-to-end tests for complete user journeys across the frontend, backend, and supporting services, with test fixtures and runner configuration.
 - `frontend/`: User-facing applications, client-side state and API clients, and frontend unit and component tests. Keep reusable UI components in `src/components/` and route-level page views in `src/pages/`.
 - `infra/`: Infrastructure as code with reusable Bicep modules in `modules/`, the deployment entry point in `main.bicep`, development and test configuration in `parameters.dev.json` and `parameters.test.json`, and provisioning instructions in `README.md`.
