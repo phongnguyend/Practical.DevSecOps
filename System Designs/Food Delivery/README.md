@@ -832,9 +832,11 @@ Keep each application in a repository with these folders and GitHub Actions work
 |       `-- release.yml
 |-- backend/
 |   |-- ProjectName.Api/
+|   |   `-- Dockerfile
 |   |-- ProjectName.Application/
 |   |-- ProjectName.AspireAppHost/
 |   |-- ProjectName.Background/
+|   |   `-- Dockerfile
 |   |-- ProjectName.Domain/
 |   |-- ProjectName.Infrastructure/
 |   |-- ProjectName.Persistence/
