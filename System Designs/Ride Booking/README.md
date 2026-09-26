@@ -847,22 +847,39 @@ Keep each application in a repository with these folders and GitHub Actions work
 |       `-- release.yml
 |-- backend/
 |   |-- ProjectName.Api/
-|   |   `-- Dockerfile
+|   |   |-- DependencyInjection.cs
+|   |   |-- Dockerfile
+|   |   `-- Program.cs
 |   |-- ProjectName.Application/
 |   |-- ProjectName.AspireAppHost/
+|   |   `-- Program.cs
 |   |-- ProjectName.Background/
-|   |   `-- Dockerfile
+|   |   |-- DependencyInjection.cs
+|   |   |-- Dockerfile
+|   |   `-- Program.cs
 |   |-- ProjectName.Domain/
 |   |-- ProjectName.Infrastructure/
+|   |   |-- Caching/
+|   |   |-- Indexing/
+|   |   |-- Logging/
+|   |   |-- Messaging/
+|   |   |-- Monitoring/
+|   |   `-- Notification/
 |   |-- ProjectName.Persistence/
 |   |   |-- Repositories/
 |   |   `-- ProjectNameDbContext.cs
 |   `-- ProjectName.slnx
 |-- e2e/
+|   |-- package.json
+|   |-- package-lock.json
+|   `-- tsconfig.json
 |-- frontend/
-|   `-- src/
-|       |-- components/
-|       `-- pages/
+|   |-- src/
+|   |   |-- components/
+|   |   `-- pages/
+|   |-- package.json
+|   |-- package-lock.json
+|   `-- tsconfig.json
 `-- infra/
     |-- modules/
     |-- main.bicep
