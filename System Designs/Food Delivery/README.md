@@ -840,6 +840,8 @@ Keep each application in a repository with these folders and GitHub Actions work
 |   |-- ProjectName.Domain/
 |   |-- ProjectName.Infrastructure/
 |   |-- ProjectName.Persistence/
+|   |   |-- Repositories/
+|   |   `-- ProjectNameDbContext.cs
 |   `-- ProjectName.slnx
 |-- e2e/
 |-- frontend/
