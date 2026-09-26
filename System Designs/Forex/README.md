@@ -799,6 +799,8 @@ Keep each application in a repository with these folders and GitHub Actions work
 |   |   `-- ProjectNameDbContext.cs
 |   `-- ProjectName.slnx
 |-- e2e/
+|   |-- .env
+|   |-- .env.example
 |   |-- package.json
 |   |-- package-lock.json
 |   `-- tsconfig.json
@@ -806,6 +808,8 @@ Keep each application in a repository with these folders and GitHub Actions work
 |   |-- src/
 |   |   |-- components/
 |   |   `-- pages/
+|   |-- .env
+|   |-- .env.example
 |   |-- package.json
 |   |-- package-lock.json
 |   `-- tsconfig.json
