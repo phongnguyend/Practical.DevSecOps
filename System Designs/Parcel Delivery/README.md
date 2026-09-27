@@ -852,6 +852,7 @@ Keep each application in a repository with these folders and GitHub Actions work
 |       `-- release.yml
 |-- backend/
 |   |-- ProjectName.Api/
+|   |   |-- Endpoints/
 |   |   |-- DependencyInjection.cs
 |   |   |-- Dockerfile
 |   |   `-- Program.cs
