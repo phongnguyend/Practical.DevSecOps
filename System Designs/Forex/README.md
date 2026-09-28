@@ -784,6 +784,7 @@ Keep each application in a repository with these folders and GitHub Actions work
 |   |-- ProjectName.AspireAppHost/
 |   |   `-- Program.cs
 |   |-- ProjectName.Background/
+|   |   |-- Workers/
 |   |   |-- DependencyInjection.cs
 |   |   |-- Dockerfile
 |   |   `-- Program.cs
