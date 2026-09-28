@@ -799,6 +799,7 @@ Keep each application in a repository with these folders and GitHub Actions work
 |   |-- ProjectName.Persistence/
 |   |   |-- Repositories/
 |   |   `-- ProjectNameDbContext.cs
+|   |-- .editorconfig
 |   `-- ProjectName.slnx
 |-- e2e/
 |   |-- .env
