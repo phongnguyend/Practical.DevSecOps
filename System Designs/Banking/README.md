@@ -789,7 +789,9 @@ Keep each application in a repository with these folders and GitHub Actions work
 |   |-- src/
 |   |   |-- components/
 |   |   |   |-- Modal.css
-|   |   |   `-- Modal.tsx
+|   |   |   |-- Modal.tsx
+|   |   |   |-- Toast.css
+|   |   |   `-- Toast.tsx
 |   |   `-- pages/
 |   |-- .env
 |   |-- .env.example
