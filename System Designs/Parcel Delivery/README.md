@@ -886,6 +886,8 @@ Keep each application in a repository with these folders and GitHub Actions work
 |-- frontend/
 |   |-- src/
 |   |   |-- components/
+|   |   |   |-- Modal.css
+|   |   |   `-- Modal.tsx
 |   |   `-- pages/
 |   |-- .env
 |   |-- .env.example
